@@ -33,3 +33,5 @@ Strings with special prefixes are highlighted in the console
 | [ERROR]       | Red           |
 | [WARN]        | Yellow        |
 | [INFO]        | Cyan          |
+
+Every newline that is received is interpreted separately and colored accordingly
