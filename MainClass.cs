@@ -106,7 +106,7 @@ namespace ComMonitor.Main
                 throw new SerialException(string.Format("Unable to find port: {0}", portName));
             }
             ColorConsole(ConsoleColor.Yellow);
-            Console.WriteLine("Connecting to " + portName + " @ " + baudrate + "\np:" + parity + " d:" + databits + " s:" + stopbits + "\n");
+            Console.WriteLine("Connecting to " + portName + " @ " + baudrate + "\np:" + parity + " d:" + databits + " s:" + stopbits + " cf:" + frequency + "\n");
             ColorConsole();
         }
 
