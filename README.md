@@ -22,3 +22,14 @@ A Console application to monitor ascii data over a serial port
 
 ###   Example
 `ComMonitor.exe COM6 19200 -rc -p Even`
+
+###   Special Prefixes
+Strings with special prefixes are highlighted in the console
+
+| Prefix        | Color         |
+| ------------- |---------------|
+| _Default_     | White         |
+| [DEBUG]       | Magenta       |
+| [ERROR]       | Red           |
+| [WARN]        | Yellow        |
+| [INFO]        | Cyan          |
