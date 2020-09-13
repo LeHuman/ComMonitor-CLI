@@ -94,7 +94,6 @@ namespace ComMonitor.Main
             } while (!_serialReader.PortAvailable());
         }
         #endregion
-
         public MainClass(string portName, int baudrate, Parity parity, int databits, StopBits stopbits, bool reconnect, bool setColor, int frequency)
         {
             this.reconnect = reconnect;
@@ -133,7 +132,7 @@ namespace ComMonitor.Main
                 {
                     _serialReader.Dispose();
                 }
-                if (!reconnect)
+                if (reconnect)
                     break;
                 RetryWait();
             }
