@@ -58,7 +58,7 @@ namespace ComMonitor.Main
             if (e.Data.Length == 0)
                 return;
 
-            string data = System.Text.Encoding.ASCII.GetString(e.Data).ToUpper();
+            string data = System.Text.Encoding.ASCII.GetString(e.Data);
             if (data.IndexOf('\n') < data.Length-1)
             {
                 string[] lines = data.Replace('\r','\0').Split('\n');
@@ -66,14 +66,14 @@ namespace ComMonitor.Main
                 {
                     if (line.Length > 0)
                     {
-                        LogLevelColor(line);
+                        LogLevelColor(line.ToUpper());
                         Console.WriteLine(line);
                     }
                 }
             }
             else
             {
-                LogLevelColor(data);
+                LogLevelColor(data.ToUpper());
                 Console.Write(data);
             }
 
