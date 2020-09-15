@@ -9,6 +9,8 @@ A Console application to monitor ascii data over a serial port
 
 ## Usage
 
+Arguments are not case sensitive
+
 *   portName (pos. 0)    Required. Set the port name to connect to
 *   baudRate (pos. 1)    Required. Set the baud rate
 *   -p, --parity         (Default: None) Set the parity mode. [None|Odd|Even|Mark|Space]
@@ -24,7 +26,7 @@ A Console application to monitor ascii data over a serial port
 `ComMonitor.exe COM6 19200 -rc -p Even`
 
 ###   Special Prefixes
-Strings with special prefixes ( Case Sensitive ) are highlighted in the console
+Strings with special prefixes ( not case sensitive ) are highlighted in the console
 
 | Prefix        | Color         |
 | ------------- |---------------|

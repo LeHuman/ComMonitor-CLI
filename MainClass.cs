@@ -150,7 +150,8 @@ namespace ComMonitor.Main
             bool setColor = true;
             int frequency = 20;
 
-            var result = Parser.Default.ParseArguments<Options>(args);
+            Parser parser = new Parser(with => with.CaseInsensitiveEnumValues = true);
+            var result = parser.ParseArguments<Options>(args);
             result.WithParsed(options =>
             {
                 portName = options.portName.ToUpper();
