@@ -19,11 +19,12 @@ Arguments are not case sensitive
 *   -r, --retry          Keep console open and wait for port to reopen
 *   -c, --color          Disable changing color of console
 *   -f, --frequency      (Default: 20) Manually Set the critical frequency of communication (Hz)
+* --priority             Take priority of a port if inuse by another instance of ComMonitor
 *   --help               Display help screen
 *   --version            Display version information
 
 ###   Example
-`ComMonitor.exe COM6 19200 -rc -p Even`
+`ComMonitor.exe COM6 19200 -rc -p Even --priority`
 
 ###   Special Prefixes
 Strings with special prefixes ( not case sensitive ) are highlighted in the console

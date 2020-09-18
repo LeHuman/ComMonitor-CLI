@@ -27,7 +27,7 @@ namespace ComMonitor.Main
         [Option('s', "stopbits", HelpText = "Set the number of stop bits. [None|One|Two|OnePointFive]", Default = StopBits.One)]
         public StopBits setStopBits { get; set; }
 
-        [Option('r', "retry", HelpText = "Keep console open and wait for port to reopen")]
+        [Option('r', "retry", HelpText = "If port closes, keep console open and wait for the port to reopen")]
         public bool reconnect { get; set; } 
 
         [Option('c', "color", HelpText = "Disable console color")]
@@ -35,6 +35,9 @@ namespace ComMonitor.Main
 
         [Option('f', "frequency", HelpText = "Manually Set the critical frequency of communication (Hz)", Default = 20)]
         public int frequency { get; set; }
+
+        [Option("priority", HelpText = "Take priority of a port if another instance of ComMonitor has it open ( Does not apply to any other app )")]
+        public bool priority { get; set; }
 
     }
 }
