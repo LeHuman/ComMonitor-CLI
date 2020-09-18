@@ -150,7 +150,7 @@ namespace ComMonitor.Main
             bool setColor = true;
             int frequency = 20;
 
-            Parser parser = new Parser(with => with.CaseInsensitiveEnumValues = true);
+            Parser parser = new Parser(with => { with.CaseInsensitiveEnumValues = true; with.AutoHelp = true; with.AutoVersion = true; with.HelpWriter = Console.Out; }) ;
             var result = parser.ParseArguments<Options>(args);
             result.WithParsed(options =>
             {
