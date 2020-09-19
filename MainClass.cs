@@ -17,9 +17,7 @@ namespace ComMonitor.Main
         private SerialClient _serialReader;
         private bool reconnect;
         private bool setColor;
-        private string portName;
         private PipeServer priorityNotify;
-        private bool priorityStop;
         private string connectStr;
         private string PriorityPipeName = "ComMonitorPriority";
         private static ConsoleColor Cfg = ConsoleColor.White;
@@ -113,20 +111,9 @@ namespace ComMonitor.Main
             retries = MAX_RETRY;
         }
 
-        private void PriorityStop(string Reply)
+        private void PriorityStop()
         {
-            try
-            {
-                string portMatch = Reply.TrimEnd('\0');
-                if (portMatch.Equals(portName))
-                    priorityStop = true;
-            }
-            catch (ArgumentOutOfRangeException oEX)
-            {
-                Debug.WriteLine(oEX.Message);
-                return;
-            }
-
+            throw new SerialException("Another instance has taken priority over the current port");
         }
 
         #endregion
@@ -134,18 +121,21 @@ namespace ComMonitor.Main
         public MainClass(string portName, int baudrate, Parity parity, int databits, StopBits stopbits, bool reconnect, bool setColor, int frequency, bool priority)
         {
 
-            this.portName = portName;
             this.reconnect = reconnect;
             this.setColor = setColor;
             PriorityPipeName += portName;
             priorityNotify = new PipeServer();
             if (priority)
             {
-                priorityNotify.Send(portName, PriorityPipeName, 250);
-                Thread.Sleep(250);
+                priorityNotify.Ping(PriorityPipeName);
+                priorityNotify.ListenForPing(PriorityPipeName, 10);
             }
-            priorityNotify.Listen(PriorityPipeName);
-            priorityNotify.PipeMessage += PriorityStop;
+            else
+            {
+                priorityNotify.ListenForPing(PriorityPipeName);
+            }
+
+            priorityNotify.PipeConnect += PriorityStop;
 
             _serialReader = new SerialClient(portName, baudrate, parity, databits, stopbits, frequency);
             _serialReader.SerialDataReceived += SerialDataReceived;
@@ -173,8 +163,6 @@ namespace ComMonitor.Main
                         while (_serialReader.IsAlive())
                         {
                             Thread.Sleep(500);
-                            if (priorityStop)
-                                throw new SerialException("Another instance has taken priority over the current port");
                         }
                         ColorConsole(ConsoleColor.Red);
                         Console.WriteLine("\n-----[ Disconnect ]-----\n");
@@ -196,6 +184,23 @@ namespace ComMonitor.Main
                 RetryWait();
             }
         }
+
+        static void UnhandledExceptionTrapperColor(object sender, UnhandledExceptionEventArgs e)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Exception ex = (Exception)e.ExceptionObject;
+            Console.WriteLine(ex.Message);
+            Console.ForegroundColor = Cfg;
+            Environment.Exit(0);
+        }
+
+        static void UnhandledExceptionTrapper(object sender, UnhandledExceptionEventArgs e)
+        {
+            Exception ex = (Exception)e.ExceptionObject;
+            Console.WriteLine(ex.Message);
+            Environment.Exit(0);
+        }
+
 
         static void Main(string[] args)
         {
@@ -233,26 +238,14 @@ namespace ComMonitor.Main
                 Console.CancelKeyPress += delegate { Console.ResetColor(); };
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.ForegroundColor = Cfg;
+                AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionTrapperColor;
+            } else
+            {
+                AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionTrapper;
             }
 
-            try
-            {
-                MainClass app = new MainClass(portName, baudrate, parity, databits, stopbits, reconnect, setColor, frequency, priority);
-                app.Run();
-            }
-            catch (Exception e)
-            {
-                if (setColor)
-                    Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(e.Message);
-                //throw e;
-            }
-            finally
-            {
-                if (setColor)
-                    Console.ForegroundColor = Cfg;
-            }
-
+            MainClass app = new MainClass(portName, baudrate, parity, databits, stopbits, reconnect, setColor, frequency, priority);
+            app.Run();
 
         }
     }
