@@ -27,6 +27,9 @@ namespace ComMonitor.Main
         [Option('s', "stopbits", HelpText = "Set the number of stop bits. [None|One|Two|OnePointFive]", Default = StopBits.One)]
         public StopBits setStopBits { get; set; }
 
+        [Option('t', "type", HelpText = "Set the type of data to receive. [(A)scii|(H)ex|(D)ecimal|(B)inary]", Default = DataType.Ascii)]
+        public DataType setDataType { get; set; }
+
         [Option('r', "retry", HelpText = "If port closes, keep console open and wait for the port to reopen")]
         public bool reconnect { get; set; } 
 

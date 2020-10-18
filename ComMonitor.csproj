@@ -84,6 +84,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SerialCom.cs" />
     <Compile Include="SerialException.cs" />
+    <Compile Include="SerialType.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

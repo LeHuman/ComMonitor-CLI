@@ -16,6 +16,7 @@ Arguments are not case sensitive
 *   -p, --parity         (Default: None) Set the parity mode. [None|Odd|Even|Mark|Space]
 *   -d, --databits       (Default: 8) The maximum number of bytes to process. [5-8]
 *   -s, --stopbits       (Default: One) Set the number of stop bits. [None|One|Two|OnePointFive]
+*	-t, --type           (Default: Ascii) Set the type of data to receive. [(A)scii|(H)ex|(D)ecimal|(B)inary]
 *   -r, --retry          Keep console open and wait for port to reopen
 *   -c, --color          Disable changing color of console
 *   -f, --frequency      (Default: 20) Manually Set the critical frequency of communication (Hz)

@@ -17,6 +17,7 @@ namespace ComMonitor.Main
         private SerialClient _serialReader;
         private bool reconnect;
         private bool setColor;
+        private bool logKeyword;
         private PipeServer priorityNotify;
         private string connectStr;
         private string PriorityPipeName = "ComMonitorPriority";
@@ -39,13 +40,15 @@ namespace ComMonitor.Main
             if (setColor)
                 Console.ForegroundColor = color;
         }
+
         private void ColorConsole()
         {
             ColorConsole(Cfg);
         }
-        private void LogLevelColor(string str)
+
+        private void LogLevelColor(string str) // IMPROVE: Add option to still detect keywords despite datatype
         {
-            if (setColor)
+            if (logKeyword)
             {
                 foreach (KeyValuePair<string, ConsoleColor> entry in logLevel)
                 {
@@ -66,7 +69,7 @@ namespace ComMonitor.Main
             if (e.Data.Length == 0)
                 return;
 
-            string data = System.Text.Encoding.ASCII.GetString(e.Data);
+            string data = SerialType.getDefaultType(e.Data);
             if (data.IndexOf('\n') < data.Length - 1)
             {
                 string[] lines = data.Replace('\r', '\0').Split('\n');
@@ -118,11 +121,12 @@ namespace ComMonitor.Main
 
         #endregion
 
-        public MainClass(string portName, int baudrate, Parity parity, int databits, StopBits stopbits, bool reconnect, bool setColor, int frequency, bool priority)
+        public MainClass(string portName, int baudrate, Parity parity, int databits, StopBits stopbits, bool reconnect, bool setColor, bool logKeyword, int frequency, bool priority)
         {
 
             this.reconnect = reconnect;
             this.setColor = setColor;
+            this.logKeyword = logKeyword;
             PriorityPipeName += portName;
             priorityNotify = new PipeServer();
             if (priority)
@@ -160,6 +164,7 @@ namespace ComMonitor.Main
                         RetryReset();
                         ColorConsole(ConsoleColor.Green);
                         Console.WriteLine("\r------[ Connect ]-------\n");
+                        ColorConsole();
                         while (_serialReader.IsAlive())
                         {
                             Thread.Sleep(500);
@@ -212,6 +217,7 @@ namespace ComMonitor.Main
             StopBits stopbits = StopBits.One;
             bool reconnect = false;
             bool setColor = true;
+            bool logKeyword = true;
             bool priority = false;
             int frequency = 20;
 
@@ -228,6 +234,8 @@ namespace ComMonitor.Main
                 setColor = !options.setColor;
                 frequency = options.frequency;
                 priority = options.priority;
+                SerialType.setDefault(options.setDataType);
+                logKeyword = setColor & options.setDataType == DataType.A;
             });
 
             if (portName.Equals("COMx"))
@@ -244,7 +252,7 @@ namespace ComMonitor.Main
                 AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionTrapper;
             }
 
-            MainClass app = new MainClass(portName, baudrate, parity, databits, stopbits, reconnect, setColor, frequency, priority);
+            MainClass app = new MainClass(portName, baudrate, parity, databits, stopbits, reconnect, setColor, logKeyword, frequency, priority);
             app.Run();
 
         }
