@@ -235,7 +235,7 @@ namespace ComMonitor.Main
                 frequency = options.frequency;
                 priority = options.priority;
                 SerialType.setDefault(options.setDataType);
-                logKeyword = setColor & options.setDataType == DataType.A;
+                logKeyword = setColor && options.setDataType == DataType.Ascii;
             });
 
             if (portName.Equals("COMx"))

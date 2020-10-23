@@ -4,7 +4,7 @@
     <StartArguments>com6 19200 --priority -tH</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <StartArguments>com6 19200 --priority -th</StartArguments>
+    <StartArguments>com6 19200 --priority</StartArguments>
   </PropertyGroup>
   <PropertyGroup>
     <PublishUrlHistory>publish\</PublishUrlHistory>
