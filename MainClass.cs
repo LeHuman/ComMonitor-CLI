@@ -27,6 +27,7 @@ namespace ComMonitor.Main
 
         Dictionary<string, ConsoleColor> logLevel = new Dictionary<string, ConsoleColor>{
             { "[DEBUG]", ConsoleColor.Magenta },
+            { "[FATAL]", ConsoleColor.DarkRed },
             { "[ERROR]", ConsoleColor.Red },
             { "[WARN]", ConsoleColor.Yellow },
             { "[INFO]", ConsoleColor.Cyan }
