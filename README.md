@@ -35,6 +35,7 @@ Strings with special prefixes ( not case sensitive ) are highlighted in the cons
 | _Default_     | White         |
 | [Debug]       | Magenta       |
 | [Error]       | Red           |
+| [Fatal]       | DarkRed       |
 | [Warn]        | Yellow        |
 | [Info]        | Cyan          |
 
