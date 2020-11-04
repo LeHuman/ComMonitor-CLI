@@ -30,7 +30,7 @@ namespace ComMonitor.Main
         [Option('t', "type", HelpText = "Set the type of data to receive. [(A)scii|(H)ex|(D)ecimal|(B)inary]", Default = DataType.Ascii)]
         public DataType setDataType { get; set; }
 
-        [Option('j', "type", HelpText = "Set a max number of bytes to print for each line when not in Ascii mode [Integer]")]
+        [Option('m', "maxBytes", HelpText = "Set a max number of bytes to print for each line when not in Ascii mode [Integer]")]
         public int setMaxBytes { get; set; }
 
         [Option('r', "retry", HelpText = "If port closes, keep console open and wait for the port to reopen")]
@@ -45,7 +45,7 @@ namespace ComMonitor.Main
         [Option("priority", HelpText = "Take priority of a port if another instance of ComMonitor has it open ( Does not apply to any other app )")]
         public bool priority { get; set; }
 
-        [Option("jsonPath", HelpText = "Point to a json file that contains a JSON object which maps integers to strings, allows non ascii modes to instead print out their string, option `j` and `jsonBlock` must be set, refer to readme")]
+        [Option("jsonPath", HelpText = "Point to a json file that contains a JSON object which maps integers to strings, allows non ascii modes to instead print out their string, option `m` and `jsonBlock` must be set, refer to readme")]
         public string jsonPath { get; set; }
 
         [Option("jsonBlock", HelpText = "If jsonMap is set, setup how each message should be interpreted, refer to readme")]
