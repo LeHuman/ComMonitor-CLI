@@ -6,6 +6,7 @@ using CommandLine;
 using System.Threading;
 using SerialCom;
 using System.Diagnostics;
+using System.Buffers.Binary;
 
 namespace ComMonitor.Main
 {
@@ -14,16 +15,36 @@ namespace ComMonitor.Main
     {
 
         #region defines
-        private SerialClient _serialReader;
-        private bool reconnect;
-        private bool setColor;
-        private bool logKeyword;
-        private PipeServer priorityNotify;
+        private static string portName = "COMx";
+        private static int baudrate = 9600;
+        private static Parity parity = Parity.None;
+        private static int databits = 8;
+        private static StopBits stopbits = StopBits.One;
+        private static DataType dataType = DataType.Ascii;
+
+        private string JSON_PATH = "";
+        private string JSON_BLOCKING = "";
+        private static bool mappedMode = false;
+        private static Dictionary<long, string> JSON_IDS;
+        private static Dictionary<long, string> JSON_STRINGS;
+
+        private const int MAX_RETRY = 200; // We should give it a limit just in case
+        private static int retries = MAX_RETRY;
+        private static int frequency = 20;
+        private static int maxBytes = 0;
+
+        private static bool hasMaxBytes = false;
+        private static bool reconnect = false;
+        private static bool setColor = true;
+        private static bool logKeyword = true;
+        private static bool priority = false;
+
         private string connectStr;
         private string PriorityPipeName = "ComMonitorPriority";
+        private static SerialClient _serialReader;
+        private static Func<byte[], string> dataFunction;
+        private static PipeServer priorityNotify;
         private static ConsoleColor Cfg = ConsoleColor.White;
-        private static int retries = MAX_RETRY;
-        private const int MAX_RETRY = 200; // We should give it a limit just in case
 
         Dictionary<string, ConsoleColor> logLevel = new Dictionary<string, ConsoleColor>{
             { "[DEBUG]", ConsoleColor.Magenta },
@@ -34,8 +55,9 @@ namespace ComMonitor.Main
         };
         #endregion
 
-        #region methods
-        #region console
+        #region Methods
+
+        #region Console Methods
         private void ColorConsole(ConsoleColor color)
         {
             if (setColor)
@@ -64,13 +86,14 @@ namespace ComMonitor.Main
         }
         #endregion
 
-        void SerialDataReceived(object sender, DataStreamEventArgs e)
+        #region Data Interpreters
+        void AsciiDataReceived(object sender, DataStreamEventArgs e)
         {
 
             if (e.Data.Length == 0)
                 return;
 
-            string data = SerialType.getDefaultType(e.Data);
+            string data = SerialType.getAscii(e.Data);
             if (data.IndexOf('\n') < data.Length - 1)
             {
                 string[] lines = data.Replace('\r', '\0').Split('\n');
@@ -90,6 +113,59 @@ namespace ComMonitor.Main
             }
 
         }
+
+        void SerialDataReceived(object sender, DataStreamEventArgs e)
+        {
+            Console.WriteLine(dataFunction(e.Data));
+        }
+
+        void SerialChunkedDataReceived(object sender, DataStreamEventArgs e)
+        {
+            int remain = e.Data.Length;
+            int i = 0;
+            while (remain > 0)
+            {
+                int copyBytes = Math.Min(remain, maxBytes);
+                byte[] block = new byte[copyBytes];
+                Array.Copy(e.Data, i, block, 0, copyBytes);
+                i += maxBytes;
+                Console.WriteLine(dataFunction(block));
+                remain -= maxBytes;
+            }
+        }
+
+        public static string GetMappedMessage(Span<byte> data)
+        {
+            // TODO: Implement custom blocking of messages
+            long ID_key = BinaryPrimitives.ReadInt16LittleEndian(data.Slice(0, 2));
+            long String_key = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(6, 4));
+            long num = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(2, 4));
+            try
+            {
+                return JSON_IDS[ID_key] + " " + JSON_STRINGS[String_key] + " " + num + "\n";
+            }
+            catch (KeyNotFoundException) { }
+            return "";
+        }
+
+        void SerialMappedDataReceived(object sender, DataStreamEventArgs e)
+        {
+            int remain = e.Data.Length;
+            int i = 0;
+            while (remain > 0)
+            {
+                int copyBytes = Math.Min(remain, maxBytes);
+                byte[] block = new byte[copyBytes];
+                Array.Copy(e.Data, i, block, 0, copyBytes);
+                i += maxBytes;
+                Console.Write(GetMappedMessage(new Span<byte>(block)));
+                remain -= maxBytes;
+            }
+        }
+
+        #endregion
+
+        #region Runtime Methods
         private void RetryWait()
         {
             ColorConsole(ConsoleColor.Blue);
@@ -114,45 +190,15 @@ namespace ComMonitor.Main
         {
             retries = MAX_RETRY;
         }
-
         private void PriorityStop()
         {
             throw new SerialException("Another instance has taken priority over the current port");
         }
-
-        #endregion
-
-        public MainClass(string portName, int baudrate, Parity parity, int databits, StopBits stopbits, bool reconnect, bool setColor, bool logKeyword, int frequency, bool priority)
-        {
-
-            this.reconnect = reconnect;
-            this.setColor = setColor;
-            this.logKeyword = logKeyword;
-            PriorityPipeName += portName;
-            priorityNotify = new PipeServer();
-            if (priority)
-            {
-                priorityNotify.Ping(PriorityPipeName);
-                priorityNotify.ListenForPing(PriorityPipeName, 10);
-            }
-            else
-            {
-                priorityNotify.ListenForPing(PriorityPipeName);
-            }
-
-            priorityNotify.PipeConnect += PriorityStop;
-
-            _serialReader = new SerialClient(portName, baudrate, parity, databits, stopbits, frequency);
-            _serialReader.SerialDataReceived += SerialDataReceived;
-            if (!_serialReader.PortAvailable())
-            {
-                throw new SerialException(string.Format("Unable to find port: {0}", portName));
-            }
-            connectStr = "Connecting to " + portName + " @ " + baudrate + "\np:" + parity + " d:" + databits + " s:" + stopbits + " cf:" + frequency + "\n";
-        }
-
         public void Run()
         {
+            if (portName.Equals("COMx"))
+                return;
+
             ColorConsole(ConsoleColor.Yellow);
             Console.WriteLine(connectStr);
             ColorConsole();
@@ -172,6 +218,7 @@ namespace ComMonitor.Main
                         }
                         ColorConsole(ConsoleColor.Red);
                         Console.WriteLine("\n-----[ Disconnect ]-----\n");
+                        ColorConsole();
                     }
                 }
                 catch (IOException) { }
@@ -190,7 +237,9 @@ namespace ComMonitor.Main
                 RetryWait();
             }
         }
+        #endregion
 
+        #region Exception Handlers
         static void UnhandledExceptionTrapperColor(object sender, UnhandledExceptionEventArgs e)
         {
             Console.ForegroundColor = ConsoleColor.Red;
@@ -199,29 +248,20 @@ namespace ComMonitor.Main
             Console.ForegroundColor = Cfg;
             Environment.Exit(0);
         }
-
         static void UnhandledExceptionTrapper(object sender, UnhandledExceptionEventArgs e)
         {
             Exception ex = (Exception)e.ExceptionObject;
             Console.WriteLine(ex.Message);
             Environment.Exit(0);
         }
+        #endregion
 
+        #endregion
 
-        static void Main(string[] args)
+        public MainClass(string[] args)
         {
 
-            string portName = "COMx";
-            int baudrate = 9600;
-            Parity parity = Parity.None;
-            int databits = 8;
-            StopBits stopbits = StopBits.One;
-            bool reconnect = false;
-            bool setColor = true;
-            bool logKeyword = true;
-            bool priority = false;
-            int frequency = 20;
-
+            #region Argument Parser
             Parser parser = new Parser(with => { with.CaseInsensitiveEnumValues = true; with.AutoHelp = true; with.AutoVersion = true; with.HelpWriter = Console.Out; });
             var result = parser.ParseArguments<Options>(args);
             result.WithParsed(options =>
@@ -231,31 +271,102 @@ namespace ComMonitor.Main
                 parity = options.setParity;
                 databits = options.setDataBits;
                 stopbits = options.setStopBits;
+                maxBytes = options.setMaxBytes;
+                hasMaxBytes = maxBytes > 0;
                 reconnect = !options.reconnect;
                 setColor = !options.setColor;
                 frequency = options.frequency;
                 priority = options.priority;
-                SerialType.setDefault(options.setDataType);
+                dataType = options.setDataType;
+                JSON_PATH = options.jsonPath;
+                JSON_BLOCKING = options.jsonBlock;
+                mappedMode = options.jsonBlock != null && options.jsonPath != null && maxBytes != 0;
                 logKeyword = setColor && options.setDataType == DataType.Ascii;
             });
+            #endregion
 
-            if (portName.Equals("COMx"))
-                return;
+            #region Load JSON data
 
+            if (JSON_PATH != null)
+            {
+                Dictionary<long, string>[] maps = JSON.getDataMap(JSON_PATH);
+                JSON_IDS = maps[0];
+                JSON_STRINGS = maps[1];
+            }
+
+            #endregion
+
+            #region Setup Color
             if (setColor)
             {
                 Console.CancelKeyPress += delegate { Console.ResetColor(); };
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.ForegroundColor = Cfg;
                 AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionTrapperColor;
-            } else
+            }
+            else
             {
                 AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionTrapper;
             }
+            #endregion
 
-            MainClass app = new MainClass(portName, baudrate, parity, databits, stopbits, reconnect, setColor, logKeyword, frequency, priority);
+            #region Priority Queue Setup
+            PriorityPipeName += portName;
+            priorityNotify = new PipeServer();
+            if (priority)
+            {
+                priorityNotify.Ping(PriorityPipeName);
+                priorityNotify.ListenForPing(PriorityPipeName, 10);
+            }
+            else
+            {
+                priorityNotify.ListenForPing(PriorityPipeName);
+            }
+            priorityNotify.PipeConnect += PriorityStop;
+            #endregion
+
+            #region Setup SerialClient
+
+            SerialType.setType(dataType);
+            dataFunction = SerialType.getTypeDelegate();
+
+            _serialReader = new SerialClient(portName, baudrate, parity, databits, stopbits, frequency);
+
+            if (dataType == DataType.Ascii)
+            {
+                _serialReader.SerialDataReceived += AsciiDataReceived;
+            }
+            else
+            {
+                /*if (mappedMode)*/
+                if (true)
+                {
+                    _serialReader.SerialDataReceived += SerialMappedDataReceived;
+                }
+                else if (hasMaxBytes)
+                {
+                    _serialReader.SerialDataReceived += SerialChunkedDataReceived;
+                }
+                else
+                {
+                    _serialReader.SerialDataReceived += SerialDataReceived;
+                }
+
+            }
+            if (!_serialReader.PortAvailable())
+            {
+                throw new SerialException(string.Format("Unable to find port: {0}", portName));
+            }
+
+            #endregion
+
+            connectStr = "Connecting to " + portName + " @ " + baudrate + "\np:" + parity + " d:" + databits + " s:" + stopbits + " cf:" + frequency + (hasMaxBytes ? " j:" + maxBytes : "") + "\n";
+        }
+
+        static void Main(string[] args)
+        {
+            MainClass app = new MainClass(args);
             app.Run();
-
         }
     }
 }

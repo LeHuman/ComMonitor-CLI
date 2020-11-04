@@ -23,20 +23,20 @@ namespace ComMonitor
     public static class SerialType
     {
 
-        private static DataType defaultType = DataType.A;
+        private static DataType focusType = DataType.A;
 
-        public static void setDefault(DataType type)
+        public static void setType(DataType type)
         {
-            defaultType = type;
+            focusType = type;
         }
-        public static DataType getDefault()
+        public static DataType getType()
         {
-            return defaultType;
+            return focusType;
         }
 
-        public static String getDefaultType(byte[] data)
+        public static string getTypeData(byte[] data)
         {
-            switch (defaultType)
+            switch (focusType)
             {
                 case DataType.A:
                 case DataType.Ascii:
@@ -54,6 +54,29 @@ namespace ComMonitor
                     return getBinary(data);
                 default:
                     return "";
+            }
+        }
+
+        public static Func<byte[], string> getTypeDelegate()
+        {
+            switch (focusType)
+            {
+                case DataType.A:
+                case DataType.Ascii:
+                    return getAscii;
+                case DataType.H:
+                case DataType.Hex:
+                    return getHex;
+                case DataType.D:
+                case DataType.Dec:
+                case DataType.Decimal:
+                    return getDecimal;
+                case DataType.B:
+                case DataType.Bin:
+                case DataType.Binary:
+                    return getBinary;
+                default:
+                    return null;
             }
         }
 
@@ -77,17 +100,17 @@ namespace ComMonitor
             return new string(c, 0, c.Length);
         }
 
-        public static String getAscii(byte[] data)
+        public static string getAscii(byte[] data)
         {
             return Encoding.ASCII.GetString(data);
         }
 
-        public static String getHex(byte[] data)
+        public static string getHex(byte[] data)
         {
             return ToHex(data, ' ');
         }
 
-        public static String getDecimal(byte[] data)
+        public static string getDecimal(byte[] data)
         {
             StringBuilder fnl = new StringBuilder();
 
@@ -99,7 +122,7 @@ namespace ComMonitor
             return fnl.ToString();
         }
 
-        public static String getBinary(byte[] data)
+        public static string getBinary(byte[] data)
         {
             StringBuilder fnl = new StringBuilder();
 

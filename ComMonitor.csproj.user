@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <StartArguments>com6 19200 --priority -tH</StartArguments>
+    <StartArguments>com6 15200 --priority -tH -j10 --jsonPath "C:\Users\Isaias\Desktop\IIT\SAE\SAEGit\ECU2020\Teensy36\MCU_Testing\log_lookup.json" -r</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <StartArguments>com6 19200 --priority</StartArguments>
+    <StartArguments>com6 19200 --priority -r</StartArguments>
   </PropertyGroup>
   <PropertyGroup>
     <PublishUrlHistory>publish\</PublishUrlHistory>
