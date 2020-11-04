@@ -338,8 +338,7 @@ namespace ComMonitor.Main
             }
             else
             {
-                /*if (mappedMode)*/
-                if (true)
+                if (mappedMode)
                 {
                     _serialReader.SerialDataReceived += SerialMappedDataReceived;
                 }
