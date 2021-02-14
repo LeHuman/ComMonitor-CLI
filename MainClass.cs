@@ -168,7 +168,7 @@ namespace ComMonitor.Main
                 {
                     int b = j - maxBytes + 1;
                     data = rawData.Slice(b).ToArray();
-                    saveBuffer.AddRange(rawData.Slice(0, b-1).ToArray());
+                    saveBuffer.AddRange(rawData.Slice(0, b - 1).ToArray());
                     break;
                 }
             }
@@ -188,18 +188,18 @@ namespace ComMonitor.Main
         #endregion
 
         #region Runtime Methods
-        private void RetryWait()
+        private void RetryWait(bool firstWait = false)
         {
             ColorConsole(ConsoleColor.Blue);
             do
             {
-                Console.Write("\rRetrying |");
+                Console.Write(firstWait ? "\rWaiting for connection to {0} |" : "\rRetrying to connect to {0} |", portName);
                 Thread.Sleep(100);
-                Console.Write("\rRetrying \\");
+                Console.Write(firstWait ? "\rWaiting for connection to {0} \\" : "\rRetrying to connect to {0} \\", portName);
                 Thread.Sleep(100);
-                Console.Write("\rRetrying -");
+                Console.Write(firstWait ? "\rWaiting for connection to {0} -" : "\rRetrying to connect to {0} -", portName);
                 Thread.Sleep(100);
-                Console.Write("\rRetrying /");
+                Console.Write(firstWait ? "\rWaiting for connection to {0} /" : "\rRetrying to connect to {0} /", portName);
                 Thread.Sleep(100);
             } while (!_serialReader.PortAvailable());
             retries--;
@@ -254,7 +254,7 @@ namespace ComMonitor.Main
                 {
                     _serialReader.Dispose();
                 }
-                if (reconnect)
+                if (!reconnect)
                     break;
                 RetryWait();
             }
@@ -295,7 +295,7 @@ namespace ComMonitor.Main
                 stopbits = options.setStopBits;
                 maxBytes = options.setMaxBytes;
                 hasMaxBytes = maxBytes > 0;
-                reconnect = !options.reconnect;
+                reconnect = options.reconnect;
                 setColor = !options.setColor;
                 frequency = options.frequency;
                 priority = options.priority;
@@ -378,7 +378,10 @@ namespace ComMonitor.Main
             {
                 if (portName.Equals("COMxNULL"))
                     return;
-                throw new SerialException(string.Format("Unable to find port: {0}", portName));
+                if (reconnect)
+                    RetryWait(true);
+                else
+                    throw new SerialException(string.Format("Unable to find port: {0}", portName));
             }
 
             #endregion

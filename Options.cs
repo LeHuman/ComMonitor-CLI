@@ -33,7 +33,7 @@ namespace ComMonitor.Main
         [Option('m', "maxBytes", HelpText = "Set a max number of bytes to print for each line when not in Ascii mode [Integer]")]
         public int setMaxBytes { get; set; }
 
-        [Option('r', "retry", HelpText = "If port closes, keep console open and wait for the port to reopen")]
+        [Option('r', "retry", HelpText = "If port closes or isn't open to begin with, keep console open and wait for the port to open")]
         public bool reconnect { get; set; }
 
         [Option('c', "color", HelpText = "Disable console color")]

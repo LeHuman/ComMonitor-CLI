@@ -72,7 +72,7 @@ namespace ComMonitor
             }
             catch (TimeoutException oEX)
             {
-                Console.WriteLine("No monitor to take priority over found");
+                Console.WriteLine("No monitor to take priority over");
                 Debug.WriteLine(oEX.Message);
             }
         }
