@@ -18,6 +18,8 @@ Arguments are not case sensitive
 *   -s, --stopbits       (Default: One) Set the number of stop bits. [None|One|Two|OnePointFive]
 *	-t, --type           (Default: Ascii) Set the type of data to receive. [(A)scii|(H)ex|(D)ecimal|(B)inary]
 *   -r, --retry          Keep console open and wait for port to reopen
+*   -w, --wait           If the port is not open when the console starts, wait for it to open
+*   --timeout            (Default: 200) Set the number of retries for both -w -r options [Integer]
 *   -c, --color          Disable changing color of console
 *   -f, --frequency      (Default: 20) Manually Set the critical frequency of communication (Hz)
 *   -m, --maxBytes       Set a max number of bytes to print for each line when not in Ascii mode [Integer]

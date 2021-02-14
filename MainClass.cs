@@ -29,7 +29,7 @@ namespace ComMonitor.Main
         private static Dictionary<long, string> JSON_IDS;
         private static Dictionary<long, string> JSON_STRINGS;
 
-        private const int MAX_RETRY = 200; // We should give it a limit just in case
+        private static int MAX_RETRY = 200; // We should give it a limit just in case
         private static int retries = MAX_RETRY;
         private static int frequency = 20;
         private static int maxBytes = 0;
@@ -39,6 +39,7 @@ namespace ComMonitor.Main
         private static bool setColor = true;
         private static bool logKeyword = true;
         private static bool priority = false;
+        private static bool waitForConn = false;
 
         private string connectStr;
         private string PriorityPipeName = "ComMonitorPriority";
@@ -309,6 +310,9 @@ namespace ComMonitor.Main
                 dataType = options.setDataType;
                 JSON_PATH = options.jsonPath;
                 JSON_BLOCKING = options.jsonBlock;
+                MAX_RETRY = options.retryTimeout;
+                retries = MAX_RETRY;
+                waitForConn = options.wait;
                 mappedMode = options.jsonPath != null && maxBytes != 0 /*&& options.jsonBlock != null*/; // TODO: custom message block structure for matching strings
                 logKeyword = setColor && options.setDataType == DataType.Ascii;
             });
@@ -385,7 +389,7 @@ namespace ComMonitor.Main
             {
                 if (portName.Equals("COMxNULL"))
                     return;
-                if (reconnect)
+                if (waitForConn)
                     RetryWait(true);
                 else
                     throw new SerialException(string.Format("Unable to find port: {0}", portName));
