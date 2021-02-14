@@ -196,8 +196,9 @@ namespace SerialCom
                         Thread.Sleep(tmpInterval.Milliseconds > freqCriticalLimit ? freqCriticalLimit : tmpInterval.Milliseconds);
                     #endregion
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
+                    Console.WriteLine("ComMonitor: Error Receiving Data");
                     break;
                 }
             }
@@ -208,7 +209,7 @@ namespace SerialCom
         #region Custom Events Invoke Functions
         private void OnSerialReceiving(byte[] res)
         {
-            if (SerialDataReceived != null)
+            if (SerialDataReceived != null && res.Length > 0)
             {
                 SerialDataReceived(this, new DataStreamEventArgs() { Data = res });
             }
