@@ -145,18 +145,22 @@ namespace ComMonitor.Main
         {
             // TODO: Implement custom blocking of messages
             long ID_key = BinaryPrimitives.ReadInt16LittleEndian(data.Slice(0, 2));
-            long String_key = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(2, 2));
+            long String_key = BinaryPrimitives.ReadInt16LittleEndian(data.Slice(2, 2));
             long num = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(4, 4));
-            string id = "Bad ID";
-            string str = "Bad String ID";
-            JSON_IDS.TryGetValue(ID_key, out id);
-            JSON_STRINGS.TryGetValue(String_key, out str);
+            string id;
+            string str;
+            if (!JSON_IDS.TryGetValue(ID_key, out id))
+                id = "Bad ID";
+            if (!JSON_STRINGS.TryGetValue(String_key, out str))
+                str = "Bad String ID";
             return id + " " + str + " " + num + "\n";
         }
         private static List<byte> saveBuffer = new List<byte>();
 
         void SerialMappedDataReceived(object sender, DataStreamEventArgs e)
         {
+            if (e.Data.Length == 0)
+                return;
             saveBuffer.AddRange(e.Data);
             Span<byte> rawData = new Span<byte>(saveBuffer.ToArray());
             saveBuffer.Clear();
@@ -166,9 +170,9 @@ namespace ComMonitor.Main
             {
                 if (j / maxBytes >= 1)
                 {
-                    int b = j - maxBytes + 1;
+                    int b = j - maxBytes;
                     data = rawData.Slice(b).ToArray();
-                    saveBuffer.AddRange(rawData.Slice(0, b - 1).ToArray());
+                    saveBuffer.AddRange(rawData.Slice(0, b).ToArray());
                     break;
                 }
             }
@@ -202,6 +206,9 @@ namespace ComMonitor.Main
                 Console.Write(firstWait ? "\rWaiting for connection to {0} /" : "\rRetrying to connect to {0} /", portName);
                 Thread.Sleep(100);
             } while (!_serialReader.PortAvailable());
+            Console.Write("\r");
+            Console.Write(String.Concat(Enumerable.Repeat(" ", ("Waiting for connection to  /".Length + portName.Length))));
+            Console.Write("\r");
             retries--;
             if (retries == 0)
             {
@@ -232,7 +239,7 @@ namespace ComMonitor.Main
                     {
                         RetryReset();
                         ColorConsole(ConsoleColor.Green);
-                        Console.WriteLine("\r------[ Connect ]-------\n");
+                        Console.WriteLine("\r------[ Connect ]-------");
                         ColorConsole();
                         while (_serialReader.IsAlive())
                         {
