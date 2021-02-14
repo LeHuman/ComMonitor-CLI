@@ -7,6 +7,7 @@ using System.Threading;
 using SerialCom;
 using System.Diagnostics;
 using System.Buffers.Binary;
+using System.Linq;
 
 namespace ComMonitor.Main
 {
@@ -15,15 +16,15 @@ namespace ComMonitor.Main
     {
 
         #region defines
-        private static string portName = "COMx";
+        private static string portName = "COMxNULL";
         private static int baudrate = 9600;
         private static Parity parity = Parity.None;
         private static int databits = 8;
         private static StopBits stopbits = StopBits.One;
         private static DataType dataType = DataType.Ascii;
 
-        private string JSON_PATH = "";
-        private string JSON_BLOCKING = "";
+        private string JSON_PATH;
+        private string JSON_BLOCKING;
         private static bool mappedMode = false;
         private static Dictionary<long, string> JSON_IDS;
         private static Dictionary<long, string> JSON_STRINGS;
@@ -116,7 +117,11 @@ namespace ComMonitor.Main
 
         void SerialDataReceived(object sender, DataStreamEventArgs e)
         {
-            Console.WriteLine(dataFunction(e.Data));
+            if (e.Data.Length == 0)
+                return;
+            string prnt = dataFunction(e.Data);
+            if (prnt.Length > 0)
+                Console.WriteLine(prnt);
         }
 
         void SerialChunkedDataReceived(object sender, DataStreamEventArgs e)
@@ -129,7 +134,9 @@ namespace ComMonitor.Main
                 byte[] block = new byte[copyBytes];
                 Array.Copy(e.Data, i, block, 0, copyBytes);
                 i += maxBytes;
-                Console.WriteLine(dataFunction(block));
+                string prnt = dataFunction(e.Data);
+                if (prnt.Length > 0)
+                    Console.WriteLine(prnt);
                 remain -= maxBytes;
             }
         }
@@ -138,25 +145,40 @@ namespace ComMonitor.Main
         {
             // TODO: Implement custom blocking of messages
             long ID_key = BinaryPrimitives.ReadInt16LittleEndian(data.Slice(0, 2));
-            long String_key = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(6, 4));
-            long num = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(2, 4));
-            try
-            {
-                return JSON_IDS[ID_key] + " " + JSON_STRINGS[String_key] + " " + num + "\n";
-            }
-            catch (KeyNotFoundException) { }
-            return "";
+            long String_key = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(2, 2));
+            long num = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(4, 4));
+            string id = "Bad ID";
+            string str = "Bad String ID";
+            JSON_IDS.TryGetValue(ID_key, out id);
+            JSON_STRINGS.TryGetValue(String_key, out str);
+            return id + " " + str + " " + num + "\n";
         }
+        private static List<byte> saveBuffer = new List<byte>();
 
         void SerialMappedDataReceived(object sender, DataStreamEventArgs e)
         {
-            int remain = e.Data.Length;
-            int i = 0;
-            while (remain > 0)
+            saveBuffer.AddRange(e.Data);
+            Span<byte> rawData = new Span<byte>(saveBuffer.ToArray());
+            saveBuffer.Clear();
+            byte[] data = new byte[0];
+
+            for (int j = 0; j < e.Data.Length; j++)
             {
-                int copyBytes = Math.Min(remain, maxBytes);
-                byte[] block = new byte[copyBytes];
-                Array.Copy(e.Data, i, block, 0, copyBytes);
+                if (j / maxBytes >= 1)
+                {
+                    int b = j - maxBytes + 1;
+                    data = rawData.Slice(b).ToArray();
+                    saveBuffer.AddRange(rawData.Slice(0, b-1).ToArray());
+                    break;
+                }
+            }
+
+            byte[] block = new byte[maxBytes];
+            int remain = data.Length;
+            int i = 0;
+            while (remain >= maxBytes)
+            {
+                Array.Copy(data, i, block, 0, maxBytes);
                 i += maxBytes;
                 Console.Write(GetMappedMessage(new Span<byte>(block)));
                 remain -= maxBytes;
@@ -196,7 +218,7 @@ namespace ComMonitor.Main
         }
         public void Run()
         {
-            if (portName.Equals("COMx"))
+            if (portName.Equals("COMxNULL"))
                 return;
 
             ColorConsole(ConsoleColor.Yellow);
@@ -280,7 +302,7 @@ namespace ComMonitor.Main
                 dataType = options.setDataType;
                 JSON_PATH = options.jsonPath;
                 JSON_BLOCKING = options.jsonBlock;
-                mappedMode = options.jsonBlock != null && options.jsonPath != null && maxBytes != 0;
+                mappedMode = options.jsonPath != null && maxBytes != 0 /*&& options.jsonBlock != null*/; // TODO: custom message block structure for matching strings
                 logKeyword = setColor && options.setDataType == DataType.Ascii;
             });
             #endregion
@@ -354,6 +376,8 @@ namespace ComMonitor.Main
             }
             if (!_serialReader.PortAvailable())
             {
+                if (portName.Equals("COMxNULL"))
+                    return;
                 throw new SerialException(string.Format("Unable to find port: {0}", portName));
             }
 
