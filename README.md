@@ -20,7 +20,7 @@ Arguments are not case sensitive
 *   -r, --retry          Keep console open and wait for port to reopen
 *   -w, --wait           If the port is not open when the console starts, wait for it to open
 *   --timeout            (Default: 200) Set the number of retries for both -w -r options [Integer]
-*   -c, --color          Disable changing color of console
+*   -c, --color          Disable changing color of console, may help with latency
 *   -f, --frequency      (Default: 20) Manually Set the critical frequency of communication (Hz)
 *   -m, --maxBytes       Set a max number of bytes to print for each line when not in Ascii mode [Integer]
 *   --priority           Take priority of a port if inuse by another instance of ComMonitor
@@ -44,6 +44,8 @@ Strings with special prefixes ( not case sensitive ) are highlighted in the cons
 | [Info]    | Cyan    |
 
 Every newline that is received is interpreted separately and colored accordingly
+
+NOTE: Because each message must be searched for keywords (both in ascii and mapped mode), disabling color (-c) might help reduce latency if needed
 
 ### JSON Mapping
 

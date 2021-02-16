@@ -42,7 +42,7 @@ namespace ComMonitor.Main
         [Option("timeout", HelpText = "Set the number of retries for both -w -r options", Default = 200)]
         public int retryTimeout { get; set; }
 
-        [Option('c', "color", HelpText = "Disable console color")]
+        [Option('c', "color", HelpText = "Disable console color, may help with latency")]
         public bool setColor { get; set; }
 
         [Option('f', "frequency", HelpText = "Manually Set the critical frequency of communication (Hz)", Default = 20)]

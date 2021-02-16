@@ -47,8 +47,7 @@ namespace ComMonitor.Main
         private static Func<byte[], string> dataFunction;
         private static PipeServer priorityNotify;
         private static ConsoleColor Cfg = ConsoleColor.White;
-
-        Dictionary<string, ConsoleColor> logLevel = new Dictionary<string, ConsoleColor>{
+        readonly Dictionary<string, ConsoleColor> logLevel = new Dictionary<string, ConsoleColor>{
             { "[DEBUG]", ConsoleColor.Magenta },
             { "[FATAL]", ConsoleColor.DarkRed },
             { "[ERROR]", ConsoleColor.Red },
@@ -71,13 +70,13 @@ namespace ComMonitor.Main
             ColorConsole(Cfg);
         }
 
-        private void LogLevelColor(string str) // IMPROVE: Add option to still detect keywords despite datatype
+        private void LogLevelColor(string str)
         {
             if (logKeyword)
             {
                 foreach (KeyValuePair<string, ConsoleColor> entry in logLevel)
                 {
-                    if (str.StartsWith(entry.Key))
+                    if (str.Contains(entry.Key)) // What is the performance impact of this vs StartsWith?
                     {
                         Console.ForegroundColor = entry.Value;
                         return;
@@ -86,6 +85,28 @@ namespace ComMonitor.Main
                 Console.ForegroundColor = Cfg;
             }
         }
+
+        private void ConsolePrint(string str)
+        {
+            _ConsolePrintData(str, false);
+        }        
+        private void ConsolePrintLine(string str)
+        {
+            _ConsolePrintData(str, true);
+        }
+        private void _ConsolePrintData(string str, bool newline)
+        {
+            if (str.Length > 0)
+            {
+                LogLevelColor(str.ToUpper()); // TODO: trim to last bracket to reduce text that is searched
+                if (newline)
+                    Console.WriteLine(str);
+                else
+                    Console.Write(str);
+                ColorConsole();
+            }
+        }
+
         #endregion
 
         #region Data Interpreters
@@ -101,17 +122,12 @@ namespace ComMonitor.Main
                 string[] lines = data.Replace('\r', '\0').Split('\n');
                 foreach (string line in lines)
                 {
-                    if (line.Length > 0)
-                    {
-                        LogLevelColor(line.ToUpper());
-                        Console.WriteLine(line);
-                    }
+                    ConsolePrintLine(line);
                 }
             }
             else
             {
-                LogLevelColor(data.ToUpper());
-                Console.Write(data);
+                ConsolePrint(data);
             }
 
         }
@@ -120,25 +136,23 @@ namespace ComMonitor.Main
         {
             if (e.Data.Length == 0)
                 return;
-            string prnt = dataFunction(e.Data);
-            if (prnt.Length > 0)
-                Console.WriteLine(prnt);
+            ConsolePrintLine(dataFunction(e.Data));
         }
 
         void SerialChunkedDataReceived(object sender, DataStreamEventArgs e)
         {
-            int remain = e.Data.Length;
+            Span<byte> rawData = e.Data.AsSpan();
+            int remain = rawData.Length;
             int i = 0;
-            while (remain > 0)
+            while (remain >= maxBytes)
             {
-                int copyBytes = Math.Min(remain, maxBytes);
-                byte[] block = new byte[copyBytes];
-                Array.Copy(e.Data, i, block, 0, copyBytes);
-                i += maxBytes;
-                string prnt = dataFunction(e.Data);
-                if (prnt.Length > 0)
-                    Console.WriteLine(prnt);
+                ConsolePrintLine(dataFunction(rawData.Slice(i, maxBytes).ToArray()));
                 remain -= maxBytes;
+                i += maxBytes;
+            }
+            if (remain > 0)
+            {
+                ConsolePrintLine(dataFunction(rawData.Slice(i).ToArray()));
             }
         }
 
@@ -156,37 +170,42 @@ namespace ComMonitor.Main
                 str = "Bad String ID";
             return id + " " + str + " " + num + "\n";
         }
-        private static List<byte> saveBuffer = new List<byte>();
+
+        List<byte> saveBuffer = new List<byte>();
 
         void SerialMappedDataReceived(object sender, DataStreamEventArgs e)
         {
             if (e.Data.Length == 0)
                 return;
-            saveBuffer.AddRange(e.Data);
-            Span<byte> rawData = new Span<byte>(saveBuffer.ToArray());
-            saveBuffer.Clear();
-            byte[] data = new byte[0];
+            if (e.Data.Length % maxBytes != 0)
+                Console.WriteLine("WARN: Data may have dysynced, or badly formatted data was received");
 
-            for (int j = 0; j < e.Data.Length; j++)
+            byte[] stichedData;
+            Span<byte> rawData;
+
+            if (saveBuffer.Count > 0) // There is part of a message that was uncomplete, prepend it to our span
             {
-                if (j / maxBytes >= 1)
-                {
-                    int b = j - maxBytes;
-                    data = rawData.Slice(b).ToArray();
-                    saveBuffer.AddRange(rawData.Slice(0, b).ToArray());
-                    break;
-                }
+                stichedData = new byte[e.Data.Length + saveBuffer.Count];
+                Buffer.BlockCopy(saveBuffer.ToArray(), 0, stichedData, 0, saveBuffer.Count);
+                Buffer.BlockCopy(e.Data, 0, stichedData, saveBuffer.Count, e.Data.Length);
+                rawData = stichedData.AsSpan();
+            }
+            else
+            {
+                rawData = e.Data.AsSpan();
             }
 
-            byte[] block = new byte[maxBytes];
-            int remain = data.Length;
+            int remain = rawData.Length;
             int i = 0;
             while (remain >= maxBytes)
             {
-                Array.Copy(data, i, block, 0, maxBytes);
-                i += maxBytes;
-                Console.Write(GetMappedMessage(new Span<byte>(block)));
+                ConsolePrint(GetMappedMessage(rawData.Slice(i, maxBytes)));
                 remain -= maxBytes;
+                i += maxBytes;
+            }
+            if (remain > 0)
+            {
+                saveBuffer.AddRange(rawData.Slice(i).ToArray());
             }
         }
 
@@ -314,7 +333,7 @@ namespace ComMonitor.Main
                 retries = MAX_RETRY;
                 waitForConn = options.wait;
                 mappedMode = options.jsonPath != null && maxBytes != 0 /*&& options.jsonBlock != null*/; // TODO: custom message block structure for matching strings
-                logKeyword = setColor && options.setDataType == DataType.Ascii;
+                logKeyword = setColor && (options.setDataType == DataType.Ascii || mappedMode);
             });
             #endregion
 
