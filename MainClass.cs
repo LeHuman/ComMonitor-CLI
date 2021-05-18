@@ -416,7 +416,7 @@ namespace ComMonitor.Main
 
             #endregion
 
-            connectStr = "Connecting to " + portName + " @ " + baudrate + "\np:" + parity + " d:" + databits + " s:" + stopbits + " cf:" + frequency + (hasMaxBytes ? " j:" + maxBytes : "") + "\n";
+            connectStr = $"Connecting to {portName} @ {baudrate}\np:{parity} d:{databits} s:{stopbits} cf:{frequency} {(hasMaxBytes ? " j:" + maxBytes : "")}\n";
         }
 
         static void Main(string[] args)
