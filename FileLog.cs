@@ -1,14 +1,10 @@
 ﻿using System;
 using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ComMonitor
 {
-    class FileLog {
-
+    internal class FileLog
+    {
         private readonly StreamWriter file;
         private const string FILENAME = "ComMonitor";
 
@@ -23,24 +19,26 @@ namespace ComMonitor
             {
                 return;
             }
-            
         }
 
-        public void Write(string msg) {
+        public void Write(string msg)
+        {
             file.Write(msg);
         }
 
-        public void WriteLine(string msg) {
+        public void WriteLine(string msg)
+        {
             file.WriteLine(msg);
         }
 
-        public bool Available() {
+        public bool Available()
+        {
             return file != null && file.BaseStream.CanWrite;
         }
 
-        public void Flush() {
+        public void Flush()
+        {
             file.Flush();
         }
-
     }
 }

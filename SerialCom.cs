@@ -2,27 +2,27 @@
    Developer: Ahmed Mubarak - RoofMan
 
    https://roofman.me/2012/09/13/fast-serial-communication-for-c-real-time-applications/
- 
+
    This Library Provide The Fastest & Efficient Serial Communication
    Over The Standard C# Serial Component
 */
 
 using System;
 using System.IO.Ports;
-using System.Threading;
 using System.Linq;
+using System.Threading;
 
 namespace SerialCom
 {
     public class DataStreamEventArgs : EventArgs
     {
         public byte[] Data { get; set; }
-
     }
 
     public class SerialClient : IDisposable
     {
         #region Defines
+
         private string _port;
         private int _baudRate;
         private Parity _parity = Parity.None;
@@ -35,22 +35,28 @@ namespace SerialCom
         private DateTime _lastReceive;
         /*The Critical Frequency of Communication to Avoid Any Lag*/
         private int freqCriticalLimit = 20;
-        #endregion
+
+        #endregion Defines
 
         #region Custom Events
+
         public event EventHandler<DataStreamEventArgs> SerialDataReceived;
-        #endregion
+
+        #endregion Custom Events
 
         #region Constructors
+
         public SerialClient(string port)
         {
             _port = port;
             _baudRate = 9600;
         }
+
         public SerialClient(string Port, int baudRate) : this(Port)
         {
             _baudRate = baudRate;
-        }       
+        }
+
         public SerialClient(string Port, int baudRate, Parity parity, int dataBits, StopBits stopBits, int frequency) : this(Port, baudRate)
         {
             _parity = parity;
@@ -58,15 +64,17 @@ namespace SerialCom
             _stopbits = stopBits;
             freqCriticalLimit = Math.Max(1, frequency);
         }
-        #endregion
+
+        #endregion Constructors
 
         #region Methods
+
         #region Port Control
+
         public bool OpenConn()
         {
             try
             {
-
                 if (_serialPort == null)
                     _serialPort = new SerialPort(_port, _baudRate, _parity, _databits, _stopbits);
 
@@ -106,6 +114,7 @@ namespace SerialCom
 
             return true;
         }
+
         public bool OpenConn(string port, int baudRate)
         {
             _port = port;
@@ -113,6 +122,7 @@ namespace SerialCom
 
             return OpenConn();
         }
+
         public void CloseConn()
         {
             if (_serialPort != null && _serialPort.IsOpen)
@@ -123,40 +133,50 @@ namespace SerialCom
                     _serialPort.Close();
             }
         }
+
         public bool ResetConn()
         {
             CloseConn();
             return OpenConn();
         }
+
         public bool PortAvailable()
         {
             return SerialPort.GetPortNames().Contains(_port);
         }
+
         public bool IsAlive()
         {
             return _serialPort.IsOpen;
         }
-        #endregion
+
+        #endregion Port Control
+
         #region Transmit/Receive
+
         public void Transmit(byte[] packet)
         {
             _serialPort.Write(packet, 0, packet.Length);
         }
-        #endregion
+
+        #endregion Transmit/Receive
+
         #region IDisposable Methods
+
         public void Dispose()
         {
             CloseConn();
 
             if (_serialPort != null)
             {
-
                 _serialPort.Dispose();
                 _serialPort = null;
             }
         }
-        #endregion
-        #endregion
+
+        #endregion IDisposable Methods
+
+        #endregion Methods
 
         #region Threading Loops
 
@@ -164,7 +184,7 @@ namespace SerialCom
         {
             if (freqCriticalLimit == 1)
                 return false;
-            freqCriticalLimit = Math.Max(freqCriticalLimit+freq, 1);
+            freqCriticalLimit = Math.Max(freqCriticalLimit + freq, 1);
             return true;
         }
 
@@ -189,12 +209,14 @@ namespace SerialCom
                     OnSerialReceiving(buf); // Handlers must deal with zero byte case
 
                     #region Frequency Control
+
                     _PacketsRate = ((_PacketsRate + readBytes) / 2);
                     _lastReceive = DateTime.Now;
 
                     if (tmpInterval.Milliseconds > 0 && (double)(readBytes + _serialPort.BytesToRead) / 2 <= _PacketsRate)
                         Thread.Sleep(tmpInterval.Milliseconds > freqCriticalLimit ? freqCriticalLimit : tmpInterval.Milliseconds);
-                    #endregion
+
+                    #endregion Frequency Control
                 }
                 catch (Exception e)
                 {
@@ -202,11 +224,12 @@ namespace SerialCom
                     break;
                 }
             }
-
         }
-        #endregion
+
+        #endregion Threading Loops
 
         #region Custom Events Invoke Functions
+
         private void OnSerialReceiving(byte[] res)
         {
             if (SerialDataReceived != null && res.Length > 0)
@@ -214,7 +237,7 @@ namespace SerialCom
                 SerialDataReceived(this, new DataStreamEventArgs() { Data = res });
             }
         }
-        #endregion
 
+        #endregion Custom Events Invoke Functions
     }
 }

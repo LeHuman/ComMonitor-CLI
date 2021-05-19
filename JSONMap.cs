@@ -1,16 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace ComMonitor
 {
-    class JSON
+    internal class JSON
     {
         public static Dictionary<long, string>[] getDataMap(string FilePath)
         {
@@ -34,6 +30,5 @@ namespace ComMonitor
 
             return maps;
         }
-
     }
 }

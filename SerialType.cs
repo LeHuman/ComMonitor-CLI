@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ComMonitor
 {
@@ -22,13 +19,13 @@ namespace ComMonitor
 
     public static class SerialType
     {
-
         private static DataType focusType = DataType.A;
 
         public static void setType(DataType type)
         {
             focusType = type;
         }
+
         public static DataType getType()
         {
             return focusType;
@@ -41,17 +38,21 @@ namespace ComMonitor
                 case DataType.A:
                 case DataType.Ascii:
                     return getAscii(data);
+
                 case DataType.H:
                 case DataType.Hex:
                     return getHex(data);
+
                 case DataType.D:
                 case DataType.Dec:
                 case DataType.Decimal:
                     return getDecimal(data);
+
                 case DataType.B:
                 case DataType.Bin:
                 case DataType.Binary:
                     return getBinary(data);
+
                 default:
                     return "";
             }
@@ -64,17 +65,21 @@ namespace ComMonitor
                 case DataType.A:
                 case DataType.Ascii:
                     return getAscii;
+
                 case DataType.H:
                 case DataType.Hex:
                     return getHex;
+
                 case DataType.D:
                 case DataType.Dec:
                 case DataType.Decimal:
                     return getDecimal;
+
                 case DataType.B:
                 case DataType.Bin:
                 case DataType.Binary:
                     return getBinary;
+
                 default:
                     return null;
             }

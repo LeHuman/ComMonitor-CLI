@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
 using System.IO.Pipes;
-using System.Text;
 using System.Threading;
 
 // https://www.codeproject.com/Tips/492231/Csharp-Async-Named-Pipes
@@ -12,10 +10,11 @@ namespace ComMonitor
     // Delegate for notifying of connection or error
     public delegate void DelegateNotify();
 
-    class PipeServer
+    internal class PipeServer
     {
         public event DelegateNotify PipeConnect;
-        string _pipeName;
+
+        private string _pipeName;
 
         public void ListenForPing(string PipeName, int retries = 5)
         {
@@ -26,7 +25,7 @@ namespace ComMonitor
                 {
                     // Set to class level var so we can re-use in the async callback method
                     _pipeName = PipeName;
-                    // Create the new async pipe 
+                    // Create the new async pipe
                     NamedPipeServerStream pipeServer = new NamedPipeServerStream(PipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
                     // Wait for a connection
                     pipeServer.BeginWaitForConnection(new AsyncCallback(WaitForConnectionPingCallBack), pipeServer);
@@ -56,7 +55,6 @@ namespace ComMonitor
             pipeServer = null;
             pipeServer = new NamedPipeServerStream(_pipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
             pipeServer.BeginWaitForConnection(new AsyncCallback(WaitForConnectionPingCallBack), pipeServer);
-
         }
 
         public void Ping(string PipeName, int TimeOut = 1000)
@@ -76,6 +74,5 @@ namespace ComMonitor
                 Debug.WriteLine(oEX.Message);
             }
         }
-
     }
 }

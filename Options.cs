@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using CommandLine;
 using System.IO.Ports;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CommandLine;
-using CommandLine.Text;
 
 namespace ComMonitor.Main
 {
-    class Options
+    internal class Options
     {
-        
         [Value(0, MetaName = "portName", Required = true, HelpText = "Set the port name to connect to.\nEx. COM6")]
         public string PortName { get; set; }
 
@@ -38,7 +31,7 @@ namespace ComMonitor.Main
 
         [Option('w', "wait", HelpText = "If the port is not open when the console starts, wait for it to open")]
         public bool Wait { get; set; }
-        
+
         [Option("timeout", HelpText = "Set the number of retries for both -w -r options", Default = 200)]
         public int RetryTimeout { get; set; }
 
@@ -62,6 +55,5 @@ namespace ComMonitor.Main
 
         [Option("jsonBlock", HelpText = "If jsonPath is set, setup how each message should be interpreted, refer to readme, WIP not needed")]
         public string JsonBlock { get; set; }
-
     }
 }

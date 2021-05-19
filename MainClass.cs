@@ -1,21 +1,19 @@
-﻿using System;
-using System.IO.Ports;
-using System.IO;
-using System.Collections.Generic;
-using CommandLine;
-using System.Threading;
+﻿using CommandLine;
 using SerialCom;
-using System.Diagnostics;
+using System;
 using System.Buffers.Binary;
+using System.Collections.Generic;
+using System.IO;
+using System.IO.Ports;
 using System.Linq;
+using System.Threading;
 
 namespace ComMonitor.Main
 {
-
     public class MainClass
     {
-
         #region defines
+
         private static string portName = "COMxNULL";
         private static int baudrate = 9600;
         private static Parity parity = Parity.None;
@@ -49,18 +47,21 @@ namespace ComMonitor.Main
         private static ConsoleColor Cfg = ConsoleColor.White;
         private static bool enableFileLogging = false;
         private static FileLog logger;
-        readonly Dictionary<string, ConsoleColor> logLevel = new Dictionary<string, ConsoleColor>{
+
+        private readonly Dictionary<string, ConsoleColor> logLevel = new Dictionary<string, ConsoleColor>{
             { "[DEBUG]", ConsoleColor.Magenta },
             { "[FATAL]", ConsoleColor.DarkRed },
             { "[ERROR]", ConsoleColor.Red },
             { "[WARN]", ConsoleColor.Yellow },
             { "[INFO]", ConsoleColor.Cyan }
         };
-        #endregion
+
+        #endregion defines
 
         #region Methods
 
         #region Console Methods
+
         private void ColorConsole(ConsoleColor color)
         {
             if (setColor)
@@ -92,10 +93,12 @@ namespace ComMonitor.Main
         {
             _ConsolePrintData(str, false);
         }
+
         private void ConsolePrintDataLine(string str)
         {
             _ConsolePrintData(str, true);
         }
+
         private void _ConsolePrintData(string str, bool newline)
         {
             if (str.Length > 0)
@@ -115,6 +118,7 @@ namespace ComMonitor.Main
             if (enableFileLogging)
                 logger.WriteLine(str);
         }
+
         private void ConsolePrint(string str)
         {
             Console.Write(str);
@@ -128,12 +132,12 @@ namespace ComMonitor.Main
                 logger.Flush();
         }
 
-        #endregion
+        #endregion Console Methods
 
         #region Data Interpreters
-        void AsciiDataReceived(object sender, DataStreamEventArgs e)
-        {
 
+        private void AsciiDataReceived(object sender, DataStreamEventArgs e)
+        {
             if (e.Data.Length == 0)
                 return;
 
@@ -150,17 +154,16 @@ namespace ComMonitor.Main
             {
                 ConsolePrintData(data);
             }
-
         }
 
-        void SerialDataReceived(object sender, DataStreamEventArgs e)
+        private void SerialDataReceived(object sender, DataStreamEventArgs e)
         {
             if (e.Data.Length == 0)
                 return;
             ConsolePrintDataLine(dataFunction(e.Data));
         }
 
-        void SerialChunkedDataReceived(object sender, DataStreamEventArgs e)
+        private void SerialChunkedDataReceived(object sender, DataStreamEventArgs e)
         {
             Span<byte> rawData = e.Data.AsSpan();
             int remain = rawData.Length;
@@ -192,9 +195,9 @@ namespace ComMonitor.Main
             return id + " " + str + " " + num + "\n";
         }
 
-        List<byte> saveBuffer = new List<byte>();
+        private List<byte> saveBuffer = new List<byte>();
 
-        void SerialMappedDataReceived(object sender, DataStreamEventArgs e)
+        private void SerialMappedDataReceived(object sender, DataStreamEventArgs e)
         {
             if (e.Data.Length == 0)
                 return;
@@ -230,9 +233,10 @@ namespace ComMonitor.Main
             }
         }
 
-        #endregion
+        #endregion Data Interpreters
 
         #region Runtime Methods
+
         private void RetryWait(bool firstWait = false)
         {
             if (_serialReader.PortAvailable())
@@ -260,10 +264,12 @@ namespace ComMonitor.Main
                 throw new Exception("Max number of retries reached");
             }
         }
+
         private void RetryReset()
         {
             retries = MAX_RETRY;
         }
+
         private void PriorityStop()
         {
             try
@@ -275,6 +281,7 @@ namespace ComMonitor.Main
             }
             throw new SerialException("Another instance has taken priority over the current port");
         }
+
         public void Run()
         {
             if (portName.Equals("COMxNULL"))
@@ -317,10 +324,12 @@ namespace ComMonitor.Main
                 RetryWait();
             }
         }
-        #endregion
+
+        #endregion Runtime Methods
 
         #region Exception Handlers
-        static void UnhandledExceptionTrapperColor(object sender, UnhandledExceptionEventArgs e)
+
+        private static void UnhandledExceptionTrapperColor(object sender, UnhandledExceptionEventArgs e)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Exception ex = (Exception)e.ExceptionObject;
@@ -328,20 +337,22 @@ namespace ComMonitor.Main
             Console.ForegroundColor = Cfg;
             Environment.Exit(0);
         }
-        static void UnhandledExceptionTrapper(object sender, UnhandledExceptionEventArgs e)
+
+        private static void UnhandledExceptionTrapper(object sender, UnhandledExceptionEventArgs e)
         {
             Exception ex = (Exception)e.ExceptionObject;
             Console.WriteLine(ex.Message);
             Environment.Exit(0);
         }
-        #endregion
 
-        #endregion
+        #endregion Exception Handlers
+
+        #endregion Methods
 
         public MainClass(string[] args)
         {
-
             #region Argument Parser
+
             Parser parser = new Parser(with => { with.CaseInsensitiveEnumValues = true; with.AutoHelp = true; with.AutoVersion = true; with.HelpWriter = Console.Out; });
             var result = parser.ParseArguments<Options>(args);
             result.WithParsed(options =>
@@ -379,7 +390,8 @@ namespace ComMonitor.Main
                     }
                 }
             });
-            #endregion
+
+            #endregion Argument Parser
 
             #region Load JSON data
 
@@ -390,9 +402,10 @@ namespace ComMonitor.Main
                 JSON_STRINGS = maps[1];
             }
 
-            #endregion
+            #endregion Load JSON data
 
             #region Setup Color
+
             if (setColor)
             {
                 Console.CancelKeyPress += delegate { Console.ResetColor(); };
@@ -404,9 +417,11 @@ namespace ComMonitor.Main
             {
                 AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionTrapper;
             }
-            #endregion
+
+            #endregion Setup Color
 
             #region Priority Queue Setup
+
             PriorityPipeName += portName;
             priorityNotify = new PipeServer();
             if (priority)
@@ -419,7 +434,8 @@ namespace ComMonitor.Main
                 priorityNotify.ListenForPing(PriorityPipeName);
             }
             priorityNotify.PipeConnect += PriorityStop;
-            #endregion
+
+            #endregion Priority Queue Setup
 
             #region Setup SerialClient
 
@@ -446,7 +462,6 @@ namespace ComMonitor.Main
                 {
                     _serialReader.SerialDataReceived += SerialDataReceived;
                 }
-
             }
             if (!_serialReader.PortAvailable())
             {
@@ -458,12 +473,12 @@ namespace ComMonitor.Main
                     throw new SerialException(string.Format("Unable to find port: {0}", portName));
             }
 
-            #endregion
+            #endregion Setup SerialClient
 
-            connectStr = $"Connecting to {portName} @ {baudrate}\np:{parity} d:{databits} s:{stopbits} cf:{frequency} {(hasMaxBytes ? " j:" + maxBytes : "")}\n";
+            connectStr = $"Connecting to {portName} @ {baudrate}\np:{parity} d:{databits} s:{stopbits} cf:{frequency} {(hasMaxBytes ? "j:" + maxBytes : "")}\n";
         }
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             MainClass app = new MainClass(args);
             app.Run();
