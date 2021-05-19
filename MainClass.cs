@@ -47,6 +47,8 @@ namespace ComMonitor.Main
         private static Func<byte[], string> dataFunction;
         private static PipeServer priorityNotify;
         private static ConsoleColor Cfg = ConsoleColor.White;
+        private static bool enableFileLogging = false;
+        private static FileLog logger;
         readonly Dictionary<string, ConsoleColor> logLevel = new Dictionary<string, ConsoleColor>{
             { "[DEBUG]", ConsoleColor.Magenta },
             { "[FATAL]", ConsoleColor.DarkRed },
@@ -86,11 +88,11 @@ namespace ComMonitor.Main
             }
         }
 
-        private void ConsolePrint(string str)
+        private void ConsolePrintData(string str)
         {
             _ConsolePrintData(str, false);
         }        
-        private void ConsolePrintLine(string str)
+        private void ConsolePrintDataLine(string str)
         {
             _ConsolePrintData(str, true);
         }
@@ -100,11 +102,27 @@ namespace ComMonitor.Main
             {
                 LogLevelColor(str.ToUpper()); // TODO: trim to last bracket to reduce text that is searched
                 if (newline)
-                    Console.WriteLine(str);
+                    ConsolePrintLine(str);
                 else
-                    Console.Write(str);
+                    ConsolePrint(str);
                 ColorConsole();
             }
+        }
+
+        private void ConsolePrintLine(string str) {
+            Console.WriteLine(str);
+            if (enableFileLogging)
+                logger.WriteLine(str);
+        }        
+        private void ConsolePrint(string str) {
+            Console.Write(str);
+            if (enableFileLogging)
+                logger.Write(str);
+        }
+
+        private void ConsoleFlush() {
+            if (enableFileLogging)
+                logger.Flush();
         }
 
         #endregion
@@ -122,12 +140,12 @@ namespace ComMonitor.Main
                 string[] lines = data.Replace('\r', '\0').Split('\n');
                 foreach (string line in lines)
                 {
-                    ConsolePrintLine(line);
+                    ConsolePrintDataLine(line);
                 }
             }
             else
             {
-                ConsolePrint(data);
+                ConsolePrintData(data);
             }
 
         }
@@ -136,7 +154,7 @@ namespace ComMonitor.Main
         {
             if (e.Data.Length == 0)
                 return;
-            ConsolePrintLine(dataFunction(e.Data));
+            ConsolePrintDataLine(dataFunction(e.Data));
         }
 
         void SerialChunkedDataReceived(object sender, DataStreamEventArgs e)
@@ -146,13 +164,13 @@ namespace ComMonitor.Main
             int i = 0;
             while (remain >= maxBytes)
             {
-                ConsolePrintLine(dataFunction(rawData.Slice(i, maxBytes).ToArray()));
+                ConsolePrintDataLine(dataFunction(rawData.Slice(i, maxBytes).ToArray()));
                 remain -= maxBytes;
                 i += maxBytes;
             }
             if (remain > 0)
             {
-                ConsolePrintLine(dataFunction(rawData.Slice(i).ToArray()));
+                ConsolePrintDataLine(dataFunction(rawData.Slice(i).ToArray()));
             }
         }
 
@@ -178,7 +196,7 @@ namespace ComMonitor.Main
             if (e.Data.Length == 0)
                 return;
             if (e.Data.Length % maxBytes != 0)
-                Console.WriteLine("WARN: Data may have dysynced, or badly formatted data was received");
+                ConsolePrintLine("WARN: Data may have dysynced, or badly formatted data was received");
 
             byte[] stichedData;
             Span<byte> rawData;
@@ -199,7 +217,7 @@ namespace ComMonitor.Main
             int i = 0;
             while (remain >= maxBytes)
             {
-                ConsolePrint(GetMappedMessage(rawData.Slice(i, maxBytes)));
+                ConsolePrintData(GetMappedMessage(rawData.Slice(i, maxBytes)));
                 remain -= maxBytes;
                 i += maxBytes;
             }
@@ -227,7 +245,7 @@ namespace ComMonitor.Main
                 Thread.Sleep(100);
             } while (!_serialReader.PortAvailable());
             Console.Write("\r");
-            Console.Write(String.Concat(Enumerable.Repeat(" ", ("Waiting for connection to  /".Length + portName.Length))));
+            Console.Write(string.Concat(Enumerable.Repeat(" ", "Waiting for connection to  /".Length + portName.Length)));
             Console.Write("\r");
             retries--;
             if (retries == 0)
@@ -241,6 +259,13 @@ namespace ComMonitor.Main
         }
         private void PriorityStop()
         {
+            try
+            {
+                ConsoleFlush();
+            }
+            catch (Exception)
+            {
+            }
             throw new SerialException("Another instance has taken priority over the current port");
         }
         public void Run()
@@ -249,7 +274,7 @@ namespace ComMonitor.Main
                 return;
 
             ColorConsole(ConsoleColor.Yellow);
-            Console.WriteLine(connectStr);
+            ConsolePrintLine(connectStr);
             ColorConsole();
             while (true)
             {
@@ -259,21 +284,20 @@ namespace ComMonitor.Main
                     {
                         RetryReset();
                         ColorConsole(ConsoleColor.Green);
-                        Console.WriteLine("\r------[ Connect ]-------");
+                        ConsolePrintLine("\r------[Connect]-------");
                         ColorConsole();
                         while (_serialReader.IsAlive())
                         {
                             Thread.Sleep(500);
                         }
                         ColorConsole(ConsoleColor.Red);
-                        Console.WriteLine("\n-----[ Disconnect ]-----\n");
+                        ConsolePrintLine("-----[Disconnect]-----");
                         ColorConsole();
                     }
                 }
-                catch (IOException) { }
                 catch (SerialException e)
                 {
-                    Console.WriteLine(e.Message);
+                    ConsolePrintLine(e.Message);
                     _serialReader.Dispose();
                     return;
                 }
@@ -315,25 +339,37 @@ namespace ComMonitor.Main
             var result = parser.ParseArguments<Options>(args);
             result.WithParsed(options =>
             {
-                portName = options.portName.ToUpper();
-                baudrate = options.baudRate;
-                parity = options.setParity;
-                databits = options.setDataBits;
-                stopbits = options.setStopBits;
-                maxBytes = options.setMaxBytes;
+                portName = options.PortName.ToUpper();
+                baudrate = options.BaudRate;
+                parity = options.SetParity;
+                databits = options.SetDataBits;
+                stopbits = options.SetStopBits;
+                maxBytes = options.SetMaxBytes;
                 hasMaxBytes = maxBytes > 0;
-                reconnect = options.reconnect;
-                setColor = !options.setColor;
-                frequency = options.frequency;
-                priority = options.priority;
-                dataType = options.setDataType;
-                JSON_PATH = options.jsonPath;
-                JSON_BLOCKING = options.jsonBlock;
-                MAX_RETRY = options.retryTimeout;
+                reconnect = options.Reconnect;
+                setColor = !options.SetColor;
+                frequency = options.Frequency;
+                priority = options.Priority;
+                dataType = options.SetDataType;
+                JSON_PATH = options.JsonPath;
+                JSON_BLOCKING = options.JsonBlock;
+                MAX_RETRY = options.RetryTimeout;
                 retries = MAX_RETRY;
-                waitForConn = options.wait;
-                mappedMode = options.jsonPath != null && maxBytes != 0 /*&& options.jsonBlock != null*/; // TODO: custom message block structure for matching strings
-                logKeyword = setColor && (options.setDataType == DataType.Ascii || mappedMode);
+                waitForConn = options.Wait;
+                mappedMode = options.JsonPath != null && maxBytes != 0 /*&& options.jsonBlock != null*/; // TODO: custom message block structure for matching strings
+                logKeyword = setColor && (options.SetDataType == DataType.Ascii || mappedMode);
+                if (options.Logging != "")
+                {
+                    string path = options.Logging;
+                    if (Directory.Exists(path))
+                    {
+                        logger = new FileLog(path, options.SingleLogging);
+                        enableFileLogging = logger.Available();
+                    }
+                    else {
+                        ConsolePrintLine($"Logging path does not exist: {path}");
+                    }
+                }
             });
             #endregion
 
