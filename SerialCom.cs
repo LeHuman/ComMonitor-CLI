@@ -180,12 +180,38 @@ namespace SerialCom
 
         #region Threading Loops
 
-        public bool _addFreq(int freq)
+        public bool AddFreq(int freq)
         {
             if (freqCriticalLimit == 1)
                 return false;
             freqCriticalLimit = Math.Max(freqCriticalLimit + freq, 1);
             return true;
+        }
+
+        public void SendString(string msg)
+        {
+            try
+            {
+                if (_serialPort != null)
+                    _serialPort.Write(msg);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Serial: Error Sending Data");
+            }
+        }
+
+        public void SendBytes(byte[] msg)
+        {
+            try
+            {
+                if (_serialPort != null)
+                    _serialPort.Write(msg, 0, msg.Length);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Serial: Error Sending Data");
+            }
         }
 
         private async void SerialReceiving()
@@ -218,9 +244,9 @@ namespace SerialCom
 
                     #endregion Frequency Control
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-                    Console.WriteLine("ComMonitor: Error Receiving Data");
+                    Console.WriteLine("Serial: Error Receiving Data");
                     break;
                 }
             }

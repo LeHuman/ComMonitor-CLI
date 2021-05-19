@@ -20,6 +20,7 @@ namespace ComMonitor.Main
         private static int databits = 8;
         private static StopBits stopbits = StopBits.One;
         private static DataType dataType = DataType.Ascii;
+        private static DataType InputDataType = DataType.None;
 
         private string JSON_PATH;
         private string JSON_BLOCKING;
@@ -38,10 +39,12 @@ namespace ComMonitor.Main
         private static bool logKeyword = true;
         private static bool priority = false;
         private static bool waitForConn = false;
+        private static bool checkInput = false;
+        private static bool disableInputPrompt = false;
 
         private string connectStr;
         private string PriorityPipeName = "ComMonitorPriority";
-        private static SerialClient _serialReader;
+        private static SerialClient SerialConnection;
         private static Func<byte[], string> dataFunction;
         private static PipeServer priorityNotify;
         private static ConsoleColor Cfg = ConsoleColor.White;
@@ -101,6 +104,7 @@ namespace ComMonitor.Main
 
         private void _ConsolePrintData(string str, bool newline)
         {
+            CheckInputLine();
             if (str.Length > 0)
             {
                 LogLevelColor(str.ToUpper()); // TODO: trim to last bracket to reduce text that is searched
@@ -110,6 +114,24 @@ namespace ComMonitor.Main
                     ConsolePrint(str);
                 ColorConsole();
             }
+        }
+
+        private bool AlreadyChecking = false;
+
+        private void CheckInputLine()
+        {
+            if (!checkInput || disableInputPrompt || AlreadyChecking)
+                return;
+            AlreadyChecking = true;
+            string input = ConsoleInput.GetCurrentInput();
+
+            if (input != "")
+            {
+                Console.WriteLine();
+                Console.Write(input);
+                Console.CursorTop--;
+            }
+            AlreadyChecking = false;
         }
 
         private void ConsolePrintLine(string str)
@@ -239,7 +261,7 @@ namespace ComMonitor.Main
 
         private void RetryWait(bool firstWait = false)
         {
-            if (_serialReader.PortAvailable())
+            if (SerialConnection.PortAvailable())
                 return;
             ColorConsole(ConsoleColor.Blue);
             string waitMessage = firstWait ? $"Waiting for connection to {portName} " : $"Retrying to connect to {portName} ";
@@ -251,10 +273,10 @@ namespace ComMonitor.Main
                 {
                     Console.Write($"\r{waitMessage}{waitAnim[i]}");
                     Thread.Sleep(waitAnimTime[i]);
-                    if (_serialReader.PortAvailable())
+                    if (SerialConnection.PortAvailable())
                         break;
                 }
-            } while (!_serialReader.PortAvailable());
+            } while (!SerialConnection.PortAvailable());
             Console.Write("\r");
             Console.Write(string.Concat(Enumerable.Repeat(" ", waitMessage.Length + waitAnim[0].Length)));
             Console.Write("\r");
@@ -294,16 +316,18 @@ namespace ComMonitor.Main
             {
                 try
                 {
-                    if (_serialReader.OpenConn())
+                    if (SerialConnection.OpenConn())
                     {
                         RetryReset();
                         ColorConsole(ConsoleColor.Green);
                         ConsolePrintLine("\r------[Connect]-------");
                         ColorConsole();
-                        while (_serialReader.IsAlive())
+                        ConsoleInput.Enable(true);
+                        while (SerialConnection.IsAlive())
                         {
-                            Thread.Sleep(500);
+                            Thread.Sleep(400);
                         }
+                        ConsoleInput.Enable(false);
                         ColorConsole(ConsoleColor.Red);
                         ConsolePrintLine("-----[Disconnect]-----");
                         ColorConsole();
@@ -312,15 +336,16 @@ namespace ComMonitor.Main
                 catch (SerialException e)
                 {
                     ConsolePrintLine(e.Message);
-                    _serialReader.Dispose();
+                    SerialConnection.Dispose();
                     return;
                 }
                 finally
                 {
-                    _serialReader.Dispose();
+                    SerialConnection.Dispose();
                 }
                 if (!reconnect)
                     break;
+                ConsoleInput.Enable(false);
                 RetryWait();
             }
         }
@@ -333,17 +358,21 @@ namespace ComMonitor.Main
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Exception ex = (Exception)e.ExceptionObject;
+            Console.WriteLine(ex.StackTrace);
             Console.WriteLine(ex.Message);
             Console.ForegroundColor = Cfg;
-            ConsoleQuickEdit.Set(true);
+            //ConsoleMode.Set(ConsoleMode.ENABLE_QUICK_EDIT, true);
+            Thread.Sleep(10000);
             Environment.Exit(0);
         }
 
         private static void UnhandledExceptionTrapper(object sender, UnhandledExceptionEventArgs e)
         {
             Exception ex = (Exception)e.ExceptionObject;
+            Console.WriteLine(ex.StackTrace);
             Console.WriteLine(ex.Message);
-            ConsoleQuickEdit.Set(true);
+            //ConsoleMode.Set(ConsoleMode.ENABLE_QUICK_EDIT, true);
+            Thread.Sleep(10000);
             Environment.Exit(0);
         }
 
@@ -371,6 +400,8 @@ namespace ComMonitor.Main
                 frequency = options.Frequency;
                 priority = options.Priority;
                 dataType = options.SetDataType;
+                if (dataType == DataType.None)
+                    dataType = DataType.Ascii;
                 JSON_PATH = options.JsonPath;
                 JSON_BLOCKING = options.JsonBlock;
                 MAX_RETRY = options.RetryTimeout;
@@ -390,6 +421,34 @@ namespace ComMonitor.Main
                     {
                         ConsolePrintLine($"Logging path does not exist: {path}");
                     }
+                }
+                disableInputPrompt = options.DisableInputPrompt;
+                if (options.EnableInput != DataType.None)
+                {
+                    checkInput = true;
+                    InputDataType = options.EnableInput;
+                    ConsoleInput.SetCallback(msg =>
+                    {
+                        if (InputDataType == DataType.A || InputDataType == DataType.Ascii)
+                        {
+                            ConsolePrintLine($"Sending String: {msg}");
+                            SerialConnection.SendString(msg);
+                        }
+                        else
+                        {
+                            string[] messages = msg.Trim().Split(' ');
+                            foreach (var msgStr in messages)
+                            {
+                                byte[] msgArr = SerialType.GetByteArray(InputDataType, msgStr);
+                                if (msgArr == null)
+                                    return;
+                                ConsolePrintLine($"Sending Bytes: {string.Join(",", msgArr)}");
+                                SerialConnection.SendBytes(msgArr);
+                            }
+                        }
+                    });
+                    ConsoleInput.SetUpdateCallback(CheckInputLine);
+                    ConsoleInput.Start();
                 }
             });
 
@@ -441,31 +500,30 @@ namespace ComMonitor.Main
 
             #region Setup SerialClient
 
-            SerialType.setType(dataType);
-            dataFunction = SerialType.getTypeDelegate();
+            dataFunction = SerialType.getTypeFunction(dataType);
 
-            _serialReader = new SerialClient(portName, baudrate, parity, databits, stopbits, frequency);
+            SerialConnection = new SerialClient(portName, baudrate, parity, databits, stopbits, frequency);
 
             if (dataType == DataType.Ascii)
             {
-                _serialReader.SerialDataReceived += AsciiDataReceived;
+                SerialConnection.SerialDataReceived += AsciiDataReceived;
             }
             else
             {
                 if (mappedMode)
                 {
-                    _serialReader.SerialDataReceived += SerialMappedDataReceived;
+                    SerialConnection.SerialDataReceived += SerialMappedDataReceived;
                 }
                 else if (hasMaxBytes)
                 {
-                    _serialReader.SerialDataReceived += SerialChunkedDataReceived;
+                    SerialConnection.SerialDataReceived += SerialChunkedDataReceived;
                 }
                 else
                 {
-                    _serialReader.SerialDataReceived += SerialDataReceived;
+                    SerialConnection.SerialDataReceived += SerialDataReceived;
                 }
             }
-            if (!_serialReader.PortAvailable())
+            if (!SerialConnection.PortAvailable())
             {
                 if (portName.Equals("COMxNULL"))
                     return;
@@ -482,11 +540,13 @@ namespace ComMonitor.Main
 
         private static void Main(string[] args)
         {
-            if (!ConsoleQuickEdit.Set(false))
-                Console.WriteLine("Warning: Failed to disable console Quick Edit");
+            //if (!ConsoleMode.Set(ConsoleMode.ENABLE_QUICK_EDIT, false))
+            //    Console.WriteLine("Warning: Failed to disable console Quick Edit");
+
             MainClass app = new MainClass(args);
             app.Run();
-            ConsoleQuickEdit.Set(true);
+
+            //ConsoleMode.Set(ConsoleMode.ENABLE_QUICK_EDIT, true);
         }
     }
 }

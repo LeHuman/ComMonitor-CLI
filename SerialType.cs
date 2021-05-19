@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 
 namespace ComMonitor
 {
     public enum DataType
     {
+        None,
         A,
         H,
         D,
@@ -19,21 +21,9 @@ namespace ComMonitor
 
     public static class SerialType
     {
-        private static DataType focusType = DataType.A;
-
-        public static void setType(DataType type)
+        public static string getTypeData(DataType type, byte[] data)
         {
-            focusType = type;
-        }
-
-        public static DataType getType()
-        {
-            return focusType;
-        }
-
-        public static string getTypeData(byte[] data)
-        {
-            switch (focusType)
+            switch (type)
             {
                 case DataType.A:
                 case DataType.Ascii:
@@ -58,9 +48,106 @@ namespace ComMonitor
             }
         }
 
-        public static Func<byte[], string> getTypeDelegate()
+        public static byte[] HexToArray(string hex)
         {
-            switch (focusType)
+            if (hex.Length % 2 == 1)
+            {
+                Console.WriteLine($"The binary key cannot have an odd number of digits: {hex}");
+                return null;
+            }
+
+            byte[] arr = new byte[hex.Length >> 1];
+
+            for (int i = 0; i < hex.Length >> 1; ++i)
+            {
+                arr[i] = (byte)((GetHexVal(hex[i << 1]) << 4) + (GetHexVal(hex[(i << 1) + 1])));
+            }
+
+            return arr.Reverse().ToArray();
+        }
+
+        public static int GetHexVal(char hex)
+        {
+            int val = (int)hex;
+            return val - (val < 58 ? 48 : (val < 97 ? 55 : 87));
+        }
+
+        public static byte[] BinaryToArray(string bits)
+        {
+            try
+            {
+                var numOfBytes = (int)Math.Ceiling(bits.Length / 8m);
+                var bytes = new byte[numOfBytes];
+                var chunkSize = 8;
+
+                for (int i = 1; i <= numOfBytes; i++)
+                {
+                    var startIndex = bits.Length - 8 * i;
+                    if (startIndex < 0)
+                    {
+                        chunkSize = 8 + startIndex;
+                        startIndex = 0;
+                    }
+                    bytes[numOfBytes - i] = Convert.ToByte(bits.Substring(startIndex, chunkSize), 2);
+                }
+                return bytes.Reverse().ToArray();
+            }
+            catch (Exception)
+            {
+                Console.WriteLine($"Failed to convert to binary byte array: {bits}");
+            }
+            return null;
+        }
+
+        public static byte[] DecimalToArray(string decimalStr)
+        {
+            try
+            {
+                byte[] fullArr = BitConverter.GetBytes(long.Parse(decimalStr));
+                for (int i = fullArr.Length - 1; i >= 0; i--)
+                {
+                    if (fullArr[i] != 0)
+                        return fullArr.Take(i + 1).ToArray();
+                }
+                return new byte[] { 0 };
+            }
+            catch (Exception)
+            {
+                Console.WriteLine($"Failed to convert to long byte array: {decimalStr}");
+            }
+            return null;
+        }
+
+        public static byte[] GetByteArray(DataType type, string data)
+        {
+            switch (type)
+            {
+                case DataType.A:
+                case DataType.Ascii:
+                    return Encoding.UTF8.GetBytes(data);
+
+                case DataType.H:
+                case DataType.Hex:
+                    return HexToArray(data);
+
+                case DataType.D:
+                case DataType.Dec:
+                case DataType.Decimal:
+                    return DecimalToArray(data);
+
+                case DataType.B:
+                case DataType.Bin:
+                case DataType.Binary:
+                    return BinaryToArray(data);
+
+                default:
+                    return null;
+            }
+        }
+
+        public static Func<byte[], string> getTypeFunction(DataType type)
+        {
+            switch (type)
             {
                 case DataType.A:
                 case DataType.Ascii:

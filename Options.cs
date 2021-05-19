@@ -50,6 +50,12 @@ namespace ComMonitor.Main
         [Option("singleLog", HelpText = "If Logging is enabled, use a single file for logging, overwriting it each time", Default = false)]
         public bool SingleLogging { get; set; }
 
+        [Option("input", HelpText = "Enable input when connected to a port, refer to readme for formatting [(A)scii|(H)ex|(D)ecimal|(B)inary]", Default = DataType.None)]
+        public DataType EnableInput { get; set; }
+
+        [Option("disableInputPrompt", HelpText = "Disable the prompt that appears when inputting data, recommended to paste data instead", Default = false)]
+        public bool DisableInputPrompt { get; set; }
+
         [Option("jsonPath", HelpText = "Point to a json file that contains a JSON object which maps strings to unique integers, allows non ascii modes to instead print out their matching string, option `m` and `jsonBlock` must be set, refer to readme")]
         public string JsonPath { get; set; }
 
