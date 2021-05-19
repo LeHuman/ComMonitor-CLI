@@ -30,6 +30,7 @@ namespace SerialCom
         private StopBits _stopbits = StopBits.None;
 
         private SerialPort _serialPort;
+        private int WriteTimout = -1;
         private Thread serThread;
         private double _PacketsRate;
         private DateTime _lastReceive;
@@ -65,6 +66,11 @@ namespace SerialCom
             freqCriticalLimit = Math.Max(1, frequency);
         }
 
+        public void SetWriteTimeout(int timeout)
+        {
+            WriteTimout = timeout;
+        }
+
         #endregion Constructors
 
         #region Methods
@@ -84,7 +90,7 @@ namespace SerialCom
                 if (!_serialPort.IsOpen)
                 {
                     _serialPort.ReadTimeout = -1;
-                    _serialPort.WriteTimeout = -1;
+                    _serialPort.WriteTimeout = WriteTimout;
 
                     _serialPort.Open();
 
@@ -188,16 +194,16 @@ namespace SerialCom
             return true;
         }
 
-        public void SendString(string msg)
+        public void SendString(string msg) // TODO: Async Writes
         {
             try
             {
                 if (_serialPort != null)
                     _serialPort.Write(msg);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Console.WriteLine("Serial: Error Sending Data");
+                Console.WriteLine($"Serial: Error Sending Data, {e.Message}");
             }
         }
 
@@ -208,9 +214,9 @@ namespace SerialCom
                 if (_serialPort != null)
                     _serialPort.Write(msg, 0, msg.Length);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Console.WriteLine("Serial: Error Sending Data");
+                Console.WriteLine($"Serial: Error Sending Data, {e.Message}");
             }
         }
 
@@ -244,9 +250,9 @@ namespace SerialCom
 
                     #endregion Frequency Control
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    Console.WriteLine("Serial: Error Receiving Data");
+                    Console.WriteLine($"Serial: Error Receiving Data, {e.Message}");
                     break;
                 }
             }

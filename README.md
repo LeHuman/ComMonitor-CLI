@@ -43,11 +43,11 @@ Ascii strings are sent as it, however, note that escape characters are not suppo
 Hex strings, Binary strings, and Integer strings are all converted into little endian byte arrays of a maximum length 8. Integer strings are decoded as a signed long. These numerical types can be delimited by a space to send multiple numbers at a time.
 
 Example:
-> Input: 45684 456 56 4\
-> Sending Bytes: 116,178\
-> Sending Bytes: 200,1\
-> Sending Bytes: 56\
-> Sending Bytes: 4
+> *Input: 45684 456 56 4\
+> *Sending Bytes: 116,178\
+> *Sending Bytes: 200,1\
+> *Sending Bytes: 56\
+> *Sending Bytes: 4
 
 **NOTE:** User input only works when actively connected to a port, input buffer is cleared when port disconnects.
 

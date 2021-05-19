@@ -32,8 +32,11 @@ namespace ComMonitor.Main
         [Option('w', "wait", HelpText = "If the port is not open when the console starts, wait for it to open")]
         public bool Wait { get; set; }
 
-        [Option("timeout", HelpText = "Set the number of retries for both -w -r options", Default = 200)]
-        public int RetryTimeout { get; set; }
+        [Option("retries", HelpText = "Set the number of retries for both -w -r options", Default = 200)]
+        public int MaxRetries { get; set; }
+
+        [Option("timeout", HelpText = "Set the number of milliseconds before a time-out occurs when writing to serial", Default = -1)]
+        public int WaitTimeout { get; set; }
 
         [Option('c', "color", HelpText = "Disable console color, may help with latency")]
         public bool SetColor { get; set; }

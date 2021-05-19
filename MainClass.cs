@@ -21,6 +21,7 @@ namespace ComMonitor.Main
         private static StopBits stopbits = StopBits.One;
         private static DataType dataType = DataType.Ascii;
         private static DataType InputDataType = DataType.None;
+        private static int WaitTimeout = -1;
 
         private string JSON_PATH;
         private string JSON_BLOCKING;
@@ -404,7 +405,7 @@ namespace ComMonitor.Main
                     dataType = DataType.Ascii;
                 JSON_PATH = options.JsonPath;
                 JSON_BLOCKING = options.JsonBlock;
-                MAX_RETRY = options.RetryTimeout;
+                MAX_RETRY = options.MaxRetries;
                 retries = MAX_RETRY;
                 waitForConn = options.Wait;
                 mappedMode = options.JsonPath != null && maxBytes != 0 /*&& options.jsonBlock != null*/; // TODO: custom message block structure for matching strings
@@ -450,6 +451,7 @@ namespace ComMonitor.Main
                     ConsoleInput.SetUpdateCallback(CheckInputLine);
                     ConsoleInput.Start();
                 }
+                WaitTimeout = options.WaitTimeout;
             });
 
             #endregion Argument Parser
@@ -503,6 +505,7 @@ namespace ComMonitor.Main
             dataFunction = SerialType.getTypeFunction(dataType);
 
             SerialConnection = new SerialClient(portName, baudrate, parity, databits, stopbits, frequency);
+            SerialConnection.SetWriteTimeout(WaitTimeout);
 
             if (dataType == DataType.Ascii)
             {
