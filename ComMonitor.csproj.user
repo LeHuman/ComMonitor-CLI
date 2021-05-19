@@ -6,7 +6,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <StartArguments>com9 115200 --priority -tH -r -w -m8 --jsonPath "C:\GitHub\SAEGit\ECU2020\log_lookup.json" -l "C:\GitHub\SAEGit\ECU2020" --singleLog --input D</StartArguments>
+    <StartArguments>com9 115200 --priority -tH -r -w -m8 --jsonPath "C:\GitHub\SAEGit\ECU2020\log_lookup.json" -l"C:\GitHub\SAEGit\ECU2020" --singleLog --input D</StartArguments>
   </PropertyGroup>
   <PropertyGroup>
     <PublishUrlHistory>publish\</PublishUrlHistory>

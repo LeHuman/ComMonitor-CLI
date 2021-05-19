@@ -11,25 +11,30 @@ A Console application to monitor ascii data over a serial port
 
 Arguments are not case sensitive
 
-*   portName (pos. 0)    Required. Set the port name to connect to
-*   baudRate (pos. 1)    Required. Set the baud rate
-*   -p, --parity         (Default: None) Set the parity mode. [None|Odd|Even|Mark|Space]
-*   -d, --databits       (Default: 8) The maximum number of bytes to process. [5-8]
-*   -s, --stopbits       (Default: One) Set the number of stop bits. [None|One|Two|OnePointFive]
-*	-t, --type           (Default: Ascii) Set the type of data to receive. [(A)scii|(H)ex|(D)ecimal|(B)inary]
-*   -r, --retry          Keep console open and wait for port to reopen
-*   -w, --wait           If the port is not open when the console starts, wait for it to open
-*   --timeout            (Default: 200) Set the number of retries for both -w -r options [Integer]
-*   -c, --color          Disable changing color of console, may help with latency
-*   -f, --frequency      (Default: 20) Manually Set the critical frequency of communication (Hz)
-*   -m, --maxBytes       Set a max number of bytes to print for each line when not in Ascii mode [Integer]
-*   --priority           Take priority of a port if inuse by another instance of ComMonitor
-*   --help               Display help screen
-*   --version            Display version information
-*   --jsonPath           Point to a json file that contains a JSON object which maps strings to unique integers, allows non ascii modes to instead print out their matching string, option `m` and `jsonBlock` must be set, refer to JSON Mapping on README
+*   portName (pos. 0)       Required. Set the port name to connect to
+*   baudRate (pos. 1)       Required. Set the baud rate
+*   -p, --parity            (Default: None) Set the parity mode. [None|Odd|Even|Mark|Space]
+*   -d, --databits          (Default: 8) The maximum number of bytes to process. [5-8]
+*   -s, --stopbits          (Default: One) Set the number of stop bits. [None|One|Two|OnePointFive]
+*   -t, --type              (Default: Ascii) Set the type of data to receive. [(A)scii|(H)ex|(D)ecimal|(B)inary]
+*   -m, --maxBytes          Set a max number of bytes to print for each line when not in Ascii mode [Integer]
+*   -r, --retry             After connecting, if the port closes, keep the console open and wait for the port to reopen
+*   -w, --wait              If the port is not open when the console starts, wait for it to open
+*   --retries               (Default: 200) Set the number of retries for both -w -r options
+*   --timeout               (Default: -1) Set the number of milliseconds before a time-out occurs when writing to serial
+*   -c, --color             Disable console color, may help with latency
+*   --priority              Take priority of a port if another instance of ComMonitor has it open ( Does not apply to any other app )
+*   -f, --frequency         (Default: 20) Manually Set the critical frequency of communication (Hz)
+*   -l, --log               (Default: "") Enable logging to a file [Valid Path]
+*   --singleLog             (Default: false) If Logging is enabled, use a single file for logging, overwriting it each time
+*   --input                 (Default: None) Enable input when connected to a port, refer to readme for formatting [(A)scii|(H)ex|(D)ecimal|(B)inary]
+*   --disableInputPrompt    (Default: false) Disable the prompt that appears when inputting data, recommended to paste data instead
+*   --jsonPath              Point to a json file that contains a JSON object which maps strings to unique integers, allows non ascii modes to instead print out their matching string, option `m` and `jsonBlock` must be set, refer to readme
+*   --help                  Display this help screen.
+*   --version               Display version information.
 
 Example:
-> ComMonitor.exe COM6 19200 -rc -p Even --priority
+> ComMonitor.exe COM9 115200 --priority -tH -r -w -l"C:\tmp\LogFiles" --singleLog --input D
 
 **NOTE:** When selecting something on the console, such as with the mouse, the console might freeze. Hitting `Enter`, `Esc`, or `Right Mouse` will unfreeze it.
 This can be disabled, however, this would also mean one would not be able to select text at all.
@@ -38,7 +43,7 @@ This can be disabled, however, this would also mean one would not be able to sel
 
 Using the `--input` option, it enables the console app to take in input.
 
-Ascii strings are sent as it, however, note that escape characters are not supported.
+Ascii strings are sent as is, however, note that escape characters are not supported.
 
 Hex strings, Binary strings, and Integer strings are all converted into little endian byte arrays of a maximum length 8. Integer strings are decoded as a signed long. These numerical types can be delimited by a space to send multiple numbers at a time.
 
@@ -53,9 +58,9 @@ Example:
 
 **NOTE:** Currently, input is somewhat *experimental*
 
-`--disableInputPrompt` might help if the console text gets garbled in anyway
-
-Sending too much data at once might freeze up the serial port.
+* `--disableInputPrompt` might help if the console text gets garbled in anyway
+* Sending too much data at once might freeze up the serial port.
+  * Until asynchronous writes are implemented, setting `--timeout` can help discern whether writing is what is freezing the app.
 
 The `Insert` key can also be used to paste any text that is on the clipboard to be immediately sent. The `Right Mouse` button, by default on Windows console, can be used to just paste but not send.
 
