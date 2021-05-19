@@ -93,6 +93,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConsoleQuickEdit.cs" />
     <Compile Include="FileLog.cs" />
     <Compile Include="JSONMap.cs" />
     <Compile Include="MainClass.cs" />

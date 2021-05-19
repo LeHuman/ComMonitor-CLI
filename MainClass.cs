@@ -335,6 +335,7 @@ namespace ComMonitor.Main
             Exception ex = (Exception)e.ExceptionObject;
             Console.WriteLine(ex.Message);
             Console.ForegroundColor = Cfg;
+            ConsoleQuickEdit.Set(true);
             Environment.Exit(0);
         }
 
@@ -342,6 +343,7 @@ namespace ComMonitor.Main
         {
             Exception ex = (Exception)e.ExceptionObject;
             Console.WriteLine(ex.Message);
+            ConsoleQuickEdit.Set(true);
             Environment.Exit(0);
         }
 
@@ -480,8 +482,11 @@ namespace ComMonitor.Main
 
         private static void Main(string[] args)
         {
+            if (!ConsoleQuickEdit.Set(false))
+                Console.WriteLine("Warning: Failed to disable console Quick Edit");
             MainClass app = new MainClass(args);
             app.Run();
+            ConsoleQuickEdit.Set(true);
         }
     }
 }
