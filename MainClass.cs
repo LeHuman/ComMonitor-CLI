@@ -91,7 +91,7 @@ namespace ComMonitor.Main
         private void ConsolePrintData(string str)
         {
             _ConsolePrintData(str, false);
-        }        
+        }
         private void ConsolePrintDataLine(string str)
         {
             _ConsolePrintData(str, true);
@@ -109,18 +109,21 @@ namespace ComMonitor.Main
             }
         }
 
-        private void ConsolePrintLine(string str) {
+        private void ConsolePrintLine(string str)
+        {
             Console.WriteLine(str);
             if (enableFileLogging)
                 logger.WriteLine(str);
-        }        
-        private void ConsolePrint(string str) {
+        }
+        private void ConsolePrint(string str)
+        {
             Console.Write(str);
             if (enableFileLogging)
                 logger.Write(str);
         }
 
-        private void ConsoleFlush() {
+        private void ConsoleFlush()
+        {
             if (enableFileLogging)
                 logger.Flush();
         }
@@ -232,20 +235,24 @@ namespace ComMonitor.Main
         #region Runtime Methods
         private void RetryWait(bool firstWait = false)
         {
+            if (_serialReader.PortAvailable())
+                return;
             ColorConsole(ConsoleColor.Blue);
+            string waitMessage = firstWait ? $"Waiting for connection to {portName} " : $"Retrying to connect to {portName} ";
+            int[] waitAnimTime = { 80, 40, 30, 30, 20, 20, 10, 20, 20, 30, 30, 40 };
+            string[] waitAnim = { "        ", "-       ", "--      ", "---     ", "----    ", " ----   ", "  ----  ", "   ---- ", "    ----", "     ---", "      --", "       -" };
             do
             {
-                Console.Write(firstWait ? "\rWaiting for connection to {0} |" : "\rRetrying to connect to {0} |", portName);
-                Thread.Sleep(100);
-                Console.Write(firstWait ? "\rWaiting for connection to {0} \\" : "\rRetrying to connect to {0} \\", portName);
-                Thread.Sleep(100);
-                Console.Write(firstWait ? "\rWaiting for connection to {0} -" : "\rRetrying to connect to {0} -", portName);
-                Thread.Sleep(100);
-                Console.Write(firstWait ? "\rWaiting for connection to {0} /" : "\rRetrying to connect to {0} /", portName);
-                Thread.Sleep(100);
+                for (int i = 0; i < waitAnimTime.Length; i++)
+                {
+                    Console.Write($"\r{waitMessage}{waitAnim[i]}");
+                    Thread.Sleep(waitAnimTime[i]);
+                    if (_serialReader.PortAvailable())
+                        break;
+                }
             } while (!_serialReader.PortAvailable());
             Console.Write("\r");
-            Console.Write(string.Concat(Enumerable.Repeat(" ", "Waiting for connection to  /".Length + portName.Length)));
+            Console.Write(string.Concat(Enumerable.Repeat(" ", waitMessage.Length + waitAnim[0].Length)));
             Console.Write("\r");
             retries--;
             if (retries == 0)
@@ -366,7 +373,8 @@ namespace ComMonitor.Main
                         logger = new FileLog(path, options.SingleLogging);
                         enableFileLogging = logger.Available();
                     }
-                    else {
+                    else
+                    {
                         ConsolePrintLine($"Logging path does not exist: {path}");
                     }
                 }
