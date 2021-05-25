@@ -363,8 +363,8 @@ namespace ComMonitor.Main
             Console.WriteLine(ex.Message);
             Console.ForegroundColor = Cfg;
             //ConsoleMode.Set(ConsoleMode.ENABLE_QUICK_EDIT, true);
-            Thread.Sleep(10000);
-            Environment.Exit(0);
+            //Thread.Sleep(10000);
+            Environment.Exit(1);
         }
 
         private static void UnhandledExceptionTrapper(object sender, UnhandledExceptionEventArgs e)
@@ -373,8 +373,8 @@ namespace ComMonitor.Main
             Console.WriteLine(ex.StackTrace);
             Console.WriteLine(ex.Message);
             //ConsoleMode.Set(ConsoleMode.ENABLE_QUICK_EDIT, true);
-            Thread.Sleep(10000);
-            Environment.Exit(0);
+            //Thread.Sleep(10000);
+            Environment.Exit(1);
         }
 
         #endregion Exception Handlers
