@@ -23,7 +23,7 @@ namespace ComMonitor.Main
         [Option('t', "type", HelpText = "Set the type of data to receive. [(A)scii|(H)ex|(D)ecimal|(B)inary]", Default = DataType.Ascii)]
         public DataType SetDataType { get; set; }
 
-        [Option('m', "maxBytes", HelpText = "Set a max number of bytes to print for each line when not in Ascii mode [Integer]")]
+        [Option('m', "maxBytes", HelpText = "Set a max number of bytes to print for each line when not in Ascii mode [Integer]", Default = 8)]
         public int SetMaxBytes { get; set; }
 
         [Option('r', "retry", HelpText = "After connecting, if the port closes, keep the console open and wait for the port to reopen")]
@@ -47,8 +47,11 @@ namespace ComMonitor.Main
         [Option('f', "frequency", HelpText = "Manually Set the critical frequency of communication (Hz)", Default = 20)]
         public int Frequency { get; set; }
 
-        [Option('l', "log", HelpText = "Enable logging to a file [Valid Path]", Default = "")]
+        [Option('l', "log", HelpText = "Enable logging to a file [Valid Directory Path]", Default = "")]
         public string Logging { get; set; }
+
+        [Option("logTime", HelpText = "If Logging is enabled, log with a nanosecond timestamp", Default = false)]
+        public bool LogTime { get; set; }
 
         [Option("singleLog", HelpText = "If Logging is enabled, use a single file for logging, overwriting it each time", Default = false)]
         public bool SingleLogging { get; set; }

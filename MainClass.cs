@@ -135,18 +135,30 @@ namespace ComMonitor.Main
             AlreadyChecking = false;
         }
 
+        private void LogMsgLine(string str)
+        {
+            if (enableFileLogging)
+                logger.WriteLine(str);
+        }
+
+        private void LogMsg(string str)
+        {
+            if (enableFileLogging)
+                logger.Write(str);
+        }
+
         private void ConsolePrintLine(string str)
         {
             Console.WriteLine(str);
-            if (enableFileLogging)
-                logger.WriteLine(str);
+            if (!mappedMode)
+                LogMsgLine(str);
         }
 
         private void ConsolePrint(string str)
         {
             Console.Write(str);
-            if (enableFileLogging)
-                logger.Write(str);
+            if (!mappedMode)
+                LogMsg(str);
         }
 
         private void ConsoleFlush()
@@ -183,7 +195,8 @@ namespace ComMonitor.Main
         {
             if (e.Data.Length == 0)
                 return;
-            ConsolePrintDataLine(dataFunction(e.Data));
+            string msg = dataFunction(e.Data);
+            ConsolePrintDataLine(msg);
         }
 
         private void SerialChunkedDataReceived(object sender, DataStreamEventArgs e)
@@ -203,18 +216,25 @@ namespace ComMonitor.Main
             }
         }
 
-        public static string GetMappedMessage(Span<byte> data)
+        public string GetMappedMessage(Span<byte> data)
         {
             // TODO: Implement custom blocking of messages
             long ID_key = BinaryPrimitives.ReadInt16LittleEndian(data.Slice(0, 2));
             long String_key = BinaryPrimitives.ReadInt16LittleEndian(data.Slice(2, 2));
             long num = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(4, 4));
-            string id;
-            string str;
-            if (!JSON_IDS.TryGetValue(ID_key, out id))
+            bool bad = false;
+            if (!JSON_IDS.TryGetValue(ID_key, out string id))
+            {
                 id = "Bad ID";
-            if (!JSON_STRINGS.TryGetValue(String_key, out str))
+                bad = true;
+            }
+            if (!JSON_STRINGS.TryGetValue(String_key, out string str))
+            {
                 str = "Bad String ID";
+                bad = true;
+            }
+            if (!bad)
+                LogMsg(ID_key.ToString() + " " + String_key.ToString() + " " + num.ToString() + "\n");
             return id + " " + str + " " + num + "\n";
         }
 
@@ -416,6 +436,7 @@ namespace ComMonitor.Main
                     if (Directory.Exists(path))
                     {
                         logger = new FileLog(path, options.SingleLogging);
+                        logger.timestamp = options.LogTime;
                         enableFileLogging = logger.Available();
                     }
                     else
