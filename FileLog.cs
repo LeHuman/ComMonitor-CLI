@@ -28,7 +28,7 @@ namespace ComMonitor
 
         public static long Nanoseconds()
         {
-            return DateTime.Now.Ticks % TimeSpan.TicksPerMillisecond % TicksPerMicrosecond * NanosecondsPerTick;
+            return DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond / TicksPerMicrosecond / NanosecondsPerTick;
         }
 
         public void Write(string msg)

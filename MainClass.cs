@@ -274,6 +274,7 @@ namespace ComMonitor.Main
             {
                 saveBuffer.AddRange(rawData.Slice(i).ToArray());
             }
+            ConsoleFlush();
         }
 
         #endregion Data Interpreters
@@ -288,6 +289,7 @@ namespace ComMonitor.Main
             string waitMessage = firstWait ? $"Waiting for connection to {portName} " : $"Retrying to connect to {portName} ";
             int[] waitAnimTime = { 80, 40, 30, 30, 20, 20, 10, 20, 20, 30, 30, 40 };
             string[] waitAnim = { "        ", "-       ", "--      ", "---     ", "----    ", " ----   ", "  ----  ", "   ---- ", "    ----", "     ---", "      --", "       -" };
+            ConsoleFlush();
             do
             {
                 for (int i = 0; i < waitAnimTime.Length; i++)
@@ -436,8 +438,14 @@ namespace ComMonitor.Main
                     if (Directory.Exists(path))
                     {
                         logger = new FileLog(path, options.SingleLogging);
-                        logger.timestamp = options.LogTime;
                         enableFileLogging = logger.Available();
+                        if (enableFileLogging && mappedMode && JSON_PATH != null)
+                        {
+                            using (StreamReader file = File.OpenText(JSON_PATH))
+                                LogMsg("---[ LOG MAP START ]---\n" + file.ReadToEnd() + "\n\n---[ LOG MAP END ]---\n");
+                            ConsoleFlush();
+                        }
+                        logger.timestamp = options.LogTime;
                     }
                     else
                     {
