@@ -16,7 +16,7 @@ Arguments are not case sensitive
 * -p, --parity            (Default: None) Set the parity mode. [None|Odd|Even|Mark|Space]
 * -d, --databits          (Default: 8) The maximum number of bytes to process. [5-8]
 * -s, --stopbits          (Default: One) Set the number of stop bits. [None|One|Two|OnePointFive]
-* -t, --type              (Default: Ascii) Set the type of data to receive. [(A)scii|(H)ex|(D)ecimal|(B)inary]
+* -t, --type              (Default: Ascii) Set the type of data to receive. [(A)scii|(H)ex|(D)ecimal|(B)inary|(M)apped]
 * -m, --maxBytes          (Default: 8) Set a max number of bytes to print for each line when not in Ascii mode [Integer]
 * -r, --retry             After connecting, if the port closes, keep the console open and wait for the port to reopen
 * -w, --wait              If the port is not open when the console starts, wait for it to open
@@ -87,6 +87,8 @@ Every newline that is received is interpreted separately and colored accordingly
 ## JSON Mapping WIP
 
 **NOTE:** Option `--jsonBlock` is not needed, WIP
+
+**NOTE:** Option `-t` Should be set to `Mapped` and a valid json map should be passed to `--jsonPath`
 
 The only supported mapping is to an 8 byte block with the following structure
 
