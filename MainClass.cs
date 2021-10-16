@@ -20,7 +20,10 @@ namespace ComMonitor.Main
         private static bool initalWait = false;
 
         private static string PriorityPipeName = "ComMonitor";
-        private static PriorityPipe priorityNotify;
+        private static PingPipe priorityNotify;
+
+        private static string SerialPipeName = "ComMonitorSerial";
+        private static PingPipe SerialNotify;
 
         private static string connectStr, waitStr, retryStr;
         private static readonly int[] waitAnimTime = { 80, 40, 30, 30, 20, 20, 10, 20, 20, 30, 30, 40 };
@@ -90,7 +93,7 @@ namespace ComMonitor.Main
                 }
                 catch (SerialException e)
                 {
-                    Term.PrintLine(e.Message);
+                    Term.WriteLine(e.Message);
                     SerialClient.Dispose();
                     return;
                 }
@@ -172,16 +175,24 @@ namespace ComMonitor.Main
             #region Priority Queue Setup
 
             PriorityPipeName += SerialClient.portName;
-            priorityNotify = new PriorityPipe(PriorityPipeName);
+            priorityNotify = new PingPipe(PriorityPipeName);
             if (options.Priority)
             {
-                priorityNotify.Ping();
-                priorityNotify.ListenForPing(10);
+                if (priorityNotify.Ping())
+                {
+                    Term.WriteLine("Notified priority to another ComMonitor");
+                }
+                else
+                {
+                    Term.WriteLine("No ComMonitor to take priority over");
+                }
             }
-            else
+            if (!priorityNotify.ListenForPing(options.Priority ? 10 : 5))
             {
-                priorityNotify.ListenForPing();
+                Console.WriteLine("Warning: Unable to open priority notifier.");
+                Console.WriteLine("Is another ComMonitor open?");
             }
+
             priorityNotify.SetCallback(PriorityStop);
 
             #endregion Priority Queue Setup

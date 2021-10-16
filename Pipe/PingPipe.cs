@@ -10,13 +10,13 @@ namespace Pipe
     // Delegate for notifying of connection or error
     public delegate void DelegateNotify();
 
-    internal class PriorityPipe
+    internal class PingPipe
     {
         private event DelegateNotify PipeConnect;
 
         private readonly string PipeName;
 
-        public PriorityPipe(string PipeName)
+        public PingPipe(string PipeName)
         {
             this.PipeName = PipeName;
         }
@@ -26,10 +26,9 @@ namespace Pipe
             PipeConnect = callback;
         }
 
-        public void ListenForPing(int retries = 5)
+        public bool ListenForPing(int retries = 5)
         {
-            int f = retries;
-            while (f > 0)
+            while (retries > 0)
             {
                 try
                 {
@@ -37,17 +36,16 @@ namespace Pipe
                     NamedPipeServerStream pipeServer = new NamedPipeServerStream(PipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
                     // Wait for a connection
                     pipeServer.BeginWaitForConnection(new AsyncCallback(WaitForConnectionPingCallBack), pipeServer);
-                    return;
+                    return true;
                 }
                 catch (Exception oEX)
                 {
                     Debug.WriteLine(oEX.Message);
-                    f--;
+                    retries--;
                     Thread.Sleep(50);
                 }
             }
-            Console.WriteLine("Warning: Unable to open priority notifier.");
-            Console.WriteLine("Is another ComMonitor open?");
+            return false;
         }
 
         private void WaitForConnectionPingCallBack(IAsyncResult iar)
@@ -65,21 +63,21 @@ namespace Pipe
             pipeServer.BeginWaitForConnection(new AsyncCallback(WaitForConnectionPingCallBack), pipeServer);
         }
 
-        public void Ping(int TimeOut = 1000)
+        public bool Ping(int TimeOut = 1000)
         {
             try
             {
                 NamedPipeClientStream pipeStream = new NamedPipeClientStream(".", PipeName, PipeDirection.Out);
 
                 pipeStream.Connect(TimeOut);
-                Debug.WriteLine("[Client] Priority Pipe connection Pinged");
-                Console.WriteLine("Notified priority to other monitor");
+                Debug.WriteLine("[Client] Pipe connection Pinged");
                 pipeStream.Close();
+                return true;
             }
             catch (TimeoutException oEX)
             {
-                Console.WriteLine("No monitor to take priority over");
                 Debug.WriteLine(oEX.Message);
+                return false;
             }
         }
     }

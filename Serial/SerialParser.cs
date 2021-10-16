@@ -45,12 +45,12 @@ namespace Serial
                 string[] lines = data.Replace('\r', ' ').Split('\n');
                 foreach (string line in lines)
                 {
-                    Term.PrintLine(line.Trim(), true);
+                    Term.WriteLine(line.Trim(), true);
                 }
             }
             else
             {
-                Term.Print(data, true);
+                Term.Write(data, true);
             }
             FileLog.Flush();
         }
@@ -58,7 +58,7 @@ namespace Serial
         private static void SerialDataReceived(object sender, DataStreamEventArgs e)
         {
             string msg = dataFunction(e.Data);
-            Term.PrintLine(msg, true);
+            Term.WriteLine(msg, true);
         }
 
         private static void SerialChunkedDataReceived(object sender, DataStreamEventArgs e)
@@ -68,13 +68,13 @@ namespace Serial
             int i = 0;
             while (remain >= MaxBytes)
             {
-                Term.PrintLine(dataFunction(rawData.Slice(i, MaxBytes).ToArray()), true);
+                Term.WriteLine(dataFunction(rawData.Slice(i, MaxBytes).ToArray()), true);
                 remain -= MaxBytes;
                 i += MaxBytes;
             }
             if (remain > 0)
             {
-                Term.PrintLine(dataFunction(rawData.Slice(i).ToArray()), true);
+                Term.WriteLine(dataFunction(rawData.Slice(i).ToArray()), true);
             }
             FileLog.Flush();
         }
@@ -84,7 +84,7 @@ namespace Serial
         private static void SerialMappedDataReceived(object sender, DataStreamEventArgs e)
         {
             if (e.Data.Length % MaxBytes != 0)
-                Term.PrintLine("WARN: Data may have dysynced, or badly formatted data was received");
+                Term.WriteLine("WARN: Data may have dysynced, or badly formatted data was received");
 
             byte[] stichedData;
             Span<byte> rawData;
@@ -105,7 +105,7 @@ namespace Serial
             int i = 0;
             while (remain >= MaxBytes)
             {
-                Term.Print(JSONMap.GetMappedMessage(rawData.Slice(i, MaxBytes)));
+                Term.Write(JSONMap.GetMappedMessage(rawData.Slice(i, MaxBytes)));
                 remain -= MaxBytes;
                 i += MaxBytes;
             }

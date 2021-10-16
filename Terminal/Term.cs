@@ -134,17 +134,17 @@ namespace Terminal
 
         #region Output
 
-        public static void Print(string str, bool Log = false)
+        public static void Write(string str, bool Log = false)
         {
-            PrintInternal(str, false, Log);
+            WriteInternal(str, false, Log);
         }
 
-        public static void PrintLine(string str, bool Log = false)
+        public static void WriteLine(string str, bool Log = false)
         {
-            PrintInternal(str, true, Log);
+            WriteInternal(str, true, Log);
         }
 
-        private static void PrintInternal(string str, bool newline, bool Log)
+        private static void WriteInternal(string str, bool newline, bool Log)
         {
             CheckInputLine();
             if (str.Length > 0)

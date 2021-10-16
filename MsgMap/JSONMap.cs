@@ -53,7 +53,7 @@ namespace MsgMap
             }
             else
             {
-                Term.PrintLine("Message Map not printed");
+                Term.WriteLine("Message Map not printed");
             }
         }
 
