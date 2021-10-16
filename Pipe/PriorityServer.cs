@@ -10,11 +10,11 @@ namespace Pipe
     // Delegate for notifying of connection or error
     public delegate void DelegateNotify();
 
-    internal class PipeServer
+    internal class PriorityServer
     {
         public event DelegateNotify PipeConnect;
 
-        private string _pipeName;
+        private string PipeName;
 
         public void ListenForPing(string PipeName, int retries = 5)
         {
@@ -24,7 +24,7 @@ namespace Pipe
                 try
                 {
                     // Set to class level var so we can re-use in the async callback method
-                    _pipeName = PipeName;
+                    this.PipeName = PipeName;
                     // Create the new async pipe
                     NamedPipeServerStream pipeServer = new NamedPipeServerStream(PipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
                     // Wait for a connection
@@ -53,7 +53,7 @@ namespace Pipe
             // Kill original sever and create new wait server
             pipeServer.Close();
             pipeServer = null;
-            pipeServer = new NamedPipeServerStream(_pipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+            pipeServer = new NamedPipeServerStream(PipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
             pipeServer.BeginWaitForConnection(new AsyncCallback(WaitForConnectionPingCallBack), pipeServer);
         }
 

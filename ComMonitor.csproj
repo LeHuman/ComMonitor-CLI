@@ -100,7 +100,7 @@
     <Compile Include="MsgMap\JSONMap.cs" />
     <Compile Include="MainClass.cs" />
     <Compile Include="Options.cs" />
-    <Compile Include="Pipe\PipeNotify.cs" />
+    <Compile Include="Pipe\PriorityServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serial\SerialCom.cs" />
     <Compile Include="Serial\SerialException.cs" />

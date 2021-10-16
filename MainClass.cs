@@ -20,7 +20,7 @@ namespace ComMonitor.Main
         private static bool initalWait = false;
 
         private static string PipeName = "ComMonitor";
-        private static PipeServer priorityNotify;
+        private static PriorityServer priorityNotify;
 
         private static string connectStr, waitStr, retryStr;
         private static readonly int[] waitAnimTime = { 80, 40, 30, 30, 20, 20, 10, 20, 20, 30, 30, 40 };
@@ -172,7 +172,7 @@ namespace ComMonitor.Main
             #region Priority Queue Setup
 
             PipeName += SerialClient.portName;
-            priorityNotify = new PipeServer();
+            priorityNotify = new PriorityServer();
             if (options.Priority)
             {
                 priorityNotify.Ping(PipeName);
