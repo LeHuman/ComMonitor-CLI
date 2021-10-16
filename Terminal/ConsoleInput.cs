@@ -1,25 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 
-namespace ComMonitor
+namespace Terminal
 {
     public delegate void DelegateConsoleInput(string msg);
 
     public delegate void DelegateConsoleUpdate();
 
-    internal class ConsoleInput
+    internal static class ConsoleInput
     {
-        private static readonly Stream Input = Console.OpenStandardInput();
         private static readonly Thread Observer = new Thread(new ThreadStart(ObserveInput));
-
-        private static DelegateConsoleInput Callback;
-        private static DelegateConsoleUpdate UpdateCallback;
+        private static readonly Stream Input = Console.OpenStandardInput();
+        private static bool EnableInput = false;
         private static string currentInput = "";
 
         public static void Start()
@@ -35,24 +29,12 @@ namespace ComMonitor
             }
         }
 
-        public static void SetCallback(DelegateConsoleInput callback)
-        {
-            Callback = callback;
-        }
-
-        public static void SetUpdateCallback(DelegateConsoleUpdate updateCallback)
-        {
-            UpdateCallback = updateCallback;
-        }
-
         public static string GetCurrentInput()
         {
             if (currentInput == "")
                 return "";
             return $"Input: {currentInput}\r";
         }
-
-        private static bool EnableInput = false;
 
         public static void Enable(bool enable)
         {
@@ -68,7 +50,7 @@ namespace ComMonitor
                     if (currentInput != "")
                     {
                         currentInput = "";
-                        UpdateCallback.Invoke();
+                        Term.CheckInputLine();
                     }
                     continue;
                 }
@@ -77,14 +59,14 @@ namespace ComMonitor
                 {
                     string clip = Clipboard.GetText(TextDataFormat.Text);
                     if (clip != "")
-                        Callback.Invoke(clip);
+                        Term.SendMsg(clip);
                 }
                 else if (keyInfo.Key == ConsoleKey.Backspace)
                 {
                     if (currentInput.Length > 0)
                     {
                         currentInput = currentInput.Substring(0, currentInput.Length - 1);
-                        UpdateCallback.Invoke();
+                        Term.CheckInputLine();
                     }
                 }
                 else
@@ -99,14 +81,14 @@ namespace ComMonitor
                                 Console.Write("\rInput Buffer is empty\r");
                                 continue;
                             }
-                            Callback.Invoke(currentInput);
+                            Term.SendMsg(currentInput);
                             currentInput = "";
-                            UpdateCallback.Invoke();
+                            Term.CheckInputLine();
                         }
                         else if (next != '\0')
                         {
                             currentInput += next;
-                            UpdateCallback.Invoke();
+                            Term.CheckInputLine();
                         }
                     }
                 }

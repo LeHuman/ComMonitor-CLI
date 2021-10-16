@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text;
 
-namespace ComMonitor
+namespace Serial
 {
     public enum DataType
     {

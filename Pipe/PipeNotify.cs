@@ -5,7 +5,7 @@ using System.Threading;
 
 // https://www.codeproject.com/Tips/492231/Csharp-Async-Named-Pipes
 
-namespace ComMonitor
+namespace Pipe
 {
     // Delegate for notifying of connection or error
     public delegate void DelegateNotify();

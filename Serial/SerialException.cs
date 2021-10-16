@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace SerialCom
+namespace Serial
 {
     [Serializable]
     public class SerialException : Exception

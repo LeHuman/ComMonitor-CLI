@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 // Yoinked from https://stackoverflow.com/questions/13656846/how-to-programmatic-disable-c-sharp-console-applications-quick-edit-mode
 
-namespace ComMonitor
+namespace Terminal
 {
     internal static class ConsoleMode
     {

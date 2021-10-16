@@ -1,4 +1,5 @@
-﻿using CommandLine;
+﻿using Serial;
+using CommandLine;
 using System.IO.Ports;
 
 namespace ComMonitor.Main
