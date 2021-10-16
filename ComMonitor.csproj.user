@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <StartArguments>com9 115200 --priority -tH -r -w -m8 --jsonPath "C:\GitHub\SAEGit\ECU2020\log_lookup.json" -l "C:\GitHub\SAEGit\ECU2020" --singleLog --input D --timeout 10000</StartArguments>
+    <StartArguments>5 6 --jsonPath umbga</StartArguments>
     <RemoteDebugEnabled>false</RemoteDebugEnabled>
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>

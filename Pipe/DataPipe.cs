@@ -36,7 +36,7 @@ namespace Pipe
 
         public bool Connected()
         {
-            return pipeServer.IsConnected;
+            return pipeServer != null && pipeServer.IsConnected;
         }
 
         internal void SendData(string msg)

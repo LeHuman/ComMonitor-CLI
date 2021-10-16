@@ -170,8 +170,8 @@ namespace Terminal
         {
             if (colorEnabled)
                 Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(ex.StackTrace);
             Console.WriteLine(ex.Message);
+            Console.WriteLine(ex.StackTrace);
             if (colorEnabled)
                 Console.ForegroundColor = DefaultConsoleColor;
         }

@@ -138,6 +138,8 @@ namespace ComMonitor.Main
 
         private static void SetOptions(Options options)
         {
+            AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionTrapper;
+
             retries = MAX_RETRY;
             initalWait = options.Wait;
             reconnect = options.Reconnect;
@@ -213,8 +215,6 @@ namespace ComMonitor.Main
 
             #endregion Serial Data Pipe
 
-            AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionTrapper;
-
             waitStr = $"Waiting for connection to {SerialClient.portName} ";
             retryStr = $"Retrying to connect to {SerialClient.portName} ";
             connectStr = $"Connecting to {SerialClient.portName} @ {SerialClient.baudRate}\np:{SerialClient.parity} d:{SerialClient.dataBits} s:{SerialClient.stopBits} cf:{SerialClient.freqCriticalLimit} {(options.SetMaxBytes > 0 ? "j:" + options.SetMaxBytes : "")}\n";
@@ -230,6 +230,9 @@ namespace ComMonitor.Main
             Parser parser = new Parser(with => { with.CaseInsensitiveEnumValues = true; with.AutoHelp = true; with.AutoVersion = true; with.HelpWriter = Console.Out; });
             var result = parser.ParseArguments<Options>(args);
             result.WithParsed(SetOptions);
+
+            if (result.Tag == ParserResultType.NotParsed)
+                return;
 
             #endregion Argument Parser
 
