@@ -20,10 +20,10 @@ namespace ComMonitor.Main
         private static bool initalWait = false;
 
         private static string PriorityPipeName = "ComMonitor";
-        private static PingPipe priorityNotify;
+        private static PingPipe priorityPipe;
 
-        private static string SerialPipeName = "ComMonitorSerial";
-        private static PingPipe SerialNotify;
+        private static string SerialPipeName = "ComPlotter";
+        private static DataPipe SerialPipe;
 
         private static string connectStr, waitStr, retryStr;
         private static readonly int[] waitAnimTime = { 80, 40, 30, 30, 20, 20, 10, 20, 20, 30, 30, 40 };
@@ -175,10 +175,10 @@ namespace ComMonitor.Main
             #region Priority Queue Setup
 
             PriorityPipeName += SerialClient.portName;
-            priorityNotify = new PingPipe(PriorityPipeName);
+            priorityPipe = new PingPipe(PriorityPipeName);
             if (options.Priority)
             {
-                if (priorityNotify.Ping())
+                if (priorityPipe.Ping())
                 {
                     Term.WriteLine("Notified priority to another ComMonitor");
                 }
@@ -187,15 +187,31 @@ namespace ComMonitor.Main
                     Term.WriteLine("No ComMonitor to take priority over");
                 }
             }
-            if (!priorityNotify.ListenForPing(options.Priority ? 10 : 5))
+            if (!priorityPipe.ListenForPing(options.Priority ? 10 : 5))
             {
                 Console.WriteLine("Warning: Unable to open priority notifier.");
                 Console.WriteLine("Is another ComMonitor open?");
             }
 
-            priorityNotify.SetCallback(PriorityStop);
+            priorityPipe.SetCallback(PriorityStop);
 
             #endregion Priority Queue Setup
+
+            #region Serial Data Pipe
+
+            if (true) // TODO: add serial pipe option
+            {
+                SerialPipe = new DataPipe(SerialPipeName, SerialClient.portName);
+                // SerialClient.SerialDataReceived += (sender, e) => { SerialPipe.SendData(e.Data); }; // For piping raw data
+                SerialParser.SetParsedDataListener(msg => { SerialPipe.SendData(msg); });
+                if (!SerialPipe.WaitForConnection())
+                {
+                    Term.WriteLine("Warning: Unable to open system pipe for serial data.");
+                    Term.WriteLine("Is another ComMonitor open?");
+                }
+            }
+
+            #endregion Serial Data Pipe
 
             AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionTrapper;
 
