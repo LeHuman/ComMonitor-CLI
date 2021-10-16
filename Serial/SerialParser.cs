@@ -6,10 +6,13 @@ using Terminal;
 
 namespace Serial
 {
-    internal class SerialParser
+    internal delegate void DelegateParsedData(string Message);
+
+    internal static class SerialParser
     {
         public static int MaxBytes { get; private set; } = 8;
         private static Func<byte[], string> dataFunction;
+        private static DelegateParsedData ParsedDataListener;
 
         public static EventHandler<DataStreamEventArgs> LoadParser(DataType dataType, int MaxBytes)
         {
@@ -37,15 +40,27 @@ namespace Serial
             }
         }
 
+        public static void SetParsedDataListener(DelegateParsedData ParsedDataListener)
+        {
+            SerialParser.ParsedDataListener = ParsedDataListener;
+        }
+
+        private static void PrintMessage(string Message, bool Log = true)
+        {
+            Term.WriteLine(Message, Log);
+            if (ParsedDataListener != null)
+                ParsedDataListener.Invoke(Message);
+        }
+
         private static void AsciiDataReceived(object sender, DataStreamEventArgs e)
         {
             string data = SerialType.getAscii(e.Data);
             if (data.IndexOf('\n') < data.Length - 1)
             {
-                string[] lines = data.Replace('\r', ' ').Split('\n');
+                string[] lines = data.Split('\n');
                 foreach (string line in lines)
                 {
-                    Term.WriteLine(line.Trim(), true);
+                    PrintMessage(line.Trim('\r'));
                 }
             }
             else
@@ -58,7 +73,7 @@ namespace Serial
         private static void SerialDataReceived(object sender, DataStreamEventArgs e)
         {
             string msg = dataFunction(e.Data);
-            Term.WriteLine(msg, true);
+            PrintMessage(msg);
         }
 
         private static void SerialChunkedDataReceived(object sender, DataStreamEventArgs e)
@@ -68,13 +83,13 @@ namespace Serial
             int i = 0;
             while (remain >= MaxBytes)
             {
-                Term.WriteLine(dataFunction(rawData.Slice(i, MaxBytes).ToArray()), true);
+                PrintMessage(dataFunction(rawData.Slice(i, MaxBytes).ToArray()));
                 remain -= MaxBytes;
                 i += MaxBytes;
             }
             if (remain > 0)
             {
-                Term.WriteLine(dataFunction(rawData.Slice(i).ToArray()), true);
+                PrintMessage(dataFunction(rawData.Slice(i).ToArray()));
             }
             FileLog.Flush();
         }
@@ -105,7 +120,7 @@ namespace Serial
             int i = 0;
             while (remain >= MaxBytes)
             {
-                Term.Write(JSONMap.GetMappedMessage(rawData.Slice(i, MaxBytes)));
+                PrintMessage(JSONMap.GetMappedMessage(rawData.Slice(i, MaxBytes)), false);
                 remain -= MaxBytes;
                 i += MaxBytes;
             }
