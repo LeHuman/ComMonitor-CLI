@@ -10,21 +10,29 @@ namespace Pipe
     // Delegate for notifying of connection or error
     public delegate void DelegateNotify();
 
-    internal class PriorityServer
+    internal class PriorityPipe
     {
-        public event DelegateNotify PipeConnect;
+        private event DelegateNotify PipeConnect;
 
-        private string PipeName;
+        private readonly string PipeName;
 
-        public void ListenForPing(string PipeName, int retries = 5)
+        public PriorityPipe(string PipeName)
+        {
+            this.PipeName = PipeName;
+        }
+
+        public void SetCallback(DelegateNotify callback)
+        {
+            PipeConnect = callback;
+        }
+
+        public void ListenForPing(int retries = 5)
         {
             int f = retries;
             while (f > 0)
             {
                 try
                 {
-                    // Set to class level var so we can re-use in the async callback method
-                    this.PipeName = PipeName;
                     // Create the new async pipe
                     NamedPipeServerStream pipeServer = new NamedPipeServerStream(PipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
                     // Wait for a connection
@@ -57,14 +65,14 @@ namespace Pipe
             pipeServer.BeginWaitForConnection(new AsyncCallback(WaitForConnectionPingCallBack), pipeServer);
         }
 
-        public void Ping(string PipeName, int TimeOut = 1000)
+        public void Ping(int TimeOut = 1000)
         {
             try
             {
                 NamedPipeClientStream pipeStream = new NamedPipeClientStream(".", PipeName, PipeDirection.Out);
 
                 pipeStream.Connect(TimeOut);
-                Debug.WriteLine("[Client] Pipe connection Pinged");
+                Debug.WriteLine("[Client] Priority Pipe connection Pinged");
                 Console.WriteLine("Notified priority to other monitor");
                 pipeStream.Close();
             }

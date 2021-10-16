@@ -19,8 +19,8 @@ namespace ComMonitor.Main
         private static bool reconnect = false;
         private static bool initalWait = false;
 
-        private static string PipeName = "ComMonitor";
-        private static PriorityServer priorityNotify;
+        private static string PriorityPipeName = "ComMonitor";
+        private static PriorityPipe priorityNotify;
 
         private static string connectStr, waitStr, retryStr;
         private static readonly int[] waitAnimTime = { 80, 40, 30, 30, 20, 20, 10, 20, 20, 30, 30, 40 };
@@ -171,18 +171,18 @@ namespace ComMonitor.Main
 
             #region Priority Queue Setup
 
-            PipeName += SerialClient.portName;
-            priorityNotify = new PriorityServer();
+            PriorityPipeName += SerialClient.portName;
+            priorityNotify = new PriorityPipe(PriorityPipeName);
             if (options.Priority)
             {
-                priorityNotify.Ping(PipeName);
-                priorityNotify.ListenForPing(PipeName, 10);
+                priorityNotify.Ping();
+                priorityNotify.ListenForPing(10);
             }
             else
             {
-                priorityNotify.ListenForPing(PipeName);
+                priorityNotify.ListenForPing();
             }
-            priorityNotify.PipeConnect += PriorityStop;
+            priorityNotify.SetCallback(PriorityStop);
 
             #endregion Priority Queue Setup
 
