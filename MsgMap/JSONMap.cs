@@ -29,9 +29,7 @@ namespace MsgMap
                 JSONMap.Path = Path;
                 JSONMap.MapBlocking = MapBlocking;
                 JSONMap.blockingLength = blockingLength;
-                Dictionary<long, string>[] maps = getDataMap(Path);
-                IDs = maps[0];
-                Strings = maps[1];
+                LoadDataMap(Path);
                 Loaded = true;
             }
             else
@@ -59,27 +57,19 @@ namespace MsgMap
             }
         }
 
-        private static Dictionary<long, string>[] getDataMap(string FilePath)
+        private static void LoadDataMap(string FilePath)
         {
-            Dictionary<long, string> IDS;
-            Dictionary<long, string> STRINGS;
-
-            Dictionary<long, string>[] maps = new Dictionary<long, string>[2];
-
             using (StreamReader file = File.OpenText(FilePath))
-            using (JsonTextReader reader = new JsonTextReader(file))
             {
-                JArray arr = (JArray)JToken.ReadFrom(reader);
-                JObject J_TAGs = (JObject)arr[0];
-                JObject J_IDs = (JObject)arr[1];
-                IDS = J_TAGs.ToObject<Dictionary<string, long>>().ToDictionary(x => x.Value, x => x.Key);
-                STRINGS = J_IDs.ToObject<Dictionary<string, long>>().ToDictionary(x => x.Value, x => x.Key);
+                using (JsonTextReader reader = new JsonTextReader(file))
+                {
+                    JArray arr = (JArray)JToken.ReadFrom(reader);
+                    JObject J_TAGs = (JObject)arr[0];
+                    JObject J_IDs = (JObject)arr[1];
+                    IDs = J_TAGs.ToObject<Dictionary<string, long>>().ToDictionary(x => x.Value, x => x.Key);
+                    Strings = J_IDs.ToObject<Dictionary<string, long>>().ToDictionary(x => x.Value, x => x.Key);
+                }
             }
-
-            maps[0] = IDS;
-            maps[1] = STRINGS;
-
-            return maps;
         }
 
         public static string GetMappedMessage(Span<byte> data)
