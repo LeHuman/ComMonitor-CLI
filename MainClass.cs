@@ -1,13 +1,12 @@
-﻿using Log;
+﻿using CommandLine;
+using Log;
+using MsgMap;
 using Pipe;
 using Serial;
-using MsgMap;
-using Terminal;
-
 using System;
 using System.Linq;
-using CommandLine;
 using System.Threading;
+using Terminal;
 
 namespace ComMonitor.Main
 {
@@ -148,7 +147,10 @@ namespace ComMonitor.Main
 
             JSONMap.LoadJSONMap(options.JsonPath, options.JsonBlock, SerialParser.MaxBytes);
 
-            Term.EnableLogColor(dataType == DataType.Ascii || JSONMap.Loaded);
+            if (dataType == DataType.Mapped && !JSONMap.Loaded)
+                throw new ArgumentException("Mapped Mode selected, but no map was loaded");
+
+            Term.EnableLogColor(dataType == DataType.Ascii || (JSONMap.Loaded && dataType == DataType.Mapped));
 
             #region Setup SerialClient
 
@@ -162,7 +164,7 @@ namespace ComMonitor.Main
 
             FileLog.SetFile(options.Logging, options.SingleLogging);
             FileLog.EnableTimeStamp(options.LogTime);
-            if (dataType != DataType.Ascii)
+            if (dataType == DataType.Mapped)
                 JSONMap.LogMap();
 
             #endregion File Logging

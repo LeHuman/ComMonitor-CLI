@@ -1,5 +1,5 @@
-﻿using Serial;
-using CommandLine;
+﻿using CommandLine;
+using Serial;
 using System.IO.Ports;
 
 namespace ComMonitor.Main
@@ -21,7 +21,7 @@ namespace ComMonitor.Main
         [Option('s', "stopbits", HelpText = "Set the number of stop bits. [None|One|Two|OnePointFive]", Default = StopBits.One)]
         public StopBits SetStopBits { get; set; }
 
-        [Option('t', "type", HelpText = "Set the type of data to receive. [(A)scii|(H)ex|(D)ecimal|(B)inary]", Default = DataType.Ascii)]
+        [Option('t', "type", HelpText = "Set the type of data to receive. [(A)scii|(H)ex|(D)ecimal|(B)inary|(M)apped]", Default = DataType.Ascii)]
         public DataType SetDataType { get; set; }
 
         [Option('m', "maxBytes", HelpText = "Set a max number of bytes to print for each line when not in Ascii mode [Integer]", Default = 8)]

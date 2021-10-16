@@ -1,7 +1,6 @@
 ﻿using Log;
 using MsgMap;
 using System;
-using System.Buffers.Binary;
 using System.Collections.Generic;
 using Terminal;
 
@@ -23,7 +22,7 @@ namespace Serial
             }
             else
             {
-                if (JSONMap.Loaded)
+                if (dataType == DataType.Mapped)
                 {
                     return SerialMappedDataReceived;
                 }

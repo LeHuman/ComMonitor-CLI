@@ -1,5 +1,4 @@
 ﻿using Log;
-using MsgMap;
 using Serial;
 using System;
 using System.Collections.Generic;
@@ -86,7 +85,7 @@ namespace Terminal
         {
             Term.inputDataType = inputDataType;
             Term.enableInputPrompt = enableInputPrompt;
-            checkInput = inputDataType != DataType.None;
+            checkInput = inputDataType != DataType.None && inputDataType != DataType.Mapped;
 
             if (checkInput)
                 ConsoleInput.Start();
@@ -112,7 +111,7 @@ namespace Terminal
 
         internal static void SendMsg(string msg)
         {
-            if (inputDataType == DataType.A || inputDataType == DataType.Ascii)
+            if (inputDataType == DataType.Ascii)
             {
                 Console.WriteLine($"Sending String: {msg}");
                 SerialClient.SendString(msg);

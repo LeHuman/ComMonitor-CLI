@@ -7,16 +7,19 @@ namespace Serial
     public enum DataType
     {
         None,
-        A,
-        H,
-        D,
-        B,
         Ascii,
         Hex,
         Decimal,
-        Dec,
         Binary,
-        Bin,
+        Mapped,
+        A = Ascii,
+        H = Hex,
+        D = Decimal,
+        Dec = Decimal,
+        B = Binary,
+        Bin = Binary,
+        M = Mapped,
+        Map = Mapped,
     }
 
     public static class SerialType
@@ -25,21 +28,15 @@ namespace Serial
         {
             switch (type)
             {
-                case DataType.A:
                 case DataType.Ascii:
                     return getAscii(data);
 
-                case DataType.H:
                 case DataType.Hex:
                     return getHex(data);
 
-                case DataType.D:
-                case DataType.Dec:
                 case DataType.Decimal:
                     return getDecimal(data);
 
-                case DataType.B:
-                case DataType.Bin:
                 case DataType.Binary:
                     return getBinary(data);
 
@@ -122,21 +119,15 @@ namespace Serial
         {
             switch (type)
             {
-                case DataType.A:
                 case DataType.Ascii:
                     return Encoding.UTF8.GetBytes(data);
 
-                case DataType.H:
                 case DataType.Hex:
                     return HexToArray(data);
 
-                case DataType.D:
-                case DataType.Dec:
                 case DataType.Decimal:
                     return DecimalToArray(data);
 
-                case DataType.B:
-                case DataType.Bin:
                 case DataType.Binary:
                     return BinaryToArray(data);
 
@@ -149,21 +140,15 @@ namespace Serial
         {
             switch (type)
             {
-                case DataType.A:
                 case DataType.Ascii:
                     return getAscii;
 
-                case DataType.H:
                 case DataType.Hex:
                     return getHex;
 
-                case DataType.D:
-                case DataType.Dec:
                 case DataType.Decimal:
                     return getDecimal;
 
-                case DataType.B:
-                case DataType.Bin:
                 case DataType.Binary:
                     return getBinary;
 
