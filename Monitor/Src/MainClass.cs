@@ -231,6 +231,8 @@ namespace ComMonitor.Main
                     {
                         throw new FileNotFoundException("Failed to launch Plotter");
                     }
+                else
+                    Term.ColorSingle(ConsoleColor.Blue, "Plotter already opened");
             }
 
             waitStr = $"Waiting for connection to {SerialClient.portName} ";
