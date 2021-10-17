@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
-using System.Windows;
+using TextCopy;
 
 namespace Terminal
 {
@@ -20,7 +20,6 @@ namespace Terminal
         {
             if (Input.CanRead)
             {
-                Observer.SetApartmentState(ApartmentState.STA);
                 Observer.Start();
             }
             else
@@ -55,10 +54,10 @@ namespace Terminal
                     continue;
                 }
                 ConsoleKeyInfo keyInfo = Console.ReadKey(true);
-                if (keyInfo.Key == ConsoleKey.Insert && Clipboard.ContainsText())
+                if (keyInfo.Key == ConsoleKey.Insert)
                 {
-                    string clip = Clipboard.GetText(TextDataFormat.Text);
-                    if (clip != "")
+                    string clip = ClipboardService.GetText();
+                    if (clip.Length > 0)
                         Term.SendMsg(clip);
                 }
                 else if (keyInfo.Key == ConsoleKey.Backspace)

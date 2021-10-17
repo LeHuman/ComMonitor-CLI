@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ComMonitor": {
+      "commandName": "Project",
+      "commandLineArgs": "COM3 115200 -tMapped -m8 --jsonPath C:\\GitHub\\SAEGit\\IIT-SAE-ECU\\log_lookup.json -r -w -lC:\\GitHub\\SAEGit\\IIT-SAE-ECU\\logs --logTime --input D",
+      "remoteDebugEnabled": false,
+      "nativeDebugging": true
+    }
+  }
+}

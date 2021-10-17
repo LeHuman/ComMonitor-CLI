@@ -7,9 +7,9 @@
    Over The Standard C# Serial Component
 */
 
+using RJCP.IO.Ports;
 using System;
 using System.ComponentModel;
-using System.IO.Ports;
 using System.Linq;
 using System.Threading;
 
@@ -28,10 +28,10 @@ namespace Serial
         public static int baudRate { get; private set; } = 9600;
         public static Parity parity { get; private set; } = Parity.None;
         public static int dataBits { get; private set; } = 8;
-        public static StopBits stopBits { get; private set; } = StopBits.None;
+        public static StopBits stopBits { get; private set; } = StopBits.One;
         public static int freqCriticalLimit { get; private set; } = 20; // The Critical Frequency of Communication to Avoid Any Lag
 
-        private static SerialPort serialPort;
+        private static SerialPortStream serialPort;
         private static int writeTimeout = -1;
         private static Thread serThread;
         private static double packetsRate;
@@ -83,7 +83,7 @@ namespace Serial
             try
             {
                 if (serialPort == null)
-                    serialPort = new SerialPort(portName, baudRate, parity, dataBits, stopBits);
+                    serialPort = new SerialPortStream(portName, baudRate, dataBits, parity, stopBits);
 
                 if (!PortAvailable())
                     throw new SerialException(string.Format("Port is not available: {0}", portName));
@@ -133,11 +133,11 @@ namespace Serial
         public static void CloseConn()
         {
             if (serialPort != null && serialPort.IsOpen)
-            {
-                serThread.Abort();
+            {// Stop thread here
+             // serThread.Interrupt();
 
-                if (serThread.ThreadState == ThreadState.Aborted)
-                    serialPort.Close();
+                // if (serThread.ThreadState == ThreadState.Aborted)
+                serialPort.Close();
             }
         }
 
@@ -151,7 +151,7 @@ namespace Serial
         {
             try
             {
-                return SerialPort.GetPortNames().Contains(portName);
+                return SerialPortStream.GetPortNames().Contains(portName);
             }
             catch (Win32Exception)
             {
@@ -245,13 +245,13 @@ namespace Serial
                     int readBytes = 0;
                     if (count > 0)
                     {
-                        readBytes = await serialPort.BaseStream.ReadAsync(buf, 0, count);
+                        readBytes = await serialPort.ReadAsync(buf, 0, count);
                         OnSerialReceiving(buf);
                     }
 
                     #region Frequency Control
 
-                    packetsRate = ((packetsRate + readBytes) / 2);
+                    packetsRate = (packetsRate + readBytes) / 2;
                     lastReceive = DateTime.Now;
 
                     if (tmpInterval.Milliseconds > 0 && (double)(readBytes + serialPort.BytesToRead) / 2 <= packetsRate)

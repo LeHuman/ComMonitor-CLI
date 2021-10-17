@@ -91,7 +91,7 @@ namespace MsgMap
             }
             if (!bad)
                 FileLog.Log(ID_key.ToString() + " " + String_key.ToString() + " " + num.ToString() + "\n");
-            return id + " " + str + " " + num + "\n";
+            return id + " " + str + " " + num;
         }
     }
 }

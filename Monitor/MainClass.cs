@@ -39,6 +39,7 @@ namespace ComMonitor.Main
         {
             if (SerialClient.PortAvailable())
                 return;
+            Thread.Sleep(100);
             Term.ColorConsole(ConsoleColor.Blue);
             FileLog.Flush();
             string waitMessage = firstWait ? waitStr : retryStr;
@@ -205,7 +206,7 @@ namespace ComMonitor.Main
             {
                 SerialPipe = new DataPipe(SerialPipeName, SerialClient.portName);
                 // SerialClient.SerialDataReceived += (sender, e) => { SerialPipe.SendData(e.Data); }; // For piping raw data
-                SerialParser.SetParsedDataListener(msg => { SerialPipe.SendData(msg); });
+                SerialParser.SetParsedDataListener(msg => { if (SerialPipe.Connected()) SerialPipe.SendData(msg); });
                 if (!SerialPipe.WaitForConnection())
                 {
                     Term.WriteLine("Warning: Unable to open system pipe for serial data.");
