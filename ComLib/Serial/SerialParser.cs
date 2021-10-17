@@ -6,9 +6,9 @@ using Terminal;
 
 namespace Serial
 {
-    internal delegate void DelegateParsedData(string Message);
+    public delegate void DelegateParsedData(string Message);
 
-    internal static class SerialParser
+    public static class SerialParser
     {
         public static int MaxBytes { get; private set; } = 8;
         private static Func<byte[], string> dataFunction;

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Terminal
 {
-    internal static class Term
+    public static class Term
     {
         #region Defines
 
@@ -30,7 +30,7 @@ namespace Terminal
 
         #region Color
 
-        internal static void ColorEnable(bool enabled)
+        public static void ColorEnable(bool enabled)
         {
             colorEnabled = enabled;
             Console.CancelKeyPress += delegate { Console.ResetColor(); };
@@ -38,7 +38,7 @@ namespace Terminal
             Console.ForegroundColor = DefaultConsoleColor;
         }
 
-        internal static void EnableLogColor(bool enabled)
+        public static void EnableLogColor(bool enabled)
         {
             logColorEnabled = colorEnabled && enabled;
         }

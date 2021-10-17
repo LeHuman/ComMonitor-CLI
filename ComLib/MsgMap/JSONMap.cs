@@ -10,7 +10,7 @@ using Terminal;
 
 namespace MsgMap
 {
-    internal static class JSONMap
+    public static class JSONMap
     {
         public static string Path;
         private static string MapBlocking;

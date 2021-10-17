@@ -10,7 +10,7 @@ namespace Pipe
     // Delegate for notifying of connection or error
     public delegate void DelegateNotify();
 
-    internal class PingPipe
+    public class PingPipe
     {
         private event DelegateNotify PipeConnect;
 

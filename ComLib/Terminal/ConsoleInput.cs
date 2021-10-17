@@ -9,7 +9,7 @@ namespace Terminal
 
     public delegate void DelegateConsoleUpdate();
 
-    internal static class ConsoleInput
+    public static class ConsoleInput
     {
         private static readonly Thread Observer = new Thread(new ThreadStart(ObserveInput));
         private static readonly Stream Input = Console.OpenStandardInput();

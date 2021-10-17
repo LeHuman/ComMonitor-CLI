@@ -44,10 +44,11 @@
     <Optimize>true</Optimize>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <DefineConstants />
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="Resources\Comx.ico" />
-    <Content Include="Resources\Comx.png" />
+    <None Remove="Resources\Comx.ico" />
+    <None Remove="Resources\Comx.png" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
@@ -55,6 +56,10 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\Comx.ico" />
+    <Content Include="Resources\Comx.png" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommandLineParser">
@@ -66,5 +71,8 @@
     </PackageReference>
     <PackageReference Include="SerialPortStream" Version="2.3.1" />
     <PackageReference Include="TextCopy" Version="4.3.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ComLib\ComLib.csproj" />
   </ItemGroup>
 </Project>

@@ -7,9 +7,9 @@ using System.Threading;
 
 namespace Pipe
 {
-    internal delegate void SerialDataDelegate(string SendingPipeID, byte[] Data);
+    public delegate void SerialDataDelegate(string SendingPipeID, byte[] Data);
 
-    internal class DataPipe
+    public class DataPipe
     {
         protected const int BUFFER_SIZE = 4096;
         protected const int MAX_CONNECTIONS = 32;
@@ -39,7 +39,7 @@ namespace Pipe
             return pipeServer != null && pipeServer.IsConnected;
         }
 
-        internal void SendData(string msg)
+        public void SendData(string msg)
         {
             if (direction == PipeDirection.Out)
                 SendData(Encoding.ASCII.GetBytes(msg));

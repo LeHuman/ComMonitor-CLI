@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Log
 {
-    internal static class FileLog
+    public static class FileLog
     {
         private static StreamWriter file;
         public static bool Enabled = false;
