@@ -4,6 +4,9 @@ using MsgMap;
 using Pipe;
 using Serial;
 using System;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using Terminal;
@@ -202,7 +205,7 @@ namespace ComMonitor.Main
 
             #region Serial Data Pipe
 
-            if (true) // TODO: add serial pipe option
+            if (options.EnableSerialPipe || options.PlotData)
             {
                 SerialPipe = new DataPipe(SerialPipeName, SerialClient.portName);
                 // SerialClient.SerialDataReceived += (sender, e) => { SerialPipe.SendData(e.Data); }; // For piping raw data
@@ -215,6 +218,20 @@ namespace ComMonitor.Main
             }
 
             #endregion Serial Data Pipe
+
+            if (options.PlotData)
+            {
+                Process[] processes = Process.GetProcessesByName("ComPlotter");
+                if (processes.Length == 0)
+                    try
+                    {
+                        Process.Start(options.PlotterPath);
+                    }
+                    catch (SystemException)
+                    {
+                        throw new FileNotFoundException("Failed to launch Plotter");
+                    }
+            }
 
             waitStr = $"Waiting for connection to {SerialClient.portName} ";
             retryStr = $"Retrying to connect to {SerialClient.portName} ";

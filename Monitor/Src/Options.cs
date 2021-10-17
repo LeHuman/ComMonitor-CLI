@@ -51,6 +51,15 @@ namespace ComMonitor.Main
         [Option('l', "log", HelpText = "Enable logging to a file [Valid Directory Path]", Default = "")]
         public string Logging { get; set; }
 
+        [Option('g', "graph", HelpText = "Graph received values using ComPlotter, refer to readme", Default = false)]
+        public bool PlotData { get; set; }
+
+        [Option("graphPath", HelpText = "Define the path for ComPlotter, used by the -g flag", Default = "ComPlotter.exe")]
+        public string PlotterPath { get; set; }
+
+        [Option("serialPipe", HelpText = "Enable the underlying serial pipe for other .Net applications to use, refer to readme. Note that this is used by ComPlotter when the -g flag is used", Default = false)]
+        public bool EnableSerialPipe { get; set; }
+
         [Option("logTime", HelpText = "If Logging is enabled, log with a nanosecond timestamp", Default = false)]
         public bool LogTime { get; set; }
 
