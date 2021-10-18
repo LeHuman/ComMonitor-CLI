@@ -62,11 +62,13 @@ namespace ComPlotter
             double r = Math.Round(rand.NextDouble() - .5, 3);
 
             foreach (PlotSeries ps in PlotController.SeriesManager.Series)
-                if (rand.Next(100) > rand.Next(100))
+                if (ps == signalPlot)
+                    signalPlot.Update(Math.Sin(Stopwatch.Elapsed.TotalSeconds));
+                else if (rand.Next(100) > rand.Next(100))
                     ps.Update((rand.NextDouble() - 0.5) * rand.NextDouble());
+                else if (rand.Next(100) > rand.Next(100))
+                    ps.Update(s);
 
-            if (rand.Next(100) > rand.Next(100))
-                signalPlot.Update(s);
             if (rand.Next(100) > rand.Next(100))
                 signalPlot2.Update(r);
             if (rand.Next(100) > 90)
