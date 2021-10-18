@@ -15,12 +15,13 @@ namespace ComPlotter
         public PlotSeries SelectedPlot { get; set; }
         public List<PlotSeries> Series { get; } = new();
 
-        internal readonly WpfPlot Plot;
+        internal readonly WpfPlot WpfPlot;
         internal ScatterPlot HighlightedPoint;
 
         private int ip = -1;
 
         private string _HighlightedPointStatus;
+        private PlotControl plotControl;
 
         public string HighlightedPointStatus
         {
@@ -42,8 +43,8 @@ namespace ComPlotter
         private Color NextColor()
         {
             ip++;
-            ip %= Plot.Plot.Palette.Count();
-            return Plot.Plot.Palette.GetColor(ip);
+            ip %= WpfPlot.Plot.Palette.Count();
+            return WpfPlot.Plot.Palette.GetColor(ip);
         }
 
         internal void SetRange(int value)
@@ -64,9 +65,9 @@ namespace ComPlotter
 
         internal void Reload(PlotSeries Reloadee)
         {
-            Plot.Plot.Remove(Reloadee.SignalPlot);
+            WpfPlot.Plot.Remove(Reloadee.SignalPlot);
             bool vis = Reloadee.SignalPlot == null || Reloadee.SignalPlot.IsVisible;
-            Reloadee.SignalPlot = Plot.Plot.AddSignal(Reloadee.Data);
+            Reloadee.SignalPlot = WpfPlot.Plot.AddSignal(Reloadee.Data);
             Reloadee.SignalPlot.IsVisible = vis;
             Reloadee.SignalPlot.MaxRenderIndex = 0;
             Reloadee.SignalPlot.Color = Reloadee.Color;
@@ -77,6 +78,11 @@ namespace ComPlotter
             PlotSeries ps = new(Name, Range, Growing, this, NextColor());
             Reload(ps);
             Series.Add(ps);
+
+            if (plotControl.SetLowQ = Series.Count > WpfPlot.Plot.Palette.Count())
+            {
+                ps.IsVisible = false;
+            }
 
             return ps;
         }
@@ -95,11 +101,12 @@ namespace ComPlotter
             HighlightedPointStatus = $"Highlight: {Math.Round(pointY, 8)}";
         }
 
-        public PlotSeriesManager(WpfPlot Plot)
+        public PlotSeriesManager(PlotControl plotControl, WpfPlot WpfPlot)
         {
-            this.Plot = Plot;
+            this.plotControl = plotControl;
+            this.WpfPlot = WpfPlot;
 
-            HighlightedPoint = Plot.Plot.AddPoint(0, 0);
+            HighlightedPoint = this.WpfPlot.Plot.AddPoint(0, 0);
             HighlightedPoint.Color = Color.White;
             HighlightedPoint.MarkerSize = 10;
             HighlightedPoint.MarkerShape = MarkerShape.openCircle;

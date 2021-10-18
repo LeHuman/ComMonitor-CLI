@@ -17,8 +17,10 @@ namespace ComPlotter
         public bool Growing { get; set; }
 
         internal long Counter;
-        public SignalPlot SignalPlot { get; internal set; }
+        internal SignalPlot SignalPlot;
         public string Name { get; }
+
+        public bool IsVisible { get => SignalPlot.IsVisible; set => SignalPlot.IsVisible = value; }
 
         private string _Status;
 

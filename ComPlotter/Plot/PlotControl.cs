@@ -8,18 +8,18 @@ namespace ComPlotter
     public class PlotControl
     {
         public PlotSeriesManager SeriesManager { get; }
-
         public ICommand ClearCommand { get; private set; }
-        private int _Range = PlotSeries.InitHeap;
+        public bool AutoRange { get => _AutoRange; set { _AutoRange = value; if (value) { WpfPlot.Plot.AxisAuto(0.1, 0.5); } } }
 
         public int Range // TODO: enable range for individual series
         {
             get => _Range; set { _Range = value; SeriesManager.SetRange(value); }
         }
 
-        private bool _AutoRange = true;
-        public bool AutoRange { get => _AutoRange; set { _AutoRange = value; if (value) { WpfPlot.Plot.AxisAuto(0.1, 0.5); } } }
+        internal bool SetLowQ { get; set; } = false;
 
+        private int _Range = PlotSeries.InitHeap;
+        private bool _AutoRange = true;
         private readonly WpfPlot WpfPlot;
         private readonly DispatcherTimer RenderTimer = new();
         private readonly DispatcherTimer MouseTimer = new();
@@ -31,7 +31,7 @@ namespace ComPlotter
 
         public PlotControl(WpfPlot WpfPlot)
         {
-            SeriesManager = new PlotSeriesManager(WpfPlot);
+            SeriesManager = new PlotSeriesManager(this, WpfPlot);
 
             this.WpfPlot = WpfPlot;
             Plot plt = WpfPlot.Plot;
@@ -54,7 +54,7 @@ namespace ComPlotter
             WpfPlot.Refresh();
         }
 
-        private double avg(double a, double b, double mult = 32)
+        private static double avg(double a, double b, double mult = 32)
         {
             return (a * mult + b) / (mult + 1);
         }
@@ -75,7 +75,7 @@ namespace ComPlotter
                 AxisLimits ala = WpfPlot.Plot.GetAxisLimits();
                 WpfPlot.Plot.SetAxisLimitsY(ala.YMin < alb.YMin ? ala.YMin : avg(alb.YMin, ala.YMin), ala.YMax > alb.YMax ? ala.YMax : avg(alb.YMax, ala.YMax));
             }
-            WpfPlot.Refresh();
+            WpfPlot.Refresh(SetLowQ);
         }
 
         public void Clear()
