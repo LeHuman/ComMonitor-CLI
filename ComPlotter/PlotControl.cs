@@ -22,7 +22,7 @@ namespace ComPlotter
 
         private readonly WpfPlot WpfPlot;
         private readonly DispatcherTimer RenderTimer = new();
-        //private readonly DispatcherTimer ZoomTimer = new();
+        private readonly DispatcherTimer MouseTimer = new();
 
         private void SetupCommands()
         {
@@ -44,13 +44,13 @@ namespace ComPlotter
 
             SetupCommands();
 
-            RenderTimer.Interval = TimeSpan.FromMilliseconds(5);
+            RenderTimer.Interval = TimeSpan.FromMilliseconds(10);
             RenderTimer.Tick += Render;
             RenderTimer.Start();
 
-            //ZoomTimer.Interval = TimeSpan.FromMilliseconds(20);
-            //ZoomTimer.Tick += Zoom;
-            //ZoomTimer.Start();
+            MouseTimer.Interval = TimeSpan.FromMilliseconds(250);
+            MouseTimer.Tick += UpdateMouse;
+            MouseTimer.Start();
         }
 
         private double avg(double a, double b, double mult = 32)
@@ -58,33 +58,23 @@ namespace ComPlotter
             return (a * mult + b) / (mult + 1);
         }
 
-        //private void Zoom(object sender = null, EventArgs e = null)
-        //{
-        //    AxisLimits alb = WpfPlot.Plot.GetAxisLimits();
-        //    WpfPlot.Plot.AxisAuto(0.5, 0.5);
-        //    AxisLimits ala = WpfPlot.Plot.GetAxisLimits();
-
-        //    WpfPlot.Plot.SetAxisLimits(avg(alb.XMin, ala.XMin), avg(alb.XMax, ala.XMax), avg(alb.YMin, ala.YMin, 32), avg(alb.YMax, ala.YMax, 32));
-        //    WpfPlot.Plot.AxisAutoX(0.5);
-        //    WpfPlot.Refresh(true);
-        //}
+        private void UpdateMouse(object sender, EventArgs e)
+        {
+            (double mouseCoordX, _) = WpfPlot.GetMouseCoordinates();
+            SeriesManager.SetHighlight(mouseCoordX);
+        }
 
         private void Render(object sender = null, EventArgs e = null)
         {
             if (_AutoRange)
             {
-                //SeriesManager.Update();
                 WpfPlot.Plot.AxisAutoX(0.1);
                 AxisLimits alb = WpfPlot.Plot.GetAxisLimits();
                 WpfPlot.Plot.AxisAutoY(0.5);
                 AxisLimits ala = WpfPlot.Plot.GetAxisLimits();
                 WpfPlot.Plot.SetAxisLimitsY(ala.YMin < alb.YMin ? ala.YMin : avg(alb.YMin, ala.YMin), ala.YMax > alb.YMax ? ala.YMax : avg(alb.YMax, ala.YMax));
-                //double mny = SeriesManager.MinY, mxy = SeriesManager.MaxY;
-                //WpfPlot.Plot.SetAxisLimitsY(mny < alb.YMin ? mny : avg(mny, alb.YMin), mxy > alb.YMax ? mxy : avg(mxy, alb.YMax));
-                //WpfPlot.Plot.SetAxisLimitsY(SeriesManager.MinY - 1, SeriesManager.MaxY + 1);
-                //WpfPlot.Plot.AxisAuto(0.1, 0.1);
             }
-            WpfPlot.Refresh(true);
+            WpfPlot.Refresh();
         }
 
         public void Clear()

@@ -43,7 +43,7 @@ namespace ComPlotter
 
             // create a timer to modify the data
             _updateDataTimer = new DispatcherTimer();
-            _updateDataTimer.Interval = TimeSpan.FromMilliseconds(10);
+            _updateDataTimer.Interval = TimeSpan.FromMilliseconds(1);
             _updateDataTimer.Tick += UpdateTestData;
             _updateDataTimer.Start();
 
@@ -78,6 +78,11 @@ namespace ComPlotter
             MainPlot.Plot.AxisAuto(verticalMargin: .5);
             ScottPlot.AxisLimits oldLimits = MainPlot.Plot.GetAxisLimits();
             MainPlot.Plot.SetAxisLimits(xMax: oldLimits.XMax + 1000);
+        }
+
+        private void UpdateSelectedPlotSeries(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            PlotController.SeriesManager.SelectedPlot = (PlotSeries)e.AddedItems[0];
         }
 
         private void LaunchGitHubSite(object sender, RoutedEventArgs e)

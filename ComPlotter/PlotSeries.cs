@@ -1,10 +1,12 @@
 ﻿using ScottPlot.Plottable;
 using System;
+using System.ComponentModel;
 using System.Drawing;
+using System.Windows.Data;
 
 namespace ComPlotter
 {
-    public class PlotSeries
+    public class PlotSeries : INotifyPropertyChanged
     {
         public const int InitHeap = 512;
 
@@ -17,10 +19,29 @@ namespace ComPlotter
         internal long Counter;
         public SignalPlot SignalPlot { get; internal set; }
         public string Name { get; }
+
+        private string _Status;
+
+        public string Status
+        {
+            get { return _Status; }
+            set
+            {
+                _Status = value;
+                OnPropertyChanged("Status");
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string property)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
+        }
+
         internal readonly Color Color;
         internal double[] Data = new double[InitHeap];
 
-        private string Status;
         private int _Range;
         private int nextDataIndex = 1;
         private readonly PlotSeriesManager Manager;
@@ -47,11 +68,8 @@ namespace ComPlotter
             return CurrentSize - (CurrentSize % InitHeap);
         }
 
-        //private bool increasing = false;
-
         private void IncreaseBuffer()
         {
-            //increasing = true;
             double[] NewData = SignalPlot.MinRenderIndex != 0 && Data.Length > _Range * 2 ? Data : new double[NextSize(Data.Length)];
             Span<double> d = Data.AsSpan().Slice(SignalPlot.MinRenderIndex);
             d.CopyTo(NewData);
@@ -59,24 +77,18 @@ namespace ComPlotter
             Data = NewData;
 
             Manager.Reload(this);
-            //increasing = false;
         }
 
         public void Update(double value)
         {
-            //bool up = false;
             if (nextDataIndex >= Data.Length)
             {
                 IncreaseBuffer();
-                //up = true;
             }
 
             Data[nextDataIndex] = Growing ? Data[nextDataIndex - 1] + value : value;
 
-            //if (increasing)
-            //    return;
-
-            Status = $"{Counter} : {LastY}";
+            Status = $"{Counter} : {Math.Round(LastY, 3)}";
 
             if (_Range != 0)
             {
@@ -84,30 +96,9 @@ namespace ComPlotter
             }
             SignalPlot.MaxRenderIndex = LastX;
 
-            //Manager.GiveValue(this, Data[nextDataIndex]);
-
             Counter++;
 
             nextDataIndex += 1;
-
-            //if (up)
-            //{
-            //    Update();
-            //}
         }
-
-        //internal void Update()
-        //{
-        //    if (increasing)
-        //        return;
-
-        //    Status = $"{Counter} : {LastY}";
-
-        //    if (_Range != 0)
-        //    {
-        //        sp.MinRenderIndex = Math.Max(nextDataIndex - _Range, 0);
-        //    }
-        //    sp.MaxRenderIndex = LastX;
-        //}
     }
 }
