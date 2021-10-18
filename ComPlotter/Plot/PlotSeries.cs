@@ -41,12 +41,19 @@ namespace ComPlotter
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
         }
 
-        internal readonly Color Color;
+        internal readonly Color _Color;
+        public System.Windows.Media.SolidColorBrush Brush { get; }
+
         internal double[] Data = new double[InitHeap];
 
         private int _Range;
         private int nextDataIndex = 1;
         private readonly PlotSeriesManager Manager;
+
+        public static System.Windows.Media.Color ToMediaColor(Color color)
+        {
+            return System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B);
+        }
 
         internal PlotSeries(string Name, int Range, bool Growing, PlotSeriesManager Manager, Color Color)
         {
@@ -54,7 +61,8 @@ namespace ComPlotter
             this.Range = Range;
             this.Growing = Growing;
             this.Manager = Manager;
-            this.Color = Color;
+            _Color = Color;
+            Brush = new(ToMediaColor(_Color));
         }
 
         internal void Clear()

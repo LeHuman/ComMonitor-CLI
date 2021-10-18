@@ -70,7 +70,7 @@ namespace ComPlotter
             Reloadee.SignalPlot = WpfPlot.Plot.AddSignal(Reloadee.Data);
             Reloadee.SignalPlot.IsVisible = vis;
             Reloadee.SignalPlot.MaxRenderIndex = 0;
-            Reloadee.SignalPlot.Color = Reloadee.Color;
+            Reloadee.SignalPlot.Color = Reloadee._Color;
         }
 
         public PlotSeries Create(string Name, int Range = 512, bool Growing = false)

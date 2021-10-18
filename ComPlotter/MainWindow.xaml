@@ -77,7 +77,7 @@
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel>
-                                    <CheckBox Content="{Binding Name}" IsChecked="{Binding IsVisible}" />
+                                    <CheckBox Content="{Binding Name}" IsChecked="{Binding IsVisible}" Background="{Binding Brush}" />
                                     <Label Content="{Binding Status}" />
                                 </StackPanel>
                             </DataTemplate>
