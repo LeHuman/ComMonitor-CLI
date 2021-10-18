@@ -10,16 +10,7 @@
     <PackageReference Include="MahApps.Metro" Version="2.4.9" />
     <PackageReference Include="MahApps.Metro.IconPacks" Version="4.10.0" />
     <PackageReference Include="MaterialDesignThemes.MahApps" Version="0.1.9" />
+    <PackageReference Include="ScottPlot" Version="4.1.26" />
+    <PackageReference Include="ScottPlot.WPF" Version="4.1.26" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\RealTimeGraphX.WPF\RealTimeGraphX.WPF.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Themes\Generic.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-  </ItemGroup>
-
 </Project>
