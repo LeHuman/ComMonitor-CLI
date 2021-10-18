@@ -85,6 +85,14 @@ namespace ComPlotter
             PlotController.SeriesManager.SelectedPlot = (PlotSeries)e.AddedItems[0];
         }
 
+        private void UpdateSampleSize(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (PlotController != null)
+            {
+                PlotController.Range = 2 << (int)e.NewValue;
+            }
+        }
+
         private void LaunchGitHubSite(object sender, RoutedEventArgs e)
         {
         }

@@ -4,6 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <StartupObject />
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,5 +13,9 @@
     <PackageReference Include="MaterialDesignThemes.MahApps" Version="0.1.9" />
     <PackageReference Include="ScottPlot" Version="4.1.26" />
     <PackageReference Include="ScottPlot.WPF" Version="4.1.26" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Include="App.xaml" />
   </ItemGroup>
 </Project>

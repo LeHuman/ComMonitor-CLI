@@ -51,6 +51,7 @@ namespace ComPlotter
             MouseTimer.Interval = TimeSpan.FromMilliseconds(250);
             MouseTimer.Tick += UpdateMouse;
             MouseTimer.Start();
+            WpfPlot.Refresh();
         }
 
         private double avg(double a, double b, double mult = 32)
