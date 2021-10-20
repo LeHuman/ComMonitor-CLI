@@ -39,11 +39,11 @@ namespace ComPlotter
             plt.Style(Style.Gray1);
             plt.Style(figureBackground: System.Drawing.Color.Transparent, dataBackground: System.Drawing.Color.Transparent);
             plt.XAxis.Grid(false);
-            plt.XAxis.Ticks(false);
+            //plt.XAxis.Ticks(false);
 
             SetupCommands();
 
-            RenderTimer.Interval = TimeSpan.FromMilliseconds(10);
+            RenderTimer.Interval = TimeSpan.FromMilliseconds(20);
             RenderTimer.Tick += Render;
             RenderTimer.Start();
         }
@@ -69,6 +69,7 @@ namespace ComPlotter
                 AxisLimits ala = WpfPlot.Plot.GetAxisLimits();
                 WpfPlot.Plot.SetAxisLimitsY(ala.YMin < alb.YMin ? ala.YMin : Avg(alb.YMin, ala.YMin), ala.YMax > alb.YMax ? ala.YMax : Avg(alb.YMax, ala.YMax));
             }
+            SeriesManager.Update();
             WpfPlot.Refresh(SetLowQ);
         }
 

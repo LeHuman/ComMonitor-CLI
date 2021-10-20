@@ -66,9 +66,14 @@ namespace ComPlotter
 
         internal void Clear()
         {
+            MinRender = 0;
+            MaxRender = 0;
             nextDataIndex = 1;
             SignalPlot.MinRenderIndex = 0;
             SignalPlot.MaxRenderIndex = 0;
+            OffsetX = 0;
+            SignalPlot.OffsetX = 0;
+            Counter = 0;
         }
 
         private static int NextSize(int CurrentSize)
@@ -77,15 +82,18 @@ namespace ComPlotter
             return CurrentSize - (CurrentSize % InitHeap);
         }
 
+        private int MinRender, MaxRender;
+        private double OffsetX;
+        //private static readonly Semaphore DataArray = new(1, 1);
+
         private void IncreaseBuffer()
         {
-            double[] NewData = SignalPlot.MinRenderIndex != 0 && Data.Length > _Range * 2 ? Data : new double[NextSize(Data.Length)];
-            Span<double> d = Data.AsSpan().Slice(SignalPlot.MinRenderIndex);
+            double[] NewData = MinRender != 0 && Data.Length > _Range * 2 ? Data : new double[NextSize(Data.Length)];
+            Span<double> d = Data.AsSpan()[MinRender..];
             d.CopyTo(NewData);
-            nextDataIndex = d.Length;
             Data = NewData;
-
             Manager.Reload(this);
+            nextDataIndex = d.Length;
         }
 
         public void Update(double value)
@@ -93,21 +101,29 @@ namespace ComPlotter
             if (nextDataIndex >= Data.Length)
             {
                 IncreaseBuffer();
+                OffsetX += MinRender;
             }
 
             Data[nextDataIndex] = Growing ? Data[nextDataIndex - 1] + value : value;
 
-            Status = $"{Counter} : {Math.Round(LastY, 3)}";
-
             if (_Range != 0)
             {
-                SignalPlot.MinRenderIndex = Math.Max(nextDataIndex - _Range, 0);
+                MinRender = Math.Max(nextDataIndex - _Range, 0);
             }
-            SignalPlot.MaxRenderIndex = LastX;
+            MaxRender = LastX;
 
+            OffsetX++;
             Counter++;
 
             nextDataIndex += 1;
+        }
+
+        internal void Update()
+        {
+            Status = $"{Counter} : {Math.Round(LastY, 3)}";
+            SignalPlot.MinRenderIndex = MinRender;
+            SignalPlot.MaxRenderIndex = MaxRender;
+            SignalPlot.OffsetX = OffsetX;
         }
     }
 }

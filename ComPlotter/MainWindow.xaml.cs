@@ -31,15 +31,15 @@ namespace ComPlotter
         {
             // plot the data array only once
             signalPlot = PlotController.SeriesManager.Create("First");
-            signalPlot2 = PlotController.SeriesManager.Create("Seconddvzx44vdx4v56z🙄");
-            signalPlot3 = PlotController.SeriesManager.Create("Amogs");
-            PlotController.SeriesManager.Create("Amo4fsgs");
-            PlotController.SeriesManager.Create("Amoag3ag4fsgs");
-            PlotController.SeriesManager.Create("Amoag3aggfgfsdgdg4fsgs");
-            PlotController.SeriesManager.Create("Amoag3aggfgfsdgdg465fds464fsgs");
-            PlotController.SeriesManager.Create("e");
-            PlotController.SeriesManager.Create("");
-            PlotController.SeriesManager.Create("fdsgf6");
+            //signalPlot2 = PlotController.SeriesManager.Create("Seconddvzx44vdx4v56z🙄");
+            //signalPlot3 = PlotController.SeriesManager.Create("Amogs");
+            //PlotController.SeriesManager.Create("Amo4fsgs");
+            //PlotController.SeriesManager.Create("Amoag3ag4fsgs");
+            //PlotController.SeriesManager.Create("Amoag3aggfgfsdgdg4fsgs");
+            //PlotController.SeriesManager.Create("Amoag3aggfgfsdgdg465fds464fsgs");
+            //PlotController.SeriesManager.Create("e");
+            //PlotController.SeriesManager.Create("");
+            //PlotController.SeriesManager.Create("fdsgf6");
 
             // create a timer to modify the data
             _updateDataTimer = new DispatcherTimer();
@@ -64,15 +64,14 @@ namespace ComPlotter
             foreach (PlotSeries ps in PlotController.SeriesManager.Series)
                 if (ps == signalPlot)
                     signalPlot.Update(Math.Sin(Stopwatch.Elapsed.TotalSeconds));
+                else if (ps == signalPlot2)
+                    signalPlot2.Update(r);
+                else if (ps == signalPlot3)
+                    signalPlot3.Update(s + r);
                 else if (rand.Next(100) > rand.Next(100))
                     ps.Update((rand.NextDouble() - 0.5) * rand.NextDouble());
                 else if (rand.Next(100) > rand.Next(100))
                     ps.Update(s);
-
-            if (rand.Next(100) > rand.Next(100))
-                signalPlot2.Update(r);
-            if (rand.Next(100) > 90)
-                signalPlot3.Update(s + r);
         }
 
         private void DisableAutoAxis(object sender, RoutedEventArgs e)

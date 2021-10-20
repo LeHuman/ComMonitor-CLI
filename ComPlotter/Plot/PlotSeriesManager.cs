@@ -21,7 +21,7 @@ namespace ComPlotter
         private int ip = -1;
 
         private string _HighlightedPointStatus;
-        private PlotControl plotControl;
+        private readonly PlotControl plotControl;
 
         public string HighlightedPointStatus
         {
@@ -63,14 +63,28 @@ namespace ComPlotter
             }
         }
 
+        internal void Update()
+        {
+            foreach (PlotSeries s in Series)
+            {
+                s.Update();
+            }
+        }
+
         internal void Reload(PlotSeries Reloadee)
         {
+            SignalPlot sp = Reloadee.SignalPlot;
             WpfPlot.Plot.Remove(Reloadee.SignalPlot);
-            bool vis = Reloadee.SignalPlot == null || Reloadee.SignalPlot.IsVisible;
+
             Reloadee.SignalPlot = WpfPlot.Plot.AddSignal(Reloadee.Data);
-            Reloadee.SignalPlot.IsVisible = vis;
             Reloadee.SignalPlot.MaxRenderIndex = 0;
             Reloadee.SignalPlot.Color = Reloadee._Color;
+
+            if (sp != null)
+            {
+                Reloadee.SignalPlot.IsVisible = sp.IsVisible;
+                Reloadee.SignalPlot.OffsetX = sp.OffsetX;
+            }
         }
 
         public PlotSeries Create(string Name, int Range = 512, bool Growing = false)
