@@ -22,7 +22,6 @@ namespace ComPlotter
         private bool _AutoRange = true;
         private readonly WpfPlot WpfPlot;
         private readonly DispatcherTimer RenderTimer = new();
-        private readonly DispatcherTimer MouseTimer = new();
 
         private void SetupCommands()
         {
@@ -47,19 +46,14 @@ namespace ComPlotter
             RenderTimer.Interval = TimeSpan.FromMilliseconds(10);
             RenderTimer.Tick += Render;
             RenderTimer.Start();
-
-            MouseTimer.Interval = TimeSpan.FromMilliseconds(250);
-            MouseTimer.Tick += UpdateMouse;
-            MouseTimer.Start();
-            WpfPlot.Refresh();
         }
 
-        private static double avg(double a, double b, double mult = 32)
+        private static double Avg(double a, double b, double mult = 32)
         {
             return (a * mult + b) / (mult + 1);
         }
 
-        private void UpdateMouse(object sender, EventArgs e)
+        public void UpdateHighlight()
         {
             (double mouseCoordX, _) = WpfPlot.GetMouseCoordinates();
             SeriesManager.SetHighlight(mouseCoordX);
@@ -73,7 +67,7 @@ namespace ComPlotter
                 AxisLimits alb = WpfPlot.Plot.GetAxisLimits();
                 WpfPlot.Plot.AxisAutoY(0.5);
                 AxisLimits ala = WpfPlot.Plot.GetAxisLimits();
-                WpfPlot.Plot.SetAxisLimitsY(ala.YMin < alb.YMin ? ala.YMin : avg(alb.YMin, ala.YMin), ala.YMax > alb.YMax ? ala.YMax : avg(alb.YMax, ala.YMax));
+                WpfPlot.Plot.SetAxisLimitsY(ala.YMin < alb.YMin ? ala.YMin : Avg(alb.YMin, ala.YMin), ala.YMax > alb.YMax ? ala.YMax : Avg(alb.YMax, ala.YMax));
             }
             WpfPlot.Refresh(SetLowQ);
         }

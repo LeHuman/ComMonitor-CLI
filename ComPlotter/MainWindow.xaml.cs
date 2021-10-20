@@ -95,6 +95,11 @@ namespace ComPlotter
             }
         }
 
+        private void UpdateMouseSelection(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            PlotController.UpdateHighlight();
+        }
+
         private void LaunchGitHubSite(object sender, RoutedEventArgs e)
         {
         }
