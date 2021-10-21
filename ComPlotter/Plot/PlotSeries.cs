@@ -24,7 +24,7 @@ namespace ComPlotter.Plot
         public int Range { get => _Range; set => _Range = Math.Max(value, 0); }
 
         internal long Counter;
-        internal readonly Color _Color;
+        internal Color _Color;
         internal SignalPlot SignalPlot;
         internal double[] Data = new double[InitHeap];
 

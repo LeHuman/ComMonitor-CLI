@@ -63,8 +63,8 @@ namespace ComPlotter
                 { ps.Update((rand.NextDouble() - 0.5) * rand.NextDouble()); }
                 else if (rand.Next(100) > rand.Next(100))
                 { ps.Update(s); }
-                else if (rand.Next(100) > 95)
-                { DeleteSeriesList.Add(ps); }
+            //else if (rand.Next(100) > 95)
+            //{ DeleteSeriesList.Add(ps); }
 
             foreach (PlotSeries ps in DeleteSeriesList)
             {
