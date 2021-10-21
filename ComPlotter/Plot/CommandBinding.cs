@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace ComPlotter
+namespace ComPlotter.Plot
 {
     public delegate void Command();
 
     public delegate bool Qualifier();
 
-    public class CommandBinding : ICommand
+    internal class CommandBinding : ICommand
     {
         private readonly Qualifier canExecute;
         private readonly Command execute;

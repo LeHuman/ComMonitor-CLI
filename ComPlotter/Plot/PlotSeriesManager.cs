@@ -1,46 +1,21 @@
 ﻿using ScottPlot;
-using ScottPlot.Plottable;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Windows;
+using ScottPlot.Plottable;
+using System.Collections.Generic;
+using System.Windows.Data;
 
-namespace ComPlotter
+namespace ComPlotter.Plot
 {
-    public class PlotSeriesManager : INotifyPropertyChanged
+    internal class PlotSeriesManager
     {
-        // public bool Sync { get; set; } = true; // TODO: Implement "Syncing" of data
-
-        public PlotSeries SelectedPlot { get; set; }
-        public List<PlotSeries> Series { get; } = new();
-
         internal readonly WpfPlot WpfPlot;
-        internal ScatterPlot HighlightedPoint;
+        internal readonly PlotControl PlotController;
+        internal readonly List<PlotSeries> SeriesList = new();
 
         private int ip = -1;
+        private object _syncLock = new();
 
-        private string _HighlightedPointStatus;
-        private readonly PlotControl plotControl;
-
-        public string HighlightedPointStatus
-        {
-            get { return _HighlightedPointStatus; }
-            set
-            {
-                _HighlightedPointStatus = value;
-                OnPropertyChanged("HighlightedPointStatus");
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void OnPropertyChanged(string property)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
-        }
-
-        private Color NextColor()
+        private Color NextColor() // TODO: more colors!
         {
             ip++;
             ip %= WpfPlot.Plot.Palette.Count();
@@ -49,7 +24,7 @@ namespace ComPlotter
 
         internal void SetRange(int value)
         {
-            foreach (PlotSeries s in Series)
+            foreach (PlotSeries s in SeriesList)
             {
                 s.Range = value;
             }
@@ -57,7 +32,7 @@ namespace ComPlotter
 
         internal void Clear()
         {
-            foreach (PlotSeries s in Series)
+            foreach (PlotSeries s in SeriesList)
             {
                 s.Clear();
             }
@@ -65,35 +40,45 @@ namespace ComPlotter
 
         internal void Update()
         {
-            foreach (PlotSeries s in Series)
+            foreach (PlotSeries s in SeriesList)
             {
                 s.Update();
             }
         }
 
-        internal void Reload(PlotSeries Reloadee)
+        internal void RemovePlot(IPlottable plottable)
         {
-            SignalPlot sp = Reloadee.SignalPlot;
-            WpfPlot.Plot.Remove(Reloadee.SignalPlot);
+            _ = WpfPlot.Dispatcher.InvokeAsync(() => { WpfPlot.Plot.Remove(plottable); }).Wait();
+        }
 
-            Reloadee.SignalPlot = WpfPlot.Plot.AddSignal(Reloadee.Data);
-            Reloadee.SignalPlot.MaxRenderIndex = 0;
-            Reloadee.SignalPlot.Color = Reloadee._Color;
-
-            if (sp != null)
+        internal void RemoveSeries(PlotSeries plotSeries)
+        {
+            plotSeries.Clear();
+            RemovePlot(plotSeries.SignalPlot);
+            lock (_syncLock)
             {
-                Reloadee.SignalPlot.IsVisible = sp.IsVisible;
-                Reloadee.SignalPlot.OffsetX = sp.OffsetX;
+                PlotController.OnPropertyChanged("SeriesList");
+                _ = SeriesList.Remove(plotSeries);
             }
         }
 
-        public PlotSeries Create(string Name, int Range = 512, bool Growing = false)
+        internal SignalPlot NewPlot(double[] DataPointer)
         {
-            PlotSeries ps = new(Name, Range, Growing, this, NextColor());
-            Reload(ps);
-            Series.Add(ps);
+            SignalPlot signalPlot = null;
+            _ = WpfPlot.Dispatcher.InvokeAsync(() => { signalPlot = WpfPlot.Plot.AddSignal(DataPointer); }).Wait();
+            return signalPlot;
+        }
 
-            if (plotControl.SetLowQ = Series.Count > WpfPlot.Plot.Palette.Count())
+        internal PlotSeries CreateSeries(string Name, int Range, bool Growing)
+        {
+            PlotSeries ps = new(this, Name, NextColor(), Range, Growing);
+            lock (_syncLock)
+            {
+                PlotController.OnPropertyChanged("SeriesList");
+                SeriesList.Add(ps);
+            }
+
+            if (PlotController.SlowMode) // TODO: Show warning that new plots are being hidden
             {
                 ps.IsVisible = false;
             }
@@ -101,30 +86,11 @@ namespace ComPlotter
             return ps;
         }
 
-        public void SetHighlight(double mouseCoordX)
+        public PlotSeriesManager(PlotControl PlotController)
         {
-            if (SelectedPlot == null || !SelectedPlot.SignalPlot.IsVisible)
-            {
-                HighlightedPoint.IsVisible = false;
-                return;
-            }
-            (double pointX, double pointY, int _) = SelectedPlot.SignalPlot.GetPointNearestX(mouseCoordX);
-            HighlightedPoint.Xs[0] = pointX;
-            HighlightedPoint.Ys[0] = pointY;
-            HighlightedPoint.IsVisible = true;
-            HighlightedPointStatus = $"Highlight: {Math.Round(pointY, 8)}";
-        }
-
-        public PlotSeriesManager(PlotControl plotControl, WpfPlot WpfPlot)
-        {
-            this.plotControl = plotControl;
-            this.WpfPlot = WpfPlot;
-
-            HighlightedPoint = this.WpfPlot.Plot.AddPoint(0, 0);
-            HighlightedPoint.Color = Color.White;
-            HighlightedPoint.MarkerSize = 10;
-            HighlightedPoint.MarkerShape = MarkerShape.openCircle;
-            HighlightedPoint.IsVisible = false;
+            this.PlotController = PlotController;
+            WpfPlot = PlotController.WpfPlot;
+            BindingOperations.EnableCollectionSynchronization(SeriesList, _syncLock);
         }
     }
 }

@@ -1,86 +1,80 @@
-﻿using ScottPlot;
-using System;
+﻿using System;
+using ScottPlot;
+using System.Drawing;
+using ScottPlot.Plottable;
 using System.Windows.Input;
-using System.Windows.Threading;
+using System.ComponentModel;
+using System.Collections.Generic;
 
-namespace ComPlotter
+namespace ComPlotter.Plot
 {
-    public class PlotControl
+    public class PlotControl : INotifyPropertyChanged
     {
-        public PlotSeriesManager SeriesManager { get; }
+        public string HighlightedPointStatus;
+        public PlotSeries SelectedPlot { get; set; }
         public ICommand ClearCommand { get; private set; }
-        public bool AutoRange { get => _AutoRange; set { _AutoRange = value; if (value) { WpfPlot.Plot.AxisAuto(0.1, 0.5); } } }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public List<PlotSeries> SeriesList { get => SeriesManager.SeriesList; }
+
+        public bool AutoRange { get => _AutoRange; set { _AutoRange = value; if (value) { _ = WpfPlot.Dispatcher.InvokeAsync(() => { WpfPlot.Plot.AxisAuto(0.1, 0.5); }).Wait(); } } }
+
+        internal WpfPlot WpfPlot;
+        internal bool _AutoRange = true;
+        internal bool LowQualityRender = true;
+        internal bool SlowMode = false;
+        internal ScatterPlot HighlightedPoint;
+        internal int _Range = PlotSeries.InitHeap;
+
+        private PlotSeriesManager SeriesManager;
+
+        internal PlotControl(WpfPlot WpfPlot)
+        {
+            this.WpfPlot = WpfPlot;
+        }
+
+        internal void Setup(PlotSeriesManager SeriesManager)
+        {
+            this.SeriesManager = SeriesManager;
+
+            SetupCommands();
+
+            HighlightedPoint = WpfPlot.Plot.AddPoint(0, 0);
+            HighlightedPoint.Color = Color.White;
+            HighlightedPoint.MarkerSize = 10;
+            HighlightedPoint.MarkerShape = MarkerShape.openCircle;
+            HighlightedPoint.IsVisible = false;
+        }
 
         public int Range // TODO: enable range for individual series
         {
             get => _Range; set { _Range = value; SeriesManager.SetRange(value); }
         }
 
-        internal bool SetLowQ { get; set; } = false;
+        public void SetHighlight(double mouseCoordX)
+        {
+            if (SelectedPlot == null || !SelectedPlot.IsVisible)
+            {
+                HighlightedPoint.IsVisible = false;
+                return;
+            }
+            (double pointX, double pointY, int _) = SelectedPlot.GetPointNearestX(mouseCoordX);
+            HighlightedPoint.Xs[0] = pointX;
+            HighlightedPoint.Ys[0] = pointY;
+            HighlightedPoint.IsVisible = true;
+            HighlightedPointStatus = $"Highlight: {Math.Round(pointY, 8)}";
+            OnPropertyChanged("HighlightedPointStatus");
+        }
 
-        private int _Range = PlotSeries.InitHeap;
-        private bool _AutoRange = true;
-        private readonly WpfPlot WpfPlot;
-        private readonly DispatcherTimer RenderTimer = new();
+        internal virtual void OnPropertyChanged(string property)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
+        }
 
         private void SetupCommands()
         {
-            ClearCommand = new CommandBinding(Clear);
-        }
-
-        public PlotControl(WpfPlot WpfPlot)
-        {
-            SeriesManager = new PlotSeriesManager(this, WpfPlot);
-
-            this.WpfPlot = WpfPlot;
-            Plot plt = WpfPlot.Plot;
-            plt.Palette = Palette.OneHalfDark;
-            plt.Title(null);
-            plt.Style(Style.Gray1);
-            plt.Style(figureBackground: System.Drawing.Color.Transparent, dataBackground: System.Drawing.Color.Transparent);
-            plt.XAxis.Grid(false);
-            //plt.XAxis.Ticks(false);
-
-            SetupCommands();
-
-            RenderTimer.Interval = TimeSpan.FromMilliseconds(20);
-            RenderTimer.Tick += Render;
-            RenderTimer.Start();
-        }
-
-        private static double Avg(double a, double b, double mult = 32)
-        {
-            return (a * mult + b) / (mult + 1);
-        }
-
-        public void UpdateHighlight()
-        {
-            (double mouseCoordX, _) = WpfPlot.GetMouseCoordinates();
-            SeriesManager.SetHighlight(mouseCoordX);
-        }
-
-        private void Render(object sender = null, EventArgs e = null)
-        {
-            if (_AutoRange)
-            {
-                WpfPlot.Plot.AxisAutoX(0.1);
-                AxisLimits alb = WpfPlot.Plot.GetAxisLimits();
-                WpfPlot.Plot.AxisAutoY(0.5);
-                AxisLimits ala = WpfPlot.Plot.GetAxisLimits();
-                WpfPlot.Plot.SetAxisLimitsY(ala.YMin < alb.YMin ? ala.YMin : Avg(alb.YMin, ala.YMin), ala.YMax > alb.YMax ? ala.YMax : Avg(alb.YMax, ala.YMax));
-            }
-            SeriesManager.Update();
-            WpfPlot.Refresh(SetLowQ);
-        }
-
-        public void Clear()
-        {
-            SeriesManager.Clear();
-        }
-
-        public void Stop()
-        {
-            RenderTimer?.Stop();
+            ClearCommand = new CommandBinding(SeriesManager.Clear);
         }
     }
 }

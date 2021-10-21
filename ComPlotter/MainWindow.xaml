@@ -68,12 +68,10 @@
                             <TextBox Text="{Binding ElementName=SampleSlider, Path=Value, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Right" TextAlignment="Right" Width="40" />
                             <Slider Name="SampleSlider" Value="9" Minimum="1" Maximum="19" TickPlacement="BottomRight" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="UpdateSampleSize" />
                         </DockPanel>
-                        <!--<TextBox Text="{Binding PlotController.Range,Mode=TwoWay}"></TextBox>-->
-                        <CheckBox Margin="0,10,0,0" IsChecked="{Binding PlotController.AutoRange,Mode=TwoWay}">Auto Fit</CheckBox>
-                        <Label Content="{Binding PlotController.SeriesManager.HighlightedPointStatus}" />
+                        <CheckBox Margin="0,10,0,0" IsChecked="{Binding PlotManager.Control.AutoRange,Mode=TwoWay}">Auto Fit</CheckBox>
+                        <Label Content="{Binding PlotManager.Control.HighlightedPointStatus}" />
                     </StackPanel>
-
-                    <ListBox ItemsSource="{Binding PlotController.SeriesManager.Series}" Grid.Row="1" Margin="0 5" SelectionChanged="UpdateSelectedPlotSeries">
+                    <ListBox ItemsSource="{Binding PlotManager.Control.SeriesList, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" Margin="0 5" SelectionChanged="UpdateSelectedPlotSeries">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel>
@@ -87,7 +85,7 @@
                 <Border Grid.Row="1">
                     <StackPanel>
                         <Button Margin="0 5 0 0" VerticalAlignment="Bottom" >Apply</Button>
-                        <Button Margin="0 5 0 0" Command="{Binding PlotController.ClearCommand}" VerticalAlignment="Bottom" >Clear</Button>
+                        <Button Margin="0 5 0 0" Command="{Binding PlotManager.Control.ClearCommand}" VerticalAlignment="Bottom" >Clear</Button>
                     </StackPanel>
                 </Border>
             </Grid>
