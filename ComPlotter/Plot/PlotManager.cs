@@ -1,6 +1,7 @@
 ﻿using ScottPlot;
 using System.Diagnostics;
 using System.Threading;
+using System.Windows.Controls;
 
 namespace ComPlotter.Plot
 {
@@ -67,9 +68,14 @@ namespace ComPlotter.Plot
             return (a * mult + b) / (mult + 1);
         }
 
+        public void SetListBox(ListBox ListBox)
+        {
+            Control.SeriesListBox = ListBox;
+        }
+
         private void Render()
         {
-            SeriesManager.Update();
+            SeriesManager.Update(); // FIXME: System.InvalidOperationException: 'Collection was modified; enumeration operation may not execute.'
 
             if (_Control._AutoRange)
             {

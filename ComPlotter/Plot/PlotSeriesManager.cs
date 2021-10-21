@@ -2,18 +2,17 @@
 using System.Drawing;
 using ScottPlot.Plottable;
 using System.Collections.Generic;
-using System.Windows.Data;
+using System.Windows;
 
 namespace ComPlotter.Plot
 {
-    internal class PlotSeriesManager
+    public class PlotSeriesManager
     {
         internal readonly WpfPlot WpfPlot;
         internal readonly PlotControl PlotController;
         internal readonly List<PlotSeries> SeriesList = new();
 
         private int ip = -1;
-        private object _syncLock = new();
 
         private Color NextColor() // TODO: more colors!
         {
@@ -53,13 +52,10 @@ namespace ComPlotter.Plot
 
         internal void RemoveSeries(PlotSeries plotSeries)
         {
+            plotSeries.Invalid = true;
             plotSeries.Clear();
             RemovePlot(plotSeries.SignalPlot);
-            lock (_syncLock)
-            {
-                PlotController.OnPropertyChanged("SeriesList");
-                _ = SeriesList.Remove(plotSeries);
-            }
+            _ = WpfPlot.Dispatcher.InvokeAsync(() => { _ = SeriesList.Remove(plotSeries); PlotController.SeriesListBox.Items.Remove(plotSeries); }).Wait();
         }
 
         internal SignalPlot NewPlot(double[] DataPointer)
@@ -71,12 +67,9 @@ namespace ComPlotter.Plot
 
         internal PlotSeries CreateSeries(string Name, int Range, bool Growing)
         {
-            PlotSeries ps = new(this, Name, NextColor(), Range, Growing);
-            lock (_syncLock)
-            {
-                PlotController.OnPropertyChanged("SeriesList");
-                SeriesList.Add(ps);
-            }
+            PlotSeries ps = null;
+
+            _ = WpfPlot.Dispatcher.InvokeAsync(() => { ps = new(this, Name, NextColor(), Range, Growing); SeriesList.Add(ps); PlotController.SeriesListBox.Items.Add(ps); }).Wait();
 
             if (PlotController.SlowMode) // TODO: Show warning that new plots are being hidden
             {
@@ -90,7 +83,6 @@ namespace ComPlotter.Plot
         {
             this.PlotController = PlotController;
             WpfPlot = PlotController.WpfPlot;
-            BindingOperations.EnableCollectionSynchronization(SeriesList, _syncLock);
         }
     }
 }

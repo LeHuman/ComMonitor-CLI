@@ -10,6 +10,7 @@ namespace ComPlotter.Plot
         public string Name { get; }
         public const int InitHeap = 512;
         public bool Growing { get; set; }
+        public bool Invalid { get; internal set; }
         public string Status { get; private set; }
 
         public bool IsVisible { get; set; } = true;

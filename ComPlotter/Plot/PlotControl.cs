@@ -5,29 +5,31 @@ using ScottPlot.Plottable;
 using System.Windows.Input;
 using System.ComponentModel;
 using System.Collections.Generic;
+using System.Windows.Controls;
 
 namespace ComPlotter.Plot
 {
     public class PlotControl : INotifyPropertyChanged
     {
-        public string HighlightedPointStatus;
+        public string HighlightedPointStatus { get; private set; }
         public PlotSeries SelectedPlot { get; set; }
         public ICommand ClearCommand { get; private set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public List<PlotSeries> SeriesList { get => SeriesManager.SeriesList; }
+        public List<PlotSeries> SeriesList => SeriesManager.SeriesList;
 
         public bool AutoRange { get => _AutoRange; set { _AutoRange = value; if (value) { _ = WpfPlot.Dispatcher.InvokeAsync(() => { WpfPlot.Plot.AxisAuto(0.1, 0.5); }).Wait(); } } }
 
         internal WpfPlot WpfPlot;
         internal bool _AutoRange = true;
         internal bool LowQualityRender = true;
-        internal bool SlowMode = false;
+        internal bool SlowMode;
+        internal ListBox SeriesListBox;
         internal ScatterPlot HighlightedPoint;
         internal int _Range = PlotSeries.InitHeap;
 
-        private PlotSeriesManager SeriesManager;
+        public PlotSeriesManager SeriesManager;
 
         internal PlotControl(WpfPlot WpfPlot)
         {

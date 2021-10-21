@@ -17,6 +17,7 @@ namespace ComPlotter
             InitializeComponent();
 
             PlotManager = new(MainPlot);
+            PlotManager.SetListBox(SeriesListBox);
 
             DataContext = this;
 
@@ -39,7 +40,7 @@ namespace ComPlotter
                 DataTimer.Stop();
             };
 
-            DataTimer = new Timer();
+            DataTimer = new();
             DataTimer.AutoReset = false;
             DataTimer.Interval = 10;
             DataTimer.Elapsed += UpdateTestData;
@@ -80,7 +81,8 @@ namespace ComPlotter
 
         private void UpdateSelectedPlotSeries(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            PlotManager.Control.SelectedPlot = (PlotSeries)e.AddedItems[0];
+            if (e.AddedItems.Count > 0 && !((PlotSeries)e.AddedItems[0]).Invalid)
+                PlotManager.Control.SelectedPlot = (PlotSeries)e.AddedItems[0];
         }
 
         private void UpdateSampleSize(object sender, RoutedPropertyChangedEventArgs<double> e)
