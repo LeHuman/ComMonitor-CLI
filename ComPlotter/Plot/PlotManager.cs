@@ -1,6 +1,7 @@
 ﻿using ScottPlot;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Threading;
 using System.Windows.Controls;
 
@@ -19,6 +20,7 @@ namespace ComPlotter.Plot
         private readonly ListBox ListBox;
         private readonly Thread RenderThread;
         private readonly Stopwatch sw = new();
+        private readonly ScottPlot.Plottable.Annotation SlowModeAnnotation;
 
         public PlotManager(WpfPlot WpfPlot, ListBox ListBox = null)
         {
@@ -28,8 +30,18 @@ namespace ComPlotter.Plot
             plt.Palette = Palette.OneHalfDark;
             plt.Title(null);
             plt.Style(Style.Gray1);
-            plt.Style(figureBackground: System.Drawing.Color.Transparent, dataBackground: System.Drawing.Color.Transparent);
+            plt.Style(figureBackground: Color.Transparent, dataBackground: Color.Transparent);
             plt.XAxis.Grid(false);
+
+            SlowModeAnnotation = WpfPlot.Plot.AddAnnotation("Slow", -10, -10);
+            SlowModeAnnotation.IsVisible = false;
+            SlowModeAnnotation.Font.Size = 14;
+            SlowModeAnnotation.Font.Bold = true;
+            SlowModeAnnotation.Font.Color = Color.White;
+            SlowModeAnnotation.Shadow = false;
+            SlowModeAnnotation.Border = false;
+            SlowModeAnnotation.BackgroundColor = Color.Red;
+            SlowModeAnnotation.Background = false;
 
             _Control = new(WpfPlot, Groups, ListBox);
 
@@ -78,6 +90,8 @@ namespace ComPlotter.Plot
                 avgMS = (avgMS + (int)sw.ElapsedMilliseconds) / 2;
                 _Control.LowQualityRender = avgMS > 10;
                 _Control.SlowMode = avgMS > 30;
+                SlowModeAnnotation.IsVisible = _Control.LowQualityRender;
+                SlowModeAnnotation.Background = _Control.SlowMode;
                 Thread.Sleep(avgMS);
             }
         }

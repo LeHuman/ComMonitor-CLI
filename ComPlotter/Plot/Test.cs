@@ -48,7 +48,7 @@ namespace ComPlotter.Plot
                     { DeleteSeriesList.Add(ps); }
                 }
 
-                if (rand.Next(100) > 98)
+                if (rand.Next(100) > 85)
                 { pm.CreateSeries(rand.Next(999).ToString()); }
 
                 foreach (PlotSeries ps in DeleteSeriesList)
@@ -69,7 +69,7 @@ namespace ComPlotter.Plot
             }
             DeletePlotList.Clear();
 
-            if (rand.Next(100) > 95)
+            if (rand.Next(100) > 85)
             { PlotManager.NewGroup(rand.Next(999).ToString()); }
 
             DataTimer.Start();
