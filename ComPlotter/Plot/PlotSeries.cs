@@ -32,9 +32,9 @@ namespace ComPlotter.Plot
         private double OffsetX;
         private int nextDataIndex = 1;
         private int MinRender, MaxRender;
-        private readonly PlotSeriesManager Manager;
+        private readonly PlotGroup Manager;
 
-        internal PlotSeries(PlotSeriesManager Manager, string Name, Color Color, int Range, bool Growing)
+        internal PlotSeries(PlotGroup Manager, string Name, Color Color, int Range, bool Growing)
         {
             this.Name = Name;
             this.Range = Range;

@@ -1,4 +1,5 @@
 ﻿using ScottPlot;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Windows.Controls;
@@ -8,18 +9,21 @@ namespace ComPlotter.Plot
     public class PlotManager
     {
         public PlotControl Control => _Control;
+        public List<PlotGroup> Groups { get; } = new();
 
         internal readonly PlotControl _Control;
 
         private int avgMS;
+        private bool RunRender;
         private readonly WpfPlot WpfPlot;
+        private readonly ListBox ListBox;
         private readonly Thread RenderThread;
         private readonly Stopwatch sw = new();
-        private readonly PlotSeriesManager SeriesManager; // TODO: SeriesManager for each pipe
 
-        public PlotManager(WpfPlot WpfPlot)
+        public PlotManager(WpfPlot WpfPlot, ListBox ListBox = null)
         {
             this.WpfPlot = WpfPlot;
+            this.ListBox = ListBox;
             ScottPlot.Plot plt = WpfPlot.Plot;
             plt.Palette = Palette.OneHalfDark;
             plt.Title(null);
@@ -27,25 +31,35 @@ namespace ComPlotter.Plot
             plt.Style(figureBackground: System.Drawing.Color.Transparent, dataBackground: System.Drawing.Color.Transparent);
             plt.XAxis.Grid(false);
 
-            _Control = new(WpfPlot);
-
-            SeriesManager = new PlotSeriesManager(_Control);
-
-            _Control.Setup(SeriesManager);
+            _Control = new(WpfPlot, Groups, ListBox);
 
             RenderThread = new(RenderRunner);
             RenderThread.Name = "Render Thread";
+            Start();
+        }
+
+        public void Start()
+        {
+            RunRender = true;
             RenderThread.Start();
         }
 
         public void Stop()
         {
-            RenderThread.Interrupt();
+            RunRender = false;
         }
 
-        public void RemoveSeries(PlotSeries plotSeries)
+        public void RemoveGroup(PlotGroup Group)
         {
-            SeriesManager.RemoveSeries(plotSeries);
+            Group.Delete();
+            _Control.RunOnUIThread(() => { _ = Groups.Remove(Group); });
+        }
+
+        public PlotGroup NewGroup(string Name)
+        {
+            PlotGroup pm = new(Name, _Control, ListBox); // TODO: Give each group their own list
+            _Control.RunOnUIThread(() => { Groups.Add(pm); });
+            return pm;
         }
 
         public void UpdateHighlight()
@@ -54,13 +68,18 @@ namespace ComPlotter.Plot
             _Control.SetHighlight(mouseCoordX);
         }
 
-        public PlotSeries CreateSeries(string Name, bool Growing = false, int Range = 0)
+        private void RenderRunner()
         {
-            if (Range <= 1)
+            while (RunRender)
             {
-                Range = Control._Range;
+                sw.Restart();
+                _Control.RunOnUIThread(Render);
+                sw.Stop();
+                avgMS = (avgMS + (int)sw.ElapsedMilliseconds) / 2;
+                _Control.LowQualityRender = avgMS > 10;
+                _Control.SlowMode = avgMS > 30;
+                Thread.Sleep(avgMS);
             }
-            return SeriesManager.CreateSeries(Name, Range, Growing);
         }
 
         private static double Avg(double a, double b, double mult = 32)
@@ -68,14 +87,12 @@ namespace ComPlotter.Plot
             return (a * mult + b) / (mult + 1);
         }
 
-        public void SetListBox(ListBox ListBox)
-        {
-            Control.SeriesListBox = ListBox;
-        }
-
         private void Render()
         {
-            SeriesManager.Update(); // FIXME: System.InvalidOperationException: 'Collection was modified; enumeration operation may not execute.'
+            foreach (PlotGroup SeriesManager in Groups)
+            {
+                SeriesManager.Update(); // FIXME: System.InvalidOperationException: 'Collection was modified; enumeration operation may not execute.'
+            }
 
             if (_Control._AutoRange)
             {
@@ -87,20 +104,6 @@ namespace ComPlotter.Plot
             }
 
             WpfPlot.Refresh(_Control.LowQualityRender);
-        }
-
-        private void RenderRunner()
-        {
-            while (true)
-            {
-                sw.Restart();
-                _ = WpfPlot.Dispatcher.InvokeAsync(Render).Wait();
-                sw.Stop();
-                avgMS = (avgMS + (int)sw.ElapsedMilliseconds) / 2;
-                _Control.LowQualityRender = avgMS > 10;
-                _Control.SlowMode = avgMS > 30;
-                Thread.Sleep(avgMS);
-            }
         }
     }
 }

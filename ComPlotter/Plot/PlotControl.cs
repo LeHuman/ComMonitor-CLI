@@ -11,15 +11,14 @@ namespace ComPlotter.Plot
 {
     public class PlotControl : INotifyPropertyChanged
     {
-        public string HighlightedPointStatus { get; private set; }
         public PlotSeries SelectedPlot { get; set; }
         public ICommand ClearCommand { get; private set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public List<PlotSeries> SeriesList => SeriesManager.SeriesList;
-
-        public bool AutoRange { get => _AutoRange; set { _AutoRange = value; if (value) { _ = WpfPlot.Dispatcher.InvokeAsync(() => { WpfPlot.Plot.AxisAuto(0.1, 0.5); }).Wait(); } } }
+        public string HighlightedPointStatus { get; private set; }
+        public int Range { get => _Range; set { _Range = value; SetRangeAll(value); } } // TODO: enable range for individual series
+        public bool AutoRange { get => _AutoRange; set { _AutoRange = value; if (value) { RunOnUIThread(() => { WpfPlot.Plot.AxisAuto(0.1, 0.5); }); } } }
 
         internal WpfPlot WpfPlot;
         internal bool _AutoRange = true;
@@ -29,16 +28,13 @@ namespace ComPlotter.Plot
         internal ScatterPlot HighlightedPoint;
         internal int _Range = PlotSeries.InitHeap;
 
-        public PlotSeriesManager SeriesManager;
+        private readonly List<PlotGroup> PlotGroups;
 
-        internal PlotControl(WpfPlot WpfPlot)
+        internal PlotControl(WpfPlot WpfPlot, List<PlotGroup> PlotGroups, ListBox listBox)
         {
             this.WpfPlot = WpfPlot;
-        }
-
-        internal void Setup(PlotSeriesManager SeriesManager)
-        {
-            this.SeriesManager = SeriesManager;
+            this.PlotGroups = PlotGroups;
+            SeriesListBox = listBox; // TODO: Programmaticlly setup the listbox
 
             SetupCommands();
 
@@ -49,9 +45,20 @@ namespace ComPlotter.Plot
             HighlightedPoint.IsVisible = false;
         }
 
-        public int Range // TODO: enable range for individual series
+        public void ClearAll()
         {
-            get => _Range; set { _Range = value; SeriesManager.SetRange(value); }
+            foreach (PlotGroup SeriesManager in PlotGroups)
+            {
+                SeriesManager.Clear();
+            }
+        }
+
+        public void SetRangeAll(int value)
+        {
+            foreach (PlotGroup SeriesManager in PlotGroups)
+            {
+                SeriesManager.SetRange(value);
+            }
         }
 
         public void SetHighlight(double mouseCoordX)
@@ -74,9 +81,14 @@ namespace ComPlotter.Plot
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
         }
 
+        internal void RunOnUIThread(Action action)
+        {
+            _ = WpfPlot.Dispatcher.InvokeAsync(action).Wait();
+        }
+
         private void SetupCommands()
         {
-            ClearCommand = new CommandBinding(SeriesManager.Clear);
+            ClearCommand = new CommandBinding(ClearAll);
         }
     }
 }
