@@ -2,7 +2,6 @@
 using System.Drawing;
 using ScottPlot.Plottable;
 using System.Collections.Generic;
-using System.Windows;
 using System;
 
 namespace ComPlotter.Plot
