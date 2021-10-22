@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Media.Animation;
 using ComPlotter.Plot;
 using MahApps.Metro.Controls;
 
@@ -7,6 +8,9 @@ namespace ComPlotter
     public partial class MainWindow : MetroWindow
     {
         public PlotManager PlotManager { get; private set; }
+
+        private bool SettingsToggle, AboutToggle;
+        private readonly Storyboard CloseSettings, OpenSettings, CloseAbout, OpenAbout;
 
         public MainWindow()
         {
@@ -17,6 +21,14 @@ namespace ComPlotter
             DataContext = this;
 
             new Test(PlotManager);
+
+            CloseSettings = MainGrid.Resources["SettingsPanelClose"] as Storyboard;
+            OpenSettings = MainGrid.Resources["SettingsPanelOpen"] as Storyboard;
+            CloseAbout = MainGrid.Resources["AboutPanelClose"] as Storyboard;
+            OpenAbout = MainGrid.Resources["AboutPanelOpen"] as Storyboard;
+
+            CloseAbout.Begin();
+            CloseSettings.Begin();
         }
 
         private void UpdateSelectedPlotSeries(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -40,12 +52,30 @@ namespace ComPlotter
             PlotManager.UpdateHighlight();
         }
 
-        private void LaunchGitHubSite(object sender, RoutedEventArgs e)
+        private void SettingsBtn(object sender, RoutedEventArgs e)
         {
+            SettingsToggle = !SettingsToggle;
+            if (SettingsToggle)
+            {
+                OpenSettings.Begin();
+            }
+            else
+            {
+                CloseSettings.Begin();
+            }
         }
 
-        private void DeployCupCakes(object sender, RoutedEventArgs e)
+        private void AboutBtn(object sender, RoutedEventArgs e)
         {
+            AboutToggle = !AboutToggle;
+            if (AboutToggle)
+            {
+                OpenAbout.Begin();
+            }
+            else
+            {
+                CloseAbout.Begin();
+            }
         }
     }
 }

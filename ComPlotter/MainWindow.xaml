@@ -14,28 +14,20 @@
 
     <mah:MetroWindow.LeftWindowCommands>
         <mah:WindowCommands>
-            <Button Click="LaunchGitHubSite"  ToolTip="Open up the GitHub site">
-                <iconPacks:PackIconModern Width="20"
-                                  Height="20"
-                                          VerticalAlignment="Center"
-                                  Kind="InformationCircle" />
+            <Button Click="AboutBtn">
+                <iconPacks:PackIconModern Width="20" Height="20" VerticalAlignment="Center" Kind="InformationCircle" />
             </Button>
         </mah:WindowCommands>
     </mah:MetroWindow.LeftWindowCommands>
 
     <mah:MetroWindow.RightWindowCommands>
         <mah:WindowCommands>
-            <Button Click="DeployCupCakes">
+            <Button Click="SettingsBtn">
                 <Button.ContentTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconModern Width="20"
-                                        Height="20"
-                                        VerticalAlignment="Center"
-                                        Kind="Settings" />
-                            <TextBlock Margin="4 0 0 0"
-                         VerticalAlignment="Center"
-                         Text="{Binding}" />
+                            <iconPacks:PackIconModern Width="20" Height="20" VerticalAlignment="Center" Kind="Settings" />
+                            <TextBlock Margin="4 0 0 0" VerticalAlignment="Center" Text="{Binding}" />
                         </StackPanel>
                     </DataTemplate>
                 </Button.ContentTemplate>
@@ -43,19 +35,39 @@
         </mah:WindowCommands>
     </mah:MetroWindow.RightWindowCommands>
 
-    <Grid>
+    <Grid Name="MainGrid">
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" x:Name="AboutCol" />
             <ColumnDefinition Width="45*" />
             <ColumnDefinition Width="10*" />
+            <ColumnDefinition Width="*" x:Name="SettingsCol" />
         </Grid.ColumnDefinitions>
 
-        <WpfPlot Name="MainPlot" MouseDown="UpdateMouseSelection" />
+        <Grid.Resources>
+            <Storyboard x:Key="SettingsPanelClose" Storyboard.TargetName="SettingsCol" Storyboard.TargetProperty="(ColumnDefinition.Width)">
+                <mah:GridLengthAnimation To="0" Duration="00:00:01" AccelerationRatio="0.4" DecelerationRatio="0.4"></mah:GridLengthAnimation>
+            </Storyboard>
+            <Storyboard x:Key="SettingsPanelOpen" Storyboard.TargetName="SettingsCol" Storyboard.TargetProperty="(ColumnDefinition.Width)">
+                <mah:GridLengthAnimation To="10*" Duration="00:00:01" AccelerationRatio="0.4" DecelerationRatio="0.4"></mah:GridLengthAnimation>
+            </Storyboard>
+            <Storyboard x:Key="AboutPanelClose" Storyboard.TargetName="AboutCol" Storyboard.TargetProperty="(ColumnDefinition.Width)">
+                <mah:GridLengthAnimation To="0" Duration="00:00:01" AccelerationRatio="0.4" DecelerationRatio="0.4"></mah:GridLengthAnimation>
+            </Storyboard>
+            <Storyboard x:Key="AboutPanelOpen" Storyboard.TargetName="AboutCol" Storyboard.TargetProperty="(ColumnDefinition.Width)">
+                <mah:GridLengthAnimation To="10*" Duration="00:00:01" AccelerationRatio="0.4" DecelerationRatio="0.4"></mah:GridLengthAnimation>
+            </Storyboard>
+        </Grid.Resources>
 
-        <Border Grid.Column="1" Margin="5,15,15,15">
+        <Border Grid.Column="0" Margin="15,15,0,15">
+        </Border>
+
+        <WpfPlot Grid.Column="1" Name="MainPlot" MouseDown="UpdateMouseSelection" />
+
+        <Border Grid.Column="2" Margin="5,15,15,15">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="40*" />
-                    <RowDefinition Height="80" />
+                    <RowDefinition Height="40" />
                 </Grid.RowDefinitions>
                 <Grid Grid.Row="0">
                     <Grid.RowDefinitions>
@@ -84,11 +96,16 @@
                 </Grid>
                 <Border Grid.Row="1">
                     <StackPanel>
-                        <Button Margin="0 5 0 0" VerticalAlignment="Bottom" >Apply</Button>
                         <Button Margin="0 5 0 0" Command="{Binding PlotManager.Control.ClearCommand}" VerticalAlignment="Bottom" >Clear</Button>
                     </StackPanel>
                 </Border>
             </Grid>
+        </Border>
+
+        <Border Grid.Column="3" Margin="10,15,15,15">
+            <StackPanel>
+                <Label Content="Yes" />
+            </StackPanel>
         </Border>
     </Grid>
 </mah:MetroWindow>
