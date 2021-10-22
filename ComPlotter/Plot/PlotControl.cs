@@ -18,7 +18,7 @@ namespace ComPlotter.Plot
 
         public string HighlightedPointStatus { get; private set; }
         public int Range { get => _Range; set { _Range = value; SetRangeAll(value); } } // TODO: enable range for individual series
-        public bool AutoRange { get => _AutoRange; set { _AutoRange = value; if (value) { RunOnUIThread(() => { WpfPlot.Plot.AxisAuto(0.1, 0.5); }); } } }
+        public bool AutoRange { get => _AutoRange; set { _AutoRange = value; EnableInput(!value); if (value) { RunOnUIThread(() => { WpfPlot.Plot.AxisAuto(0.1, 0.5); }); } } }
 
         internal WpfPlot WpfPlot;
         internal bool _AutoRange = true;
@@ -36,6 +36,12 @@ namespace ComPlotter.Plot
             this.PlotGroups = PlotGroups;
             SeriesListBox = listBox; // TODO: Programmaticlly setup the listbox
 
+            WpfPlot.Configuration.MiddleClickAutoAxis = false;
+            //WpfPlot.Configuration.DoubleClickBenchmark = false;
+            WpfPlot.Configuration.WarnIfRenderNotCalledManually = false;
+
+            EnableInput(false);
+
             SetupCommands();
 
             HighlightedPoint = WpfPlot.Plot.AddPoint(0, 0);
@@ -43,6 +49,14 @@ namespace ComPlotter.Plot
             HighlightedPoint.MarkerSize = 10;
             HighlightedPoint.MarkerShape = MarkerShape.openCircle;
             HighlightedPoint.IsVisible = false;
+        }
+
+        private void EnableInput(bool enable)
+        {
+            WpfPlot.Configuration.LeftClickDragPan = enable;
+            WpfPlot.Configuration.MiddleClickDragZoom = enable;
+            WpfPlot.Configuration.RightClickDragZoom = enable;
+            WpfPlot.Configuration.ScrollWheelZoom = enable;
         }
 
         public void ClearAll()
