@@ -37,28 +37,35 @@
 
     <Grid Name="MainGrid">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" x:Name="AboutCol" />
+            <ColumnDefinition Width="10*" x:Name="AboutCol" />
             <ColumnDefinition Width="45*" />
             <ColumnDefinition Width="10*" />
-            <ColumnDefinition Width="*" x:Name="SettingsCol" />
+            <ColumnDefinition Width="10*" x:Name="SettingsCol" />
         </Grid.ColumnDefinitions>
 
         <Grid.Resources>
-            <Storyboard x:Key="SettingsPanelClose" Storyboard.TargetName="SettingsCol" Storyboard.TargetProperty="(ColumnDefinition.Width)">
-                <mah:GridLengthAnimation To="0" Duration="00:00:01" AccelerationRatio="0.4" DecelerationRatio="0.4"></mah:GridLengthAnimation>
+            <Storyboard x:Key="AboutPanelToggle">
+                <local:GridLengthAnimation
+                Storyboard.TargetProperty="Width"
+                Storyboard.TargetName="AboutCol"
+                From="0*"
+                To="10*"
+                Duration="0:0:0.3" />
             </Storyboard>
-            <Storyboard x:Key="SettingsPanelOpen" Storyboard.TargetName="SettingsCol" Storyboard.TargetProperty="(ColumnDefinition.Width)">
-                <mah:GridLengthAnimation To="10*" Duration="00:00:01" AccelerationRatio="0.4" DecelerationRatio="0.4"></mah:GridLengthAnimation>
-            </Storyboard>
-            <Storyboard x:Key="AboutPanelClose" Storyboard.TargetName="AboutCol" Storyboard.TargetProperty="(ColumnDefinition.Width)">
-                <mah:GridLengthAnimation To="0" Duration="00:00:01" AccelerationRatio="0.4" DecelerationRatio="0.4"></mah:GridLengthAnimation>
-            </Storyboard>
-            <Storyboard x:Key="AboutPanelOpen" Storyboard.TargetName="AboutCol" Storyboard.TargetProperty="(ColumnDefinition.Width)">
-                <mah:GridLengthAnimation To="10*" Duration="00:00:01" AccelerationRatio="0.4" DecelerationRatio="0.4"></mah:GridLengthAnimation>
+            <Storyboard x:Key="SettingsPanelToggle">
+                <local:GridLengthAnimation
+                Storyboard.TargetProperty="Width"
+                Storyboard.TargetName="SettingsCol"
+                From="0*"
+                To="10*"
+                Duration="0:0:0.3" />
             </Storyboard>
         </Grid.Resources>
 
         <Border Grid.Column="0" Margin="15,15,0,15">
+            <StackPanel>
+                <Label Content="About" FontSize="18" FontWeight="Bold" />
+            </StackPanel>
         </Border>
 
         <WpfPlot Grid.Column="1" Name="MainPlot" MouseDown="UpdateMouseSelection" />
@@ -104,7 +111,7 @@
 
         <Border Grid.Column="3" Margin="10,15,15,15">
             <StackPanel>
-                <Label Content="Yes" />
+                <Label Content="Settings" FontSize="18" FontWeight="Bold" />
             </StackPanel>
         </Border>
     </Grid>

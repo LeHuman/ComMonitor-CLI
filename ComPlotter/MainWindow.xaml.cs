@@ -9,8 +9,7 @@ namespace ComPlotter
     {
         public PlotManager PlotManager { get; private set; }
 
-        private bool SettingsToggle, AboutToggle;
-        private readonly Storyboard CloseSettings, OpenSettings, CloseAbout, OpenAbout;
+        private readonly Storyboard ToggleSettings, ToggleAbout;
 
         public MainWindow()
         {
@@ -20,15 +19,10 @@ namespace ComPlotter
 
             DataContext = this;
 
-            new Test(PlotManager);
+            ToggleSettings = MainGrid.Resources["SettingsPanelToggle"] as Storyboard;
+            ToggleAbout = MainGrid.Resources["AboutPanelToggle"] as Storyboard;
 
-            CloseSettings = MainGrid.Resources["SettingsPanelClose"] as Storyboard;
-            OpenSettings = MainGrid.Resources["SettingsPanelOpen"] as Storyboard;
-            CloseAbout = MainGrid.Resources["AboutPanelClose"] as Storyboard;
-            OpenAbout = MainGrid.Resources["AboutPanelOpen"] as Storyboard;
-
-            CloseAbout.Begin();
-            CloseSettings.Begin();
+            //new Test(PlotManager);
         }
 
         private void UpdateSelectedPlotSeries(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -54,28 +48,12 @@ namespace ComPlotter
 
         private void SettingsBtn(object sender, RoutedEventArgs e)
         {
-            SettingsToggle = !SettingsToggle;
-            if (SettingsToggle)
-            {
-                OpenSettings.Begin();
-            }
-            else
-            {
-                CloseSettings.Begin();
-            }
+            ToggleSettings.Begin();
         }
 
         private void AboutBtn(object sender, RoutedEventArgs e)
         {
-            AboutToggle = !AboutToggle;
-            if (AboutToggle)
-            {
-                OpenAbout.Begin();
-            }
-            else
-            {
-                CloseAbout.Begin();
-            }
+            ToggleAbout.Begin();
         }
     }
 }
