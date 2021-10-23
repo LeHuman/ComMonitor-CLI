@@ -38,7 +38,7 @@
 
     <Grid Name="MainGrid">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="10*" x:Name="AboutCol" />
+            <ColumnDefinition Width="0*" x:Name="AboutCol" />
             <ColumnDefinition Width="45*" />
             <ColumnDefinition Width="10*" />
             <ColumnDefinition Width="10*" x:Name="SettingsCol" />
@@ -139,7 +139,8 @@
 
         <Border Grid.Column="3" Margin="10,15,15,15">
             <StackPanel>
-                <Label Content="Settings" FontSize="18" FontWeight="Bold" />
+                <TextBlock Text="Settings" FontSize="18" FontWeight="Bold"  Margin="0 0 0 10" />
+                <TextBlock Text="WIP" FontSize="12" TextWrapping="Wrap" />
             </StackPanel>
         </Border>
     </Grid>
