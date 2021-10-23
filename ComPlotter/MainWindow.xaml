@@ -3,6 +3,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:ComPlotter"
+        xmlns:wpf="clr-namespace:ComPlotter.Wpf"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         mc:Ignorable="d"
@@ -45,7 +46,7 @@
 
         <Grid.Resources>
             <Storyboard x:Key="AboutPanelToggle">
-                <local:GridLengthAnimation
+                <wpf:GridLengthAnimation
                 Storyboard.TargetProperty="Width"
                 Storyboard.TargetName="AboutCol"
                 From="0*"
@@ -53,7 +54,7 @@
                 Duration="0:0:0.3" />
             </Storyboard>
             <Storyboard x:Key="SettingsPanelToggle">
-                <local:GridLengthAnimation
+                <wpf:GridLengthAnimation
                 Storyboard.TargetProperty="Width"
                 Storyboard.TargetName="SettingsCol"
                 From="0*"
@@ -63,9 +64,36 @@
         </Grid.Resources>
 
         <Border Grid.Column="0" Margin="15,15,0,15">
-            <StackPanel>
-                <Label Content="About" FontSize="18" FontWeight="Bold" />
-            </StackPanel>
+            <Grid>
+                <StackPanel>
+                    <TextBlock Text="About" FontSize="18" FontWeight="Bold" Margin="0 0 0 10" />
+                    <Image Margin="0 0 0 10" Source="{Binding AssemblyInformation.Image}" />
+                    <TextBlock FontSize="14" FontWeight="SemiBold"  TextWrapping="Wrap" Margin="0 0 0 5">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0} {1}">
+                                <Binding Path="AssemblyInformation.Title" />
+                                <Binding Path="AssemblyInformation.Version" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                    <TextBlock Text="{Binding AssemblyInformation.Description}" FontSize="12" TextWrapping="Wrap" />
+                </StackPanel>
+                <StackPanel VerticalAlignment="Bottom">
+                    <TextBlock FontSize="12"  Margin="0 0 0 5">
+                        <Hyperlink NavigateUri="{Binding AssemblyInformation.RepoLink.Item2}" RequestNavigate="HyperlinkClick">
+                            <TextBlock Text="{Binding AssemblyInformation.RepoLink.Item1}" />
+                        </Hyperlink>
+                    </TextBlock>
+                    <TextBlock FontSize="10" FontWeight="Light" TextWrapping="Wrap">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0} {1}">
+                                <Binding Path="AssemblyInformation.Owner" />
+                                <Binding Path="AssemblyInformation.Copyright" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
         </Border>
 
         <WpfPlot Grid.Column="1" Name="MainPlot" MouseDown="UpdateMouseSelection" />

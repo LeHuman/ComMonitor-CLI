@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace ComPlotter.Plot
+namespace ComPlotter.Wpf
 {
     public delegate void Command();
 

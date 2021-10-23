@@ -1,6 +1,10 @@
-﻿using System.Windows;
+﻿using System.Diagnostics;
+using System.Reflection;
+using System.Windows;
 using System.Windows.Media.Animation;
+using System.Windows.Navigation;
 using ComPlotter.Plot;
+using ComPlotter.Util;
 using MahApps.Metro.Controls;
 
 namespace ComPlotter
@@ -8,6 +12,8 @@ namespace ComPlotter
     public partial class MainWindow : MetroWindow
     {
         public PlotManager PlotManager { get; private set; }
+
+        public AssemblyInformation AssemblyInformation { get; private set; }
 
         private readonly Storyboard ToggleSettings, ToggleAbout;
 
@@ -23,6 +29,9 @@ namespace ComPlotter
             ToggleAbout = MainGrid.Resources["AboutPanelToggle"] as Storyboard;
 
             //new Test(PlotManager);
+
+            AssemblyInformation = new(Assembly.GetExecutingAssembly());
+            AssemblyInformation.RepoLink = new("Github", new("https://github.com/LeHuman/ComMonitor-CLI"));
         }
 
         private void UpdateSelectedPlotSeries(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -49,6 +58,12 @@ namespace ComPlotter
         private void SettingsBtn(object sender, RoutedEventArgs e)
         {
             ToggleSettings.Begin();
+        }
+
+        private void HyperlinkClick(object sender, RequestNavigateEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
+            e.Handled = true;
         }
 
         private void AboutBtn(object sender, RoutedEventArgs e)

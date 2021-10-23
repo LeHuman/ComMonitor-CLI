@@ -2,10 +2,11 @@
 using ScottPlot;
 using System.Drawing;
 using ScottPlot.Plottable;
-using System.Windows.Input;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Windows.Controls;
+using System.Windows.Input;
+using CommandBinding = ComPlotter.Wpf.CommandBinding;
 
 namespace ComPlotter.Plot
 {

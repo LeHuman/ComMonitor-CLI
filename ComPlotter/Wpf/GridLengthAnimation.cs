@@ -4,7 +4,7 @@ using System.Windows.Media.Animation;
 
 // https://github.com/devstator82/inbox2_desktop/blob/221c56e0c83b0e873314767f0f9a53e25416343a/Code/Client/Inbox2/Framework/UI/GridLengthAnimation.cs
 
-namespace ComPlotter
+namespace ComPlotter.Wpf
 {
     /// <summary>
     /// Animates a grid length value just like the DoubleAnimation animates a double value
