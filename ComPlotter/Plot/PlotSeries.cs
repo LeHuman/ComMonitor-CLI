@@ -1,7 +1,7 @@
-﻿using System;
+﻿using ScottPlot.Plottable;
+using System;
 using System.ComponentModel;
 using System.Drawing;
-using ScottPlot.Plottable;
 
 namespace ComPlotter.Plot
 {

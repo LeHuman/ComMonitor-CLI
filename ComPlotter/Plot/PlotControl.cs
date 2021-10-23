@@ -1,9 +1,9 @@
-﻿using System;
-using ScottPlot;
-using System.Drawing;
+﻿using ScottPlot;
 using ScottPlot.Plottable;
-using System.ComponentModel;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
 using System.Windows.Controls;
 using System.Windows.Input;
 using CommandBinding = ComPlotter.Wpf.CommandBinding;

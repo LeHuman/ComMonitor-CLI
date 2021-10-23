@@ -1,11 +1,11 @@
-﻿using System.Diagnostics;
+﻿using ComPlotter.Plot;
+using ComPlotter.Util;
+using MahApps.Metro.Controls;
+using System.Diagnostics;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Media.Animation;
 using System.Windows.Navigation;
-using ComPlotter.Plot;
-using ComPlotter.Util;
-using MahApps.Metro.Controls;
 
 namespace ComPlotter
 {
@@ -27,8 +27,6 @@ namespace ComPlotter
 
             ToggleSettings = MainGrid.Resources["SettingsPanelToggle"] as Storyboard;
             ToggleAbout = MainGrid.Resources["AboutPanelToggle"] as Storyboard;
-
-            //new Test(PlotManager);
 
             AssemblyInformation = new(Assembly.GetExecutingAssembly());
             AssemblyInformation.RepoLink = new("Github", new("https://github.com/LeHuman/ComMonitor-CLI"));

@@ -1,8 +1,8 @@
 ﻿using ScottPlot;
-using System.Drawing;
 using ScottPlot.Plottable;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Windows.Controls;
 
 namespace ComPlotter.Plot
