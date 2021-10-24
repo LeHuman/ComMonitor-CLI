@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ComPlotter.Wpf;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Timers;
@@ -7,6 +8,7 @@ namespace ComPlotter.Plot
 {
     internal class Test
     {
+        private readonly Toaster Toaster;
         private readonly Timer DataTimer;
         private readonly Random rand = new(0);
         private readonly PlotManager PlotManager;
@@ -14,9 +16,10 @@ namespace ComPlotter.Plot
         private readonly List<PlotSeries> DeleteSeriesList = new();
         private readonly Stopwatch Stopwatch = Stopwatch.StartNew();
 
-        public Test(PlotManager PlotManager)
+        public Test(PlotManager PlotManager, Toaster Toaster)
         {
             this.PlotManager = PlotManager;
+            this.Toaster = Toaster;
 
             DataTimer = new();
             DataTimer.AutoReset = false;
@@ -65,12 +68,16 @@ namespace ComPlotter.Plot
 
             foreach (PlotGroup pm in DeletePlotList)
             {
+                Toaster.WarnToast($"Removed Port : {pm.Name}");
                 PlotManager.RemoveGroup(pm);
             }
             DeletePlotList.Clear();
 
             if (rand.Next(100) > 85)
-            { PlotManager.NewGroup(rand.Next(999).ToString()); }
+            {
+                PlotGroup g = PlotManager.NewGroup(rand.Next(999).ToString());
+                Toaster.Toast($"New Port : {g.Name}");
+            }
 
             DataTimer.Start();
         }

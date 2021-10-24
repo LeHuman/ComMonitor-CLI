@@ -16,7 +16,7 @@ namespace ComPlotter.Wpf
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private bool _IsChecked;
+        internal bool _IsChecked;
         private string _Status;
         private SolidColorBrush _Brush;
         private CheckBoxCallback Callback;
@@ -48,14 +48,14 @@ namespace ComPlotter.Wpf
             Brush = new(ToMediaColor(BrushColor));
         }
 
+        internal static MColor ToMediaColor(DColor color)
+        {
+            return MColor.FromArgb(color.A, color.R, color.G, color.B);
+        }
+
         internal virtual void OnPropertyChanged(string property)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
-        }
-
-        private static MColor ToMediaColor(DColor color)
-        {
-            return MColor.FromArgb(color.A, color.R, color.G, color.B);
         }
     }
 }

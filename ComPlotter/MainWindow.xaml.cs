@@ -2,9 +2,11 @@
 using ComPlotter.Util;
 using ComPlotter.Wpf;
 using MahApps.Metro.Controls;
+using MaterialDesignColors;
 using System.Diagnostics;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Navigation;
 
@@ -12,6 +14,7 @@ namespace ComPlotter
 {
     public partial class MainWindow : MetroWindow
     {
+        public Toaster Toaster { get; }
         public SettingsPanel Settings { get; }
         public PlotManager PlotManager { get; private set; }
 
@@ -47,9 +50,15 @@ namespace ComPlotter
             CheckBox PurgeCheck = Settings.AddCheckBox("Auto Purge");
             PurgeCheck.Status = "Automaticlly purge the data of ports that have been disconnected";
 
-            CheckBox NotifyCheck = Settings.AddCheckBox("Disable Notifications");
+            CheckBox NotifyCheck = Settings.AddCheckBox("Enable Notifications", true);
+            NotifyCheck.Status = "Notifications temporarily show info on the bottom left of the application";
+            NotifyCheck.SetCallback(v => { Toaster.Enable = v; });
 
-            new Test(PlotManager);
+            Toaster = new(FindResource("MahApps.Brushes.AccentBase") as SolidColorBrush, new(SwatchHelper.Lookup[MaterialDesignColor.Red600]), new(SwatchHelper.Lookup[MaterialDesignColor.Amber600]), new(SwatchHelper.Lookup[MaterialDesignColor.Purple600]));
+
+            Loaded += (_, _) => { Toaster.Toast("Loaded"); };
+
+            new Test(PlotManager, Toaster);
         }
 
         private void UpdateSelectedPlotSeries(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -73,6 +82,11 @@ namespace ComPlotter
             PlotManager.UpdateHighlight();
         }
 
+        private void AboutBtn(object sender, RoutedEventArgs e)
+        {
+            ToggleAbout.Begin();
+        }
+
         private void SettingsBtn(object sender, RoutedEventArgs e)
         {
             ToggleSettings.Begin();
@@ -84,9 +98,9 @@ namespace ComPlotter
             e.Handled = true;
         }
 
-        private void AboutBtn(object sender, RoutedEventArgs e)
+        private void ListView_ScrollChanged(object sender, System.Windows.Controls.ScrollChangedEventArgs e)
         {
-            ToggleAbout.Begin();
+            ((System.Windows.Controls.ScrollViewer)e.OriginalSource).ScrollToBottom();
         }
     }
 }
