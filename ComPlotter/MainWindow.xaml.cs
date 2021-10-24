@@ -43,6 +43,12 @@ namespace ComPlotter
             BenchmarkCheck.Status = "Show the render time for the last rendered frame";
             BenchmarkCheck.SetCallback(IsChecked => { PlotManager.Control.EnableBenchmark(IsChecked); });
 
+            // TODO: implement the following
+            CheckBox PurgeCheck = Settings.AddCheckBox("Auto Purge");
+            PurgeCheck.Status = "Automaticlly purge the data of ports that have been disconnected";
+
+            CheckBox NotifyCheck = Settings.AddCheckBox("Disable Notifications");
+
             new Test(PlotManager);
         }
 

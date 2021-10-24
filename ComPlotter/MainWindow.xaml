@@ -41,7 +41,7 @@
             <ColumnDefinition Width="0*" x:Name="AboutCol" />
             <ColumnDefinition Width="45*" />
             <ColumnDefinition Width="10*" />
-            <ColumnDefinition Width="0*" x:Name="SettingsCol" />
+            <ColumnDefinition Width="*" x:Name="SettingsCol" />
         </Grid.ColumnDefinitions>
 
         <Grid.Resources>
