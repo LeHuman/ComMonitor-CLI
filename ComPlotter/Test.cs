@@ -1,10 +1,11 @@
-﻿using ComPlotter.Wpf;
+﻿using ComPlotter.Plot;
+using ComPlotter.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Timers;
 
-namespace ComPlotter.Plot {
+namespace ComPlotter {
 
     internal class Test {
         private readonly Toaster Toaster;
