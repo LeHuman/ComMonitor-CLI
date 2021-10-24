@@ -1,30 +1,26 @@
-﻿using ScottPlot.Plottable;
+﻿using ComPlotter.Util;
+using ScottPlot.Plottable;
 using System;
-using System.ComponentModel;
 using System.Drawing;
 
 namespace ComPlotter.Plot
 {
-    public class PlotSeries : INotifyPropertyChanged
+    public class PlotSeries
     {
         public string Name { get; }
         public const int InitHeap = 512;
         public bool Growing { get; set; }
+        public CheckBox CheckBox { get; private set; }
         public bool Invalid { get; internal set; }
-        public string Status { get; private set; }
-
-        public bool IsVisible { get; set; } = true;
-
+        public bool IsVisible { get => _IsVisible; set { CheckBox.IsChecked = value; _IsVisible = value; } }
         public double LastY { get => Data[LastX]; }
         public int LastX { get => nextDataIndex - 1; }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public System.Windows.Media.SolidColorBrush Brush { get; }
         public int Range { get => _Range; set => _Range = Math.Max(value, 0); }
 
         internal long Counter;
+        internal bool _IsVisible;
         internal Color _Color;
+
         internal SignalPlot SignalPlot;
         internal double[] Data = new double[InitHeap];
 
@@ -41,9 +37,10 @@ namespace ComPlotter.Plot
             this.Growing = Growing;
             this.Manager = Manager;
             _Color = Color;
-            Brush = new(ToMediaColor(_Color));
+            CheckBox = new(Name, Color);
             ReloadPlot();
             SignalPlot.Color = Color;
+            IsVisible = true;
         }
 
         public (double x, double y, int index) GetPointNearestX(double X)
@@ -70,11 +67,6 @@ namespace ComPlotter.Plot
             Counter++;
 
             nextDataIndex += 1;
-        }
-
-        public static System.Windows.Media.Color ToMediaColor(Color color)
-        {
-            return System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B);
         }
 
         internal void Clear()
@@ -110,14 +102,8 @@ namespace ComPlotter.Plot
             SignalPlot.MinRenderIndex = MinRender;
             SignalPlot.MaxRenderIndex = MaxRender;
             SignalPlot.OffsetX = OffsetX;
-            SignalPlot.IsVisible = IsVisible;
-            Status = $"{Counter} : {Math.Round(LastY, 3)}";
-            OnPropertyChanged("Status");
-        }
-
-        internal virtual void OnPropertyChanged(string property)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
+            SignalPlot.IsVisible = _IsVisible;
+            CheckBox.Status = $"{Counter} : {Math.Round(LastY, 3)}";
         }
 
         private static int NextSize(int CurrentSize)

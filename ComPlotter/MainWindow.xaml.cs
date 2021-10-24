@@ -11,6 +11,7 @@ namespace ComPlotter
 {
     public partial class MainWindow : MetroWindow
     {
+        public SettingsPanel Settings { get; }
         public PlotManager PlotManager { get; private set; }
 
         public AssemblyInformation AssemblyInformation { get; private set; }
@@ -30,6 +31,10 @@ namespace ComPlotter
 
             AssemblyInformation = new(Assembly.GetExecutingAssembly());
             AssemblyInformation.RepoLink = new("Github", new("https://github.com/LeHuman/ComMonitor-CLI"));
+
+            Settings = new SettingsPanel(SettingsCheckList);
+
+            new Test(PlotManager);
         }
 
         private void UpdateSelectedPlotSeries(object sender, System.Windows.Controls.SelectionChangedEventArgs e)

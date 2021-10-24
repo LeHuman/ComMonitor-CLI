@@ -133,7 +133,12 @@ namespace ComPlotter.Plot
 
             Name = $"{this.Name} : {Name}";
 
-            PlotController.RunOnUIThread(() => { ps = new(this, Name, NextColor(), Range, Growing); SeriesList.Add(ps); SeriesListBox?.Items.Add(ps); });
+            PlotController.RunOnUIThread(() =>
+            {
+                ps = new(this, Name, NextColor(), Range, Growing);
+                SeriesList.Add(ps);
+                SeriesListBox?.Items.Add(ps);
+            });
 
             if (PlotController.SlowMode) // TODO: Show warning that new plots are being hidden
             {
