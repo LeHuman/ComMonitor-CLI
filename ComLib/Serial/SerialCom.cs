@@ -13,15 +13,14 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 
-namespace Serial
-{
-    public class DataStreamEventArgs : EventArgs
-    {
+namespace Serial {
+
+    public class DataStreamEventArgs : EventArgs {
         public byte[] Data { get; set; }
     }
 
-    public static class SerialClient
-    {
+    public static class SerialClient {
+
         #region Defines
 
         public static string portName { get; private set; }
@@ -47,19 +46,16 @@ namespace Serial
 
         #region Setups
 
-        public static void Setup(string port)
-        {
+        public static void Setup(string port) {
             portName = port;
         }
 
-        public static void Setup(string Port, int baudRate)
-        {
+        public static void Setup(string Port, int baudRate) {
             Setup(Port);
             SerialClient.baudRate = baudRate;
         }
 
-        public static void Setup(string Port, int baudRate, Parity parity, int dataBits, StopBits stopBits, int freqCriticalLimit)
-        {
+        public static void Setup(string Port, int baudRate, Parity parity, int dataBits, StopBits stopBits, int freqCriticalLimit) {
             Setup(Port, baudRate);
             SerialClient.parity = parity;
             SerialClient.dataBits = dataBits;
@@ -67,8 +63,7 @@ namespace Serial
             SerialClient.freqCriticalLimit = Math.Max(1, freqCriticalLimit);
         }
 
-        public static void SetWriteTimeout(int timeout)
-        {
+        public static void SetWriteTimeout(int timeout) {
             writeTimeout = timeout;
         }
 
@@ -78,18 +73,15 @@ namespace Serial
 
         #region Port Control
 
-        public static bool OpenConn()
-        {
-            try
-            {
+        public static bool OpenConn() {
+            try {
                 if (serialPort == null)
                     serialPort = new SerialPortStream(portName, baudRate, dataBits, parity, stopBits);
 
                 if (!PortAvailable())
                     throw new SerialException(string.Format("Port is not available: {0}", portName));
 
-                if (!serialPort.IsOpen)
-                {
+                if (!serialPort.IsOpen) {
                     serialPort.ReadTimeout = -1;
                     serialPort.WriteTimeout = writeTimeout;
 
@@ -108,59 +100,46 @@ namespace Serial
                     serThread.Name = "SerialHandle" + serThread.ManagedThreadId;
                     serThread.Start(); /*Start The Communication Thread*/
                 }
-            }
-            catch (SerialException e)
-            {
+            } catch (SerialException e) {
                 Console.WriteLine(e.Message);
                 return false;
-            }
-            catch
-            {
+            } catch {
                 return false;
             }
 
             return true;
         }
 
-        public static bool OpenConn(string port, int baudRate)
-        {
+        public static bool OpenConn(string port, int baudRate) {
             portName = port;
             SerialClient.baudRate = baudRate;
 
             return OpenConn();
         }
 
-        public static void CloseConn()
-        {
-            if (serialPort != null && serialPort.IsOpen)
-            {// Stop thread here
-             // serThread.Interrupt();
+        public static void CloseConn() {
+            if (serialPort != null && serialPort.IsOpen) {// Stop thread here
+                                                          // serThread.Interrupt();
 
                 // if (serThread.ThreadState == ThreadState.Aborted)
                 serialPort.Close();
             }
         }
 
-        public static bool ResetConn()
-        {
+        public static bool ResetConn() {
             CloseConn();
             return OpenConn();
         }
 
-        public static bool PortAvailable()
-        {
-            try
-            {
+        public static bool PortAvailable() {
+            try {
                 return SerialPortStream.GetPortNames().Contains(portName);
-            }
-            catch (Win32Exception)
-            {
+            } catch (Win32Exception) {
                 return false;
             }
         }
 
-        public static bool IsAlive()
-        {
+        public static bool IsAlive() {
             return serialPort.IsOpen;
         }
 
@@ -168,8 +147,7 @@ namespace Serial
 
         #region Transmit/Receive
 
-        public static void Transmit(byte[] packet)
-        {
+        public static void Transmit(byte[] packet) {
             serialPort.Write(packet, 0, packet.Length);
         }
 
@@ -177,12 +155,10 @@ namespace Serial
 
         #region IDisposable Methods
 
-        public static void Dispose()
-        {
+        public static void Dispose() {
             CloseConn();
 
-            if (serialPort != null)
-            {
+            if (serialPort != null) {
                 serialPort.Dispose();
                 serialPort = null;
             }
@@ -194,8 +170,7 @@ namespace Serial
 
         #region Threading Loops
 
-        public static bool AddFreq(int freq)
-        {
+        public static bool AddFreq(int freq) {
             if (freqCriticalLimit == 1)
                 return false;
             freqCriticalLimit = Math.Max(freqCriticalLimit + freq, 1);
@@ -204,37 +179,27 @@ namespace Serial
 
         public static void SendString(string msg) // TODO: Async Writes
         {
-            try
-            {
+            try {
                 if (serialPort != null)
                     serialPort.Write(msg);
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 Console.WriteLine($"Serial: Error Sending Data, {e.Message}");
             }
         }
 
-        public static void SendBytes(byte[] msg)
-        {
-            try
-            {
+        public static void SendBytes(byte[] msg) {
+            try {
                 if (serialPort != null)
                     serialPort.Write(msg, 0, msg.Length);
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 Console.WriteLine($"Serial: Error Sending Data, {e.Message}");
             }
         }
 
-        private static async void SerialReceiving()
-        {
+        private static async void SerialReceiving() {
             int count;
-            while (true)
-            {
-                try
-                {
+            while (true) {
+                try {
                     count = serialPort.BytesToRead;
 
                     /*Get Sleep Inteval*/
@@ -243,8 +208,7 @@ namespace Serial
                     /*Form The Packet in The Buffer*/
                     byte[] buf = new byte[count];
                     int readBytes = 0;
-                    if (count > 0)
-                    {
+                    if (count > 0) {
                         readBytes = await serialPort.ReadAsync(buf, 0, count);
                         OnSerialReceiving(buf);
                     }
@@ -258,9 +222,7 @@ namespace Serial
                         Thread.Sleep(tmpInterval.Milliseconds > freqCriticalLimit ? freqCriticalLimit : tmpInterval.Milliseconds);
 
                     #endregion Frequency Control
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     Console.WriteLine($"Serial: Error Receiving Data, {e.Message}");
                     break;
                 }
@@ -271,8 +233,7 @@ namespace Serial
 
         #region Custom Events Invoke Functions
 
-        private static void OnSerialReceiving(byte[] res)
-        {
+        private static void OnSerialReceiving(byte[] res) {
             SerialDataReceived?.Invoke(null, new DataStreamEventArgs() { Data = res });
         }
 

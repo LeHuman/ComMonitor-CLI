@@ -8,10 +8,9 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using CommandBinding = ComPlotter.Wpf.CommandBinding;
 
-namespace ComPlotter.Plot
-{
-    public class PlotControl : INotifyPropertyChanged
-    {
+namespace ComPlotter.Plot {
+
+    public class PlotControl : INotifyPropertyChanged {
         public PlotSeries SelectedPlot { get; set; }
         public ICommand ClearCommand { get; private set; }
 
@@ -31,8 +30,7 @@ namespace ComPlotter.Plot
 
         private readonly List<PlotGroup> PlotGroups;
 
-        internal PlotControl(WpfPlot WpfPlot, List<PlotGroup> PlotGroups, ListBox listBox)
-        {
+        internal PlotControl(WpfPlot WpfPlot, List<PlotGroup> PlotGroups, ListBox listBox) {
             this.WpfPlot = WpfPlot;
             this.PlotGroups = PlotGroups;
             SeriesListBox = listBox; // TODO: Programmaticlly setup the listbox
@@ -67,41 +65,32 @@ namespace ComPlotter.Plot
             WpfPlot.Configuration.ScrollWheelZoom = enable;
         }
 
-        public void EnableBenchmark(bool Enabled)
-        {
+        public void EnableBenchmark(bool Enabled) {
             WpfPlot.Plot.Benchmark(Enabled);
         }
 
-        public void DisableSlowMode(bool Disable)
-        {
+        public void DisableSlowMode(bool Disable) {
             _DisableSlowMode = Disable;
-            if (Disable)
-            {
+            if (Disable) {
                 LowQualityRender = false;
                 SlowMode = false;
             }
         }
 
-        public void ClearAll()
-        {
-            foreach (PlotGroup SeriesManager in PlotGroups)
-            {
+        public void ClearAll() {
+            foreach (PlotGroup SeriesManager in PlotGroups) {
                 SeriesManager.Clear();
             }
         }
 
-        public void SetRangeAll(int value)
-        {
-            foreach (PlotGroup SeriesManager in PlotGroups)
-            {
+        public void SetRangeAll(int value) {
+            foreach (PlotGroup SeriesManager in PlotGroups) {
                 SeriesManager.SetRange(value);
             }
         }
 
-        public void SetHighlight(double mouseCoordX)
-        {
-            if (SelectedPlot == null || !SelectedPlot.IsVisible)
-            {
+        public void SetHighlight(double mouseCoordX) {
+            if (SelectedPlot == null || !SelectedPlot.IsVisible) {
                 HighlightedPoint.IsVisible = false;
                 return;
             }
@@ -113,18 +102,15 @@ namespace ComPlotter.Plot
             OnPropertyChanged("HighlightedPointStatus");
         }
 
-        internal virtual void OnPropertyChanged(string property)
-        {
+        internal virtual void OnPropertyChanged(string property) {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
         }
 
-        internal void RunOnUIThread(Action action)
-        {
+        internal void RunOnUIThread(Action action) {
             _ = WpfPlot.Dispatcher.InvokeAsync(action).Wait();
         }
 
-        private void SetupCommands()
-        {
+        private void SetupCommands() {
             ClearCommand = new CommandBinding(ClearAll);
         }
     }

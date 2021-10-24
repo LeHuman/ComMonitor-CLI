@@ -5,10 +5,9 @@ using System.Drawing;
 using System.Threading;
 using System.Windows.Controls;
 
-namespace ComPlotter.Plot
-{
-    public class PlotManager
-    {
+namespace ComPlotter.Plot {
+
+    public class PlotManager {
         public PlotControl Control => _Control;
         public List<PlotGroup> Groups { get; } = new();
 
@@ -22,8 +21,7 @@ namespace ComPlotter.Plot
         private readonly Stopwatch sw = new();
         private readonly ScottPlot.Plottable.Annotation SlowModeAnnotation;
 
-        public PlotManager(WpfPlot WpfPlot, ListBox ListBox = null)
-        {
+        public PlotManager(WpfPlot WpfPlot, ListBox ListBox = null) {
             this.WpfPlot = WpfPlot;
             this.ListBox = ListBox;
             ScottPlot.Plot plt = WpfPlot.Plot;
@@ -50,42 +48,34 @@ namespace ComPlotter.Plot
             Start();
         }
 
-        public void Start()
-        {
+        public void Start() {
             RunRender = true;
             RenderThread.Start();
         }
 
-        public void Stop()
-        {
+        public void Stop() {
             RunRender = false;
         }
 
-        public void RemoveGroup(PlotGroup Group)
-        {
+        public void RemoveGroup(PlotGroup Group) {
             Group.Delete();
             _Control.RunOnUIThread(() => { _ = Groups.Remove(Group); });
         }
 
-        public PlotGroup NewGroup(string Name)
-        {
+        public PlotGroup NewGroup(string Name) {
             PlotGroup pm = new(Name, _Control, ListBox); // TODO: Give each group their own list
             _Control.RunOnUIThread(() => { Groups.Add(pm); });
             return pm;
         }
 
-        public void UpdateHighlight()
-        {
+        public void UpdateHighlight() {
             (double mouseCoordX, _) = WpfPlot.GetMouseCoordinates();
             _Control.SetHighlight(mouseCoordX);
         }
 
-        private void RenderRunner()
-        {
-            while (RunRender)
-            {
-                if (!_Control._DisableSlowMode)
-                {
+        private void RenderRunner() {
+            while (RunRender) {
+                if (!_Control._DisableSlowMode) {
                     sw.Restart();
                     _Control.RunOnUIThread(Render);
                     sw.Stop();
@@ -94,9 +84,7 @@ namespace ComPlotter.Plot
                     _Control.SlowMode = avgMS > 30;
                     SlowModeAnnotation.IsVisible = false;
                     SlowModeAnnotation.Background = false;
-                }
-                else
-                {
+                } else {
                     _Control.RunOnUIThread(Render);
                     avgMS = 5;
                 }
@@ -106,20 +94,16 @@ namespace ComPlotter.Plot
             }
         }
 
-        private static double Avg(double a, double b, double mult = 32)
-        {
+        private static double Avg(double a, double b, double mult = 32) {
             return (a * mult + b) / (mult + 1);
         }
 
-        private void Render()
-        {
-            foreach (PlotGroup SeriesManager in Groups)
-            {
+        private void Render() {
+            foreach (PlotGroup SeriesManager in Groups) {
                 SeriesManager.Update(); // FIXME: System.InvalidOperationException: 'Collection was modified; enumeration operation may not execute.'
             }
 
-            if (_Control._AutoRange)
-            {
+            if (_Control._AutoRange) {
                 AxisLimits alb = WpfPlot.Plot.GetAxisLimits();
                 WpfPlot.Plot.AxisAuto(0.1, 0.5);
                 AxisLimits ala = WpfPlot.Plot.GetAxisLimits();

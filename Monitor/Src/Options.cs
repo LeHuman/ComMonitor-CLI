@@ -2,10 +2,10 @@
 using RJCP.IO.Ports;
 using Serial;
 
-namespace ComMonitor.Main
-{
-    internal class Options
-    {
+namespace ComMonitor.Main {
+
+    internal class Options {
+
         [Value(0, MetaName = "portName", Required = true, HelpText = "Set the port name to connect to.\nEx. COM6")]
         public string PortName { get; set; }
 

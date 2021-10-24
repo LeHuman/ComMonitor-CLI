@@ -2,10 +2,10 @@
 using System.Reflection;
 using System.Windows.Media.Imaging;
 
-namespace ComPlotter.Util
-{
-    public class AssemblyInformation
-    {
+namespace ComPlotter.Util {
+
+    public class AssemblyInformation {
+
         /// <summary>
         ///     Gets or sets the product to which this assembly belongs.
         /// </summary>
@@ -50,8 +50,7 @@ namespace ComPlotter.Util
         ///     Constructs a new AssemblyInformation object with information contained in the given assembly
         /// </summary>
         /// <param name="assembly">The assembly to extract information from</param>
-        public AssemblyInformation(Assembly assembly)
-        {
+        public AssemblyInformation(Assembly assembly) {
             Title = assembly.GetCustomAttribute<AssemblyTitleAttribute>()?.Title;
             Product = assembly.GetCustomAttribute<AssemblyProductAttribute>()?.Product;
             Description = assembly.GetCustomAttribute<AssemblyDescriptionAttribute>()?.Description;

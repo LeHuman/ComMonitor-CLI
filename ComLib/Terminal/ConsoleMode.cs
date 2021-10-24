@@ -3,10 +3,9 @@ using System.Runtime.InteropServices;
 
 // Yoinked from https://stackoverflow.com/questions/13656846/how-to-programmatic-disable-c-sharp-console-applications-quick-edit-mode
 
-namespace Terminal
-{
-    internal static class ConsoleMode
-    {
+namespace Terminal {
+
+    internal static class ConsoleMode {
         public const uint ENABLE_QUICK_EDIT = 0x0040;
         public const uint ENABLE_LINE_INPUT = 0x0002;
         public const uint ENABLE_MOUSE_INPUT = 0x0010;
@@ -23,15 +22,12 @@ namespace Terminal
         [DllImport("kernel32.dll")]
         private static extern bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);
 
-        internal static bool Set(uint option, bool enable)
-        {
-            try
-            {
+        internal static bool Set(uint option, bool enable) {
+            try {
                 IntPtr consoleHandle = GetStdHandle(STD_INPUT_HANDLE);
 
                 uint consoleMode;
-                if (!GetConsoleMode(consoleHandle, out consoleMode))
-                {
+                if (!GetConsoleMode(consoleHandle, out consoleMode)) {
                     return false;
                 }
 
@@ -40,13 +36,10 @@ namespace Terminal
                 else
                     consoleMode &= ~option;
 
-                if (!SetConsoleMode(consoleHandle, consoleMode))
-                {
+                if (!SetConsoleMode(consoleHandle, consoleMode)) {
                     return false;
                 }
-            }
-            catch (Exception)
-            {
+            } catch (Exception) {
                 return false;
             }
 

@@ -10,10 +10,10 @@ using System.Linq;
 using System.Threading;
 using Terminal;
 
-namespace ComMonitor.Main
-{
-    public static class MainClass
-    {
+namespace ComMonitor.Main {
+
+    public static class MainClass {
+
         #region defines
 
         private static int MAX_RETRY = 500; // We should give it a limit, just in case
@@ -24,7 +24,7 @@ namespace ComMonitor.Main
         private static string PriorityPipeName = "ComMonitor";
         private static PingPipe priorityPipe;
 
-        private static string SerialPipeName = "ComPlotter";
+        private static readonly string SerialPipeName = "ComPlotter";
         private static DataPipe SerialPipe;
 
         private static string connectStr, waitStr, retryStr;
@@ -37,18 +37,15 @@ namespace ComMonitor.Main
 
         #region Runtime Methods
 
-        private static void RetryWait(bool firstWait = false)
-        {
+        private static void RetryWait(bool firstWait = false) {
             if (SerialClient.PortAvailable())
                 return;
             Thread.Sleep(100);
             Term.ColorConsole(ConsoleColor.Blue);
             FileLog.Flush();
             string waitMessage = firstWait ? waitStr : retryStr;
-            do
-            {
-                for (int i = 0; i < waitAnimTime.Length; i++)
-                {
+            do {
+                for (int i = 0; i < waitAnimTime.Length; i++) {
                     Console.Write($"\r{waitMessage}{waitAnim[i]}");
                     Thread.Sleep(waitAnimTime[i]);
                     if (SerialClient.PortAvailable())
@@ -59,49 +56,38 @@ namespace ComMonitor.Main
             Console.Write(string.Concat(Enumerable.Repeat(" ", waitMessage.Length + waitAnim[0].Length)));
             Console.Write("\r");
             retries--;
-            if (retries == 0)
-            {
+            if (retries == 0) {
                 throw new Exception("Max number of retries reached");
             }
         }
 
-        public static void Run()
-        {
+        public static void Run() {
             Term.ColorSingle(ConsoleColor.Yellow, connectStr);
 
-            if (!SerialClient.PortAvailable())
-            {
+            if (!SerialClient.PortAvailable()) {
                 if (initalWait)
                     RetryWait(true);
                 else
                     throw new SerialException($"Unable to find port: {SerialClient.portName}");
             }
 
-            while (true)
-            {
-                try
-                {
-                    if (SerialClient.OpenConn())
-                    {
+            while (true) {
+                try {
+                    if (SerialClient.OpenConn()) {
                         retries = MAX_RETRY; // Reset retry counter
                         Term.ColorSingle(ConsoleColor.Green, "\r------[Connect]-------");
                         ConsoleInput.Enable(true);
-                        while (SerialClient.IsAlive())
-                        {
+                        while (SerialClient.IsAlive()) {
                             Thread.Sleep(400);
                         }
                         ConsoleInput.Enable(false);
                         Term.ColorSingle(ConsoleColor.Red, "-----[Disconnect]-----");
                     }
-                }
-                catch (SerialException e)
-                {
+                } catch (SerialException e) {
                     Term.WriteLine(e.Message);
                     SerialClient.Dispose();
                     return;
-                }
-                finally
-                {
+                } finally {
                     SerialClient.Dispose();
                 }
                 if (!reconnect)
@@ -115,20 +101,15 @@ namespace ComMonitor.Main
 
         #region Exception Handlers
 
-        private static void PriorityStop()
-        {
-            try
-            {
+        private static void PriorityStop() {
+            try {
                 FileLog.Flush();
-            }
-            catch (Exception)
-            {
+            } catch (Exception) {
             }
             throw new SerialException($"Another instance has taken priority over the current port: {SerialClient.portName}");
         }
 
-        private static void UnhandledExceptionTrapper(object sender, UnhandledExceptionEventArgs e)
-        {
+        private static void UnhandledExceptionTrapper(object sender, UnhandledExceptionEventArgs e) {
             Term.ExceptionPrint((Exception)e.ExceptionObject);
             //ConsoleMode.Set(ConsoleMode.ENABLE_QUICK_EDIT, true);
             //Thread.Sleep(10000);
@@ -139,8 +120,7 @@ namespace ComMonitor.Main
 
         #endregion Methods
 
-        private static void SetOptions(Options options)
-        {
+        private static void SetOptions(Options options) {
             AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionTrapper;
 
             retries = MAX_RETRY;
@@ -181,19 +161,14 @@ namespace ComMonitor.Main
 
             PriorityPipeName += SerialClient.portName;
             priorityPipe = new PingPipe(PriorityPipeName);
-            if (options.Priority)
-            {
-                if (priorityPipe.Ping())
-                {
+            if (options.Priority) {
+                if (priorityPipe.Ping()) {
                     Term.WriteLine("Notified priority to another ComMonitor");
-                }
-                else
-                {
+                } else {
                     Term.WriteLine("No ComMonitor to take priority over");
                 }
             }
-            if (!priorityPipe.ListenForPing(options.Priority ? 10 : 5))
-            {
+            if (!priorityPipe.ListenForPing(options.Priority ? 10 : 5)) {
                 Console.WriteLine("Warning: Unable to open priority notifier.");
                 Console.WriteLine("Is another ComMonitor open?");
             }
@@ -204,13 +179,11 @@ namespace ComMonitor.Main
 
             #region Serial Data Pipe
 
-            if (options.EnableSerialPipe || options.PlotData)
-            {
+            if (options.EnableSerialPipe || options.PlotData) {
                 SerialPipe = new DataPipe(SerialPipeName, SerialClient.portName);
                 // SerialClient.SerialDataReceived += (sender, e) => { SerialPipe.SendData(e.Data); }; // For piping raw data
                 SerialParser.SetParsedDataListener(msg => { if (SerialPipe.Connected()) SerialPipe.SendData(msg); });
-                if (!SerialPipe.WaitForConnection())
-                {
+                if (!SerialPipe.WaitForConnection()) {
                     Term.WriteLine("Warning: Unable to open system pipe for serial data.");
                     Term.WriteLine("Is another ComMonitor open?");
                 }
@@ -218,16 +191,12 @@ namespace ComMonitor.Main
 
             #endregion Serial Data Pipe
 
-            if (options.PlotData)
-            {
+            if (options.PlotData) {
                 Process[] processes = Process.GetProcessesByName("ComPlotter");
                 if (processes.Length == 0)
-                    try
-                    {
+                    try {
                         Process.Start(options.PlotterPath);
-                    }
-                    catch (SystemException)
-                    {
+                    } catch (SystemException) {
                         throw new FileNotFoundException("Failed to launch Plotter");
                     }
                 else
@@ -239,16 +208,15 @@ namespace ComMonitor.Main
             connectStr = $"Connecting to {SerialClient.portName} @ {SerialClient.baudRate}\np:{SerialClient.parity} d:{SerialClient.dataBits} s:{SerialClient.stopBits} cf:{SerialClient.freqCriticalLimit} {(options.SetMaxBytes > 0 ? "j:" + options.SetMaxBytes : "")}\n";
         }
 
-        private static void Main(string[] args)
-        {
+        private static void Main(string[] args) {
             //if (!ConsoleMode.Set(ConsoleMode.ENABLE_QUICK_EDIT, false))
             //    Console.WriteLine("Warning: Failed to disable console Quick Edit");
 
             #region Argument Parser
 
-            Parser parser = new Parser(with => { with.CaseInsensitiveEnumValues = true; with.AutoHelp = true; with.AutoVersion = true; with.HelpWriter = Console.Out; });
-            var result = parser.ParseArguments<Options>(args);
-            result.WithParsed(SetOptions);
+            Parser parser = new(with => { with.CaseInsensitiveEnumValues = true; with.AutoHelp = true; with.AutoVersion = true; with.HelpWriter = Console.Out; });
+            ParserResult<Options> result = parser.ParseArguments<Options>(args);
+            _ = result.WithParsed(SetOptions);
 
             if (result.Tag == ParserResultType.NotParsed)
                 return;

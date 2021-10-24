@@ -4,20 +4,18 @@ using System.Windows.Media.Animation;
 
 // https://github.com/devstator82/inbox2_desktop/blob/221c56e0c83b0e873314767f0f9a53e25416343a/Code/Client/Inbox2/Framework/UI/GridLengthAnimation.cs
 
-namespace ComPlotter.Wpf
-{
+namespace ComPlotter.Wpf {
+
     /// <summary>
     /// Animates a grid length value just like the DoubleAnimation animates a double value
     /// </summary>
-    public class GridLengthAnimation : AnimationTimeline
-    {
+    public class GridLengthAnimation : AnimationTimeline {
         private bool isCompleted;
 
         /// <summary>
         /// Marks the animation as completed
         /// </summary>
-        public bool IsCompleted
-        {
+        public bool IsCompleted {
             get { return isCompleted; }
             set { isCompleted = value; }
         }
@@ -25,8 +23,7 @@ namespace ComPlotter.Wpf
         /// <summary>
         /// Sets the reverse value for the second animation
         /// </summary>
-        public double ReverseValue
-        {
+        public double ReverseValue {
             get { return (double)GetValue(ReverseValueProperty); }
             set { SetValue(ReverseValueProperty, value); }
         }
@@ -40,10 +37,8 @@ namespace ComPlotter.Wpf
         /// <summary>
         /// Returns the type of object to animate
         /// </summary>
-        public override Type TargetPropertyType
-        {
-            get
-            {
+        public override Type TargetPropertyType {
+            get {
                 return typeof(GridLength);
             }
         }
@@ -52,8 +47,7 @@ namespace ComPlotter.Wpf
         /// Creates an instance of the animation object
         /// </summary>
         /// <returns>Returns the instance of the GridLengthAnimation</returns>
-        protected override System.Windows.Freezable CreateInstanceCore()
-        {
+        protected override System.Windows.Freezable CreateInstanceCore() {
             return new GridLengthAnimation();
         }
 
@@ -66,14 +60,11 @@ namespace ComPlotter.Wpf
         /// <summary>
         /// CLR Wrapper for the From depenendency property
         /// </summary>
-        public GridLength From
-        {
-            get
-            {
+        public GridLength From {
+            get {
                 return (GridLength)GetValue(GridLengthAnimation.FromProperty);
             }
-            set
-            {
+            set {
                 SetValue(GridLengthAnimation.FromProperty, value);
             }
         }
@@ -87,14 +78,11 @@ namespace ComPlotter.Wpf
         /// <summary>
         /// CLR Wrapper for the To property
         /// </summary>
-        public GridLength To
-        {
-            get
-            {
+        public GridLength To {
+            get {
                 return (GridLength)GetValue(GridLengthAnimation.ToProperty);
             }
-            set
-            {
+            set {
                 SetValue(GridLengthAnimation.ToProperty, value);
             }
         }
@@ -105,10 +93,8 @@ namespace ComPlotter.Wpf
         /// registers to the completed event of the animation clock
         /// </summary>
         /// <param name="clock">the animation clock to notify completion status</param>
-        private void VerifyAnimationCompletedStatus(AnimationClock clock)
-        {
-            if (this.clock == null)
-            {
+        private void VerifyAnimationCompletedStatus(AnimationClock clock) {
+            if (this.clock == null) {
                 this.clock = clock;
                 this.clock.Completed += new EventHandler(delegate (object sender, EventArgs e) { isCompleted = true; });
             }
@@ -122,8 +108,7 @@ namespace ComPlotter.Wpf
         /// <param name="animationClock">The animation clock (timer)</param>
         /// <returns>Returns the new grid length to set</returns>
         public override object GetCurrentValue(object defaultOriginValue,
-            object defaultDestinationValue, AnimationClock animationClock)
-        {
+            object defaultDestinationValue, AnimationClock animationClock) {
             //check the animation clock event
             VerifyAnimationCompletedStatus(animationClock);
 
@@ -136,13 +121,11 @@ namespace ComPlotter.Wpf
             double toVal = To.Value;
 
             //check if the value is already collapsed
-            if (((GridLength)defaultOriginValue).Value == toVal)
-            {
+            if (((GridLength)defaultOriginValue).Value == toVal) {
                 fromVal = toVal;
                 toVal = ReverseValue;
-            }
-            else if (animationClock.CurrentProgress.Value == 1.0) //check to see if this is the last tick of the animation clock.
-            {
+            } else if (animationClock.CurrentProgress.Value == 1.0) //check to see if this is the last tick of the animation clock.
+              {
                 return To;
             }
 
@@ -156,8 +139,8 @@ namespace ComPlotter.Wpf
     /// <summary>
     /// Animates a double value
     /// </summary>
-    public class ExpanderDoubleAnimation : DoubleAnimationBase
-    {
+    public class ExpanderDoubleAnimation : DoubleAnimationBase {
+
         /// <summary>
         /// Dependency property for the From property
         /// </summary>
@@ -167,14 +150,11 @@ namespace ComPlotter.Wpf
         /// <summary>
         /// CLR Wrapper for the From depenendency property
         /// </summary>
-        public double? From
-        {
-            get
-            {
+        public double? From {
+            get {
                 return (double?)GetValue(ExpanderDoubleAnimation.FromProperty);
             }
-            set
-            {
+            set {
                 SetValue(ExpanderDoubleAnimation.FromProperty, value);
             }
         }
@@ -188,14 +168,11 @@ namespace ComPlotter.Wpf
         /// <summary>
         /// CLR Wrapper for the To property
         /// </summary>
-        public double? To
-        {
-            get
-            {
+        public double? To {
+            get {
                 return (double?)GetValue(ExpanderDoubleAnimation.ToProperty);
             }
-            set
-            {
+            set {
                 SetValue(ExpanderDoubleAnimation.ToProperty, value);
             }
         }
@@ -203,8 +180,7 @@ namespace ComPlotter.Wpf
         /// <summary>
         /// Sets the reverse value for the second animation
         /// </summary>
-        public double? ReverseValue
-        {
+        public double? ReverseValue {
             get { return (double)GetValue(ReverseValueProperty); }
             set { SetValue(ReverseValueProperty, value); }
         }
@@ -219,8 +195,7 @@ namespace ComPlotter.Wpf
         /// Creates an instance of the animation
         /// </summary>
         /// <returns></returns>
-        protected override Freezable CreateInstanceCore()
-        {
+        protected override Freezable CreateInstanceCore() {
             return new ExpanderDoubleAnimation();
         }
 
@@ -231,13 +206,11 @@ namespace ComPlotter.Wpf
         /// <param name="defaultDestinationValue">The final value</param>
         /// <param name="animationClock">The animation clock (timer)</param>
         /// <returns>Returns the new double to set</returns>
-        protected override double GetCurrentValueCore(double defaultOriginValue, double defaultDestinationValue, AnimationClock animationClock)
-        {
+        protected override double GetCurrentValueCore(double defaultOriginValue, double defaultDestinationValue, AnimationClock animationClock) {
             double fromVal = this.From.Value;
             double toVal = this.To.Value;
 
-            if (defaultOriginValue == toVal)
-            {
+            if (defaultOriginValue == toVal) {
                 fromVal = toVal;
                 toVal = this.ReverseValue.Value;
             }

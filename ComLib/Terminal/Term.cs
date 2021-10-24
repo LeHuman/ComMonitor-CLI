@@ -3,10 +3,10 @@ using Serial;
 using System;
 using System.Collections.Generic;
 
-namespace Terminal
-{
-    public static class Term
-    {
+namespace Terminal {
+
+    public static class Term {
+
         #region Defines
 
         public static readonly ConsoleColor DefaultConsoleColor = ConsoleColor.White;
@@ -30,43 +30,35 @@ namespace Terminal
 
         #region Color
 
-        public static void ColorEnable(bool enabled)
-        {
+        public static void ColorEnable(bool enabled) {
             colorEnabled = enabled;
             Console.CancelKeyPress += delegate { Console.ResetColor(); };
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.ForegroundColor = DefaultConsoleColor;
         }
 
-        public static void EnableLogColor(bool enabled)
-        {
+        public static void EnableLogColor(bool enabled) {
             logColorEnabled = colorEnabled && enabled;
         }
 
-        public static void ColorSingle(ConsoleColor color, string line)
-        {
+        public static void ColorSingle(ConsoleColor color, string line) {
             ColorConsole(color);
             Console.WriteLine(line);
             ColorConsole();
         }
 
-        public static void ColorConsole(ConsoleColor color)
-        {
+        public static void ColorConsole(ConsoleColor color) {
             if (colorEnabled)
                 Console.ForegroundColor = color;
         }
 
-        public static void ColorConsole()
-        {
+        public static void ColorConsole() {
             ColorConsole(DefaultConsoleColor);
         }
 
-        public static void ColorLogLevel(string str)
-        {
-            if (logColorEnabled)
-            {
-                foreach (KeyValuePair<string, ConsoleColor> entry in logLevels)
-                {
+        public static void ColorLogLevel(string str) {
+            if (logColorEnabled) {
+                foreach (KeyValuePair<string, ConsoleColor> entry in logLevels) {
                     if (str.Contains(entry.Key)) // What is the performance impact of this vs StartsWith?
                     {
                         Console.ForegroundColor = entry.Value;
@@ -81,8 +73,7 @@ namespace Terminal
 
         #region Input
 
-        public static void EnableInput(DataType inputDataType, bool enableInputPrompt)
-        {
+        public static void EnableInput(DataType inputDataType, bool enableInputPrompt) {
             Term.inputDataType = inputDataType;
             Term.enableInputPrompt = enableInputPrompt;
             checkInput = inputDataType != DataType.None && inputDataType != DataType.Mapped;
@@ -93,15 +84,13 @@ namespace Terminal
 
         private static bool alreadyChecking = false;
 
-        public static void CheckInputLine()
-        {
+        public static void CheckInputLine() {
             if (!checkInput || !enableInputPrompt || alreadyChecking)
                 return;
             alreadyChecking = true;
             string input = ConsoleInput.GetCurrentInput();
 
-            if (input != "")
-            {
+            if (input != "") {
                 Console.WriteLine();
                 Console.Write(input);
                 Console.CursorTop--;
@@ -109,18 +98,13 @@ namespace Terminal
             alreadyChecking = false;
         }
 
-        internal static void SendMsg(string msg)
-        {
-            if (inputDataType == DataType.Ascii)
-            {
+        internal static void SendMsg(string msg) {
+            if (inputDataType == DataType.Ascii) {
                 Console.WriteLine($"Sending String: {msg}");
                 SerialClient.SendString(msg);
-            }
-            else
-            {
+            } else {
                 string[] messages = msg.Trim().Split(' ');
-                foreach (var msgStr in messages)
-                {
+                foreach (var msgStr in messages) {
                     byte[] msgArr = SerialType.GetByteArray(inputDataType, msgStr);
                     if (msgArr == null)
                         return;
@@ -134,30 +118,23 @@ namespace Terminal
 
         #region Output
 
-        public static void Write(string str, bool Log = false)
-        {
+        public static void Write(string str, bool Log = false) {
             WriteInternal(str, false, Log);
         }
 
-        public static void WriteLine(string str, bool Log = false)
-        {
+        public static void WriteLine(string str, bool Log = false) {
             WriteInternal(str, true, Log);
         }
 
-        private static void WriteInternal(string str, bool newline, bool Log)
-        {
+        private static void WriteInternal(string str, bool newline, bool Log) {
             CheckInputLine();
-            if (str.Length > 0)
-            {
+            if (str.Length > 0) {
                 ColorLogLevel(str.ToUpper()); // TODO: trim to last bracket to reduce text that is searched
-                if (newline)
-                {
+                if (newline) {
                     Console.WriteLine(str);
                     if (Log)
                         FileLog.LogLine(str);
-                }
-                else
-                {
+                } else {
                     Console.Write(str);
                     if (Log)
                         FileLog.Log(str);
@@ -166,8 +143,7 @@ namespace Terminal
             }
         }
 
-        public static void ExceptionPrint(Exception ex)
-        {
+        public static void ExceptionPrint(Exception ex) {
             if (colorEnabled)
                 Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(ex.Message);

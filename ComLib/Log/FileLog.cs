@@ -1,10 +1,9 @@
 ﻿using System;
 using System.IO;
 
-namespace Log
-{
-    public static class FileLog
-    {
+namespace Log {
+
+    public static class FileLog {
         private static StreamWriter file;
         public static bool Enabled = false;
         public static bool Timestamp { get; set; } = false;
@@ -13,10 +12,8 @@ namespace Log
         public const long TicksPerMicrosecond = 10;
         public const long NanosecondsPerTick = 100;
 
-        public static void SetFile(string path, bool singular)
-        {
-            try
-            {
+        public static void SetFile(string path, bool singular) {
+            try {
                 if (!Directory.Exists(path))
                     throw new IOException();
 
@@ -24,22 +21,18 @@ namespace Log
                 path = Path.Combine(path, $"{FILENAME}{(singular ? "" : $"_{epoch}")}.log");
                 file = new StreamWriter(path);
                 Enabled = Available();
-            }
-            catch (IOException)
-            {
+            } catch (IOException) {
                 if (path.Length != 0)
                     throw new SystemException($"Logging path does not exist: {path}");
                 return;
             }
         }
 
-        public static long Nanoseconds()
-        {
+        public static long Nanoseconds() {
             return DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond / TicksPerMicrosecond / NanosecondsPerTick;
         }
 
-        public static void Log(string msg)
-        {
+        public static void Log(string msg) {
             if (!Enabled)
                 return;
             if (Timestamp)
@@ -47,8 +40,7 @@ namespace Log
             file.Write(msg);
         }
 
-        public static void LogLine(string msg)
-        {
+        public static void LogLine(string msg) {
             if (!Enabled)
                 return;
             if (Timestamp)
@@ -56,19 +48,16 @@ namespace Log
             file.WriteLine(msg);
         }
 
-        public static bool Available()
-        {
+        public static bool Available() {
             return file != null && file.BaseStream.CanWrite;
         }
 
-        public static void Flush()
-        {
+        public static void Flush() {
             if (Enabled)
                 file.Flush();
         }
 
-        public static void EnableTimeStamp(bool enable)
-        {
+        public static void EnableTimeStamp(bool enable) {
             Timestamp = enable;
         }
     }

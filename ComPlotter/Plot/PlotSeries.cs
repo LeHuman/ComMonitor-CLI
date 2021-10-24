@@ -3,10 +3,9 @@ using ScottPlot.Plottable;
 using System;
 using System.Drawing;
 
-namespace ComPlotter.Plot
-{
-    public class PlotSeries
-    {
+namespace ComPlotter.Plot {
+
+    public class PlotSeries {
         public string Name { get; }
         public const int InitHeap = 512;
         public bool Growing { get; set; }
@@ -30,8 +29,7 @@ namespace ComPlotter.Plot
         private int MinRender, MaxRender;
         private readonly PlotGroup Manager;
 
-        internal PlotSeries(PlotGroup Manager, string Name, Color Color, int Range, bool Growing)
-        {
+        internal PlotSeries(PlotGroup Manager, string Name, Color Color, int Range, bool Growing) {
             this.Name = Name;
             this.Range = Range;
             this.Growing = Growing;
@@ -43,23 +41,19 @@ namespace ComPlotter.Plot
             IsVisible = true;
         }
 
-        public (double x, double y, int index) GetPointNearestX(double X)
-        {
+        public (double x, double y, int index) GetPointNearestX(double X) {
             return SignalPlot.GetPointNearestX(X);
         }
 
-        public void Update(double value)
-        {
-            if (nextDataIndex >= Data.Length)
-            {
+        public void Update(double value) {
+            if (nextDataIndex >= Data.Length) {
                 IncreaseBuffer();
                 OffsetX += MinRender;
             }
 
             Data[nextDataIndex] = Growing ? Data[nextDataIndex - 1] + value : value;
 
-            if (_Range != 0)
-            {
+            if (_Range != 0) {
                 MinRender = Math.Max(nextDataIndex - _Range, 0);
             }
             MaxRender = LastX;
@@ -69,8 +63,7 @@ namespace ComPlotter.Plot
             nextDataIndex += 1;
         }
 
-        internal void Clear()
-        {
+        internal void Clear() {
             MinRender = 0;
             MaxRender = 0;
             nextDataIndex = 1;
@@ -81,13 +74,11 @@ namespace ComPlotter.Plot
             Counter = 0;
         }
 
-        internal void ReloadPlot()
-        {
+        internal void ReloadPlot() {
             SignalPlot NewPlot = Manager.NewPlot(Data);
             NewPlot.MaxRenderIndex = 0;
 
-            if (SignalPlot != null)
-            {
+            if (SignalPlot != null) {
                 Manager.RemovePlot(SignalPlot);
                 NewPlot.Color = SignalPlot.Color;
                 NewPlot.IsVisible = SignalPlot.IsVisible;
@@ -97,8 +88,7 @@ namespace ComPlotter.Plot
             SignalPlot = NewPlot;
         }
 
-        internal void Update()
-        {
+        internal void Update() {
             SignalPlot.MinRenderIndex = MinRender;
             SignalPlot.MaxRenderIndex = MaxRender;
             SignalPlot.OffsetX = OffsetX;
@@ -106,14 +96,12 @@ namespace ComPlotter.Plot
             CheckBox.Status = $"{Counter} : {Math.Round(LastY, 3)}";
         }
 
-        private static int NextSize(int CurrentSize)
-        {
+        private static int NextSize(int CurrentSize) {
             CurrentSize += (int)Math.Log(CurrentSize) * CurrentSize / 4;
             return CurrentSize - (CurrentSize % InitHeap);
         }
 
-        private void IncreaseBuffer()
-        {
+        private void IncreaseBuffer() {
             double[] NewData = MinRender != 0 && Data.Length > _Range * 2 ? Data : new double[NextSize(Data.Length)];
             Span<double> d = Data.AsSpan()[MinRender..];
             d.CopyTo(NewData);

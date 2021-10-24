@@ -5,41 +5,34 @@ using System.Threading;
 
 // https://www.codeproject.com/Tips/492231/Csharp-Async-Named-Pipes
 
-namespace Pipe
-{
+namespace Pipe {
+
     // Delegate for notifying of connection or error
     public delegate void DelegateNotify();
 
-    public class PingPipe
-    {
+    public class PingPipe {
+
         private event DelegateNotify PipeConnect;
 
         private readonly string PipeName;
 
-        public PingPipe(string PipeName)
-        {
+        public PingPipe(string PipeName) {
             this.PipeName = PipeName;
         }
 
-        public void SetCallback(DelegateNotify callback)
-        {
+        public void SetCallback(DelegateNotify callback) {
             PipeConnect = callback;
         }
 
-        public bool ListenForPing(int retries = 5)
-        {
-            while (retries > 0)
-            {
-                try
-                {
+        public bool ListenForPing(int retries = 5) {
+            while (retries > 0) {
+                try {
                     // Create the new async pipe
                     NamedPipeServerStream pipeServer = new NamedPipeServerStream(PipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
                     // Wait for a connection
                     pipeServer.BeginWaitForConnection(new AsyncCallback(WaitForConnectionPingCallBack), pipeServer);
                     return true;
-                }
-                catch (Exception oEX)
-                {
+                } catch (Exception oEX) {
                     Debug.WriteLine(oEX.Message);
                     retries--;
                     Thread.Sleep(50);
@@ -48,8 +41,7 @@ namespace Pipe
             return false;
         }
 
-        private void WaitForConnectionPingCallBack(IAsyncResult iar)
-        {
+        private void WaitForConnectionPingCallBack(IAsyncResult iar) {
             // Get the pipe
             NamedPipeServerStream pipeServer = (NamedPipeServerStream)iar.AsyncState;
             // End waiting for the connection
@@ -63,19 +55,15 @@ namespace Pipe
             pipeServer.BeginWaitForConnection(new AsyncCallback(WaitForConnectionPingCallBack), pipeServer);
         }
 
-        public bool Ping(int TimeOut = 1000)
-        {
-            try
-            {
+        public bool Ping(int TimeOut = 1000) {
+            try {
                 NamedPipeClientStream pipeStream = new NamedPipeClientStream(".", PipeName, PipeDirection.Out);
 
                 pipeStream.Connect(TimeOut);
                 Debug.WriteLine("[Client] Pipe connection Pinged");
                 pipeStream.Close();
                 return true;
-            }
-            catch (TimeoutException oEX)
-            {
+            } catch (TimeoutException oEX) {
                 Debug.WriteLine(oEX.Message);
                 return false;
             }

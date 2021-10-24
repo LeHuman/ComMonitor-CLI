@@ -3,10 +3,10 @@ using System.Windows.Media;
 using DColor = System.Drawing.Color;
 using MColor = System.Windows.Media.Color;
 
-namespace ComPlotter.Wpf
-{
-    public class CheckBox : INotifyPropertyChanged
-    {
+namespace ComPlotter.Wpf {
+
+    public class CheckBox : INotifyPropertyChanged {
+
         public delegate void CheckBoxCallback(bool IsChecked);
 
         public string Name { get; }
@@ -21,40 +21,33 @@ namespace ComPlotter.Wpf
         private SolidColorBrush _Brush;
         private CheckBoxCallback Callback;
 
-        public CheckBox(string Name, SolidColorBrush Brush = null)
-        {
+        public CheckBox(string Name, SolidColorBrush Brush = null) {
             this.Name = Name;
             this.Brush = Brush;
         }
 
-        public CheckBox(string Name, DColor BrushColor)
-        {
+        public CheckBox(string Name, DColor BrushColor) {
             this.Name = Name;
             Brush = new(ToMediaColor(BrushColor));
         }
 
-        internal void SetCallback(CheckBoxCallback Callback)
-        {
+        internal void SetCallback(CheckBoxCallback Callback) {
             this.Callback = Callback;
         }
 
-        internal void ChangeBrush(SolidColorBrush Brush)
-        {
+        internal void ChangeBrush(SolidColorBrush Brush) {
             this.Brush = Brush;
         }
 
-        internal void ChangeBrush(DColor BrushColor)
-        {
+        internal void ChangeBrush(DColor BrushColor) {
             Brush = new(ToMediaColor(BrushColor));
         }
 
-        internal static MColor ToMediaColor(DColor color)
-        {
+        internal static MColor ToMediaColor(DColor color) {
             return MColor.FromArgb(color.A, color.R, color.G, color.B);
         }
 
-        internal virtual void OnPropertyChanged(string property)
-        {
+        internal virtual void OnPropertyChanged(string property) {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
         }
     }

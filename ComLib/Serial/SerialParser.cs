@@ -4,91 +4,70 @@ using System;
 using System.Collections.Generic;
 using Terminal;
 
-namespace Serial
-{
+namespace Serial {
+
     public delegate void DelegateParsedData(string Message);
 
-    public static class SerialParser
-    {
+    public static class SerialParser {
         public static int MaxBytes { get; private set; } = 8;
         private static Func<byte[], string> dataFunction;
         private static DelegateParsedData ParsedDataListener;
 
-        public static EventHandler<DataStreamEventArgs> LoadParser(DataType dataType, int MaxBytes)
-        {
+        public static EventHandler<DataStreamEventArgs> LoadParser(DataType dataType, int MaxBytes) {
             SerialParser.MaxBytes = MaxBytes;
             dataFunction = SerialType.getTypeFunction(dataType);
 
-            if (dataType == DataType.Ascii)
-            {
+            if (dataType == DataType.Ascii) {
                 return AsciiDataReceived;
-            }
-            else
-            {
-                if (dataType == DataType.Mapped)
-                {
+            } else {
+                if (dataType == DataType.Mapped) {
                     return SerialMappedDataReceived;
-                }
-                else if (MaxBytes > 0)
-                {
+                } else if (MaxBytes > 0) {
                     return SerialChunkedDataReceived;
-                }
-                else
-                {
+                } else {
                     return SerialDataReceived;
                 }
             }
         }
 
-        public static void SetParsedDataListener(DelegateParsedData ParsedDataListener)
-        {
+        public static void SetParsedDataListener(DelegateParsedData ParsedDataListener) {
             SerialParser.ParsedDataListener = ParsedDataListener;
         }
 
-        private static void PrintMessage(string Message, bool Log = true)
-        {
+        private static void PrintMessage(string Message, bool Log = true) {
             Term.WriteLine(Message, Log);
             if (ParsedDataListener != null)
                 ParsedDataListener.Invoke(Message);
         }
 
-        private static void AsciiDataReceived(object sender, DataStreamEventArgs e)
-        {
+        private static void AsciiDataReceived(object sender, DataStreamEventArgs e) {
             string data = SerialType.getAscii(e.Data);
-            if (data.IndexOf('\n') < data.Length - 1)
-            {
+            if (data.IndexOf('\n') < data.Length - 1) {
                 string[] lines = data.Split('\n');
-                foreach (string line in lines)
-                {
+                foreach (string line in lines) {
                     PrintMessage(line.Trim('\r'));
                 }
-            }
-            else
-            {
+            } else {
                 Term.Write(data, true);
             }
             FileLog.Flush();
         }
 
-        private static void SerialDataReceived(object sender, DataStreamEventArgs e)
-        {
+        private static void SerialDataReceived(object sender, DataStreamEventArgs e) {
             string msg = dataFunction(e.Data);
             PrintMessage(msg);
         }
 
-        private static void SerialChunkedDataReceived(object sender, DataStreamEventArgs e)
-        {
+        private static void SerialChunkedDataReceived(object sender, DataStreamEventArgs e) {
             Span<byte> rawData = e.Data.AsSpan();
             int remain = rawData.Length;
             int i = 0;
-            while (remain >= MaxBytes)
-            {
+            while (remain >= MaxBytes) {
                 PrintMessage(dataFunction(rawData.Slice(i, MaxBytes).ToArray()));
                 remain -= MaxBytes;
                 i += MaxBytes;
             }
-            if (remain > 0)
-            {
+            if (remain > 0) {
                 PrintMessage(dataFunction(rawData.Slice(i).ToArray()));
             }
             FileLog.Flush();
@@ -96,8 +75,7 @@ namespace Serial
 
         private static List<byte> saveBuffer = new List<byte>();
 
-        private static void SerialMappedDataReceived(object sender, DataStreamEventArgs e)
-        {
+        private static void SerialMappedDataReceived(object sender, DataStreamEventArgs e) {
             if (e.Data.Length % MaxBytes != 0)
                 Term.WriteLine("WARN: Data may have dysynced, or badly formatted data was received");
 
@@ -110,22 +88,18 @@ namespace Serial
                 Buffer.BlockCopy(saveBuffer.ToArray(), 0, stichedData, 0, saveBuffer.Count);
                 Buffer.BlockCopy(e.Data, 0, stichedData, saveBuffer.Count, e.Data.Length);
                 rawData = stichedData.AsSpan();
-            }
-            else
-            {
+            } else {
                 rawData = e.Data.AsSpan();
             }
 
             int remain = rawData.Length;
             int i = 0;
-            while (remain >= MaxBytes)
-            {
+            while (remain >= MaxBytes) {
                 PrintMessage(JSONMap.GetMappedMessage(rawData.Slice(i, MaxBytes)), false);
                 remain -= MaxBytes;
                 i += MaxBytes;
             }
-            if (remain > 0)
-            {
+            if (remain > 0) {
                 saveBuffer.AddRange(rawData.Slice(i).ToArray());
             }
             FileLog.Flush();

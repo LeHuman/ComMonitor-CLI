@@ -1,19 +1,16 @@
 ﻿using System.Windows.Controls;
 using WCheckBox = ComPlotter.Wpf.CheckBox;
 
-namespace ComPlotter.Util
-{
-    public class SettingsPanel
-    {
+namespace ComPlotter.Util {
+
+    public class SettingsPanel {
         private readonly ListBox ListBox;
 
-        public SettingsPanel(ListBox listBox)
-        {
+        public SettingsPanel(ListBox listBox) {
             ListBox = listBox;
         }
 
-        public WCheckBox AddCheckBox(string Name, bool Enabled = false)
-        {
+        public WCheckBox AddCheckBox(string Name, bool Enabled = false) {
             WCheckBox CheckBox = new(Name);
             CheckBox._IsChecked = Enabled;
             ListBox.Items.Add(CheckBox);

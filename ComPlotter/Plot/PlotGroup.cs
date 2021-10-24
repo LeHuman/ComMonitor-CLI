@@ -5,10 +5,9 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Controls;
 
-namespace ComPlotter.Plot
-{
-    public class PlotGroup
-    {
+namespace ComPlotter.Plot {
+
+    public class PlotGroup {
         public string Name { get; }
         public List<PlotSeries> SeriesList { get; } = new();
 
@@ -20,8 +19,7 @@ namespace ComPlotter.Plot
         private readonly ListBox SeriesListBox;
         private readonly Random rand = new(420);
 
-        public PlotGroup(string Name, PlotControl PlotController, ListBox SeriesListBox = null)
-        {
+        public PlotGroup(string Name, PlotControl PlotController, ListBox SeriesListBox = null) {
             WpfPlot = PlotController.WpfPlot;
 
             this.Name = Name;
@@ -29,142 +27,117 @@ namespace ComPlotter.Plot
             this.PlotController = PlotController;
         }
 
-        internal void Delete()
-        {
-            if (Invalid)
-            {
+        internal void Delete() {
+            if (Invalid) {
                 return;
             }
 
             Invalid = true;
 
-            foreach (PlotSeries s in SeriesList.ToArray())
-            {
+            foreach (PlotSeries s in SeriesList.ToArray()) {
                 RemoveSeries(s);
             }
         }
 
-        internal void ReloadColors()
-        {
-            if (Invalid)
-            {
+        internal void ReloadColors() {
+            if (Invalid) {
                 return;
             }
 
-            ip = -1; ipb = 0;
-            foreach (PlotSeries s in SeriesList)
-            {
+            ip = -1;
+            ipb = 0;
+            foreach (PlotSeries s in SeriesList) {
                 s._Color = NextColor();
                 s.SignalPlot.Color = s._Color;
             }
         }
 
-        internal void SetRange(int value)
-        {
-            if (Invalid)
-            {
+        internal void SetRange(int value) {
+            if (Invalid) {
                 return;
             }
 
-            foreach (PlotSeries s in SeriesList)
-            {
+            foreach (PlotSeries s in SeriesList) {
                 s.Range = value;
             }
         }
 
-        internal void Clear()
-        {
-            if (Invalid)
-            {
+        internal void Clear() {
+            if (Invalid) {
                 return;
             }
 
-            foreach (PlotSeries s in SeriesList)
-            {
+            foreach (PlotSeries s in SeriesList) {
                 s.Clear();
             }
         }
 
-        internal void Update()
-        {
-            if (Invalid)
-            {
+        internal void Update() {
+            if (Invalid) {
                 return;
             }
 
-            foreach (PlotSeries s in SeriesList)
-            {
+            foreach (PlotSeries s in SeriesList) {
                 s.Update();
             }
         }
 
-        internal void RemovePlot(IPlottable plottable)
-        {
+        internal void RemovePlot(IPlottable plottable) {
             PlotController.RunOnUIThread(() => { WpfPlot.Plot.Remove(plottable); });
         }
 
-        internal void RemoveSeries(PlotSeries plotSeries)
-        {
+        internal void RemoveSeries(PlotSeries plotSeries) {
             plotSeries.Invalid = true;
             plotSeries.Clear();
             RemovePlot(plotSeries.SignalPlot);
             PlotController.RunOnUIThread(() => { _ = SeriesList.Remove(plotSeries); SeriesListBox?.Items.Remove(plotSeries); });
         }
 
-        internal SignalPlot NewPlot(double[] DataPointer)
-        {
+        internal SignalPlot NewPlot(double[] DataPointer) {
             SignalPlot signalPlot = null;
             PlotController.RunOnUIThread(() => { signalPlot = WpfPlot.Plot.AddSignal(DataPointer); });
             return signalPlot;
         }
 
-        internal PlotSeries CreateSeries(string Name, int Range = 0, bool Growing = false)
-        {
-            if (Invalid)
-            {
+        internal PlotSeries CreateSeries(string Name, int Range = 0, bool Growing = false) {
+            if (Invalid) {
                 return null;
             }
 
             PlotSeries ps = null;
-            if (Range <= 1)
-            {
+            if (Range <= 1) {
                 Range = PlotController._Range;
             }
 
             Name = $"{this.Name} : {Name}";
 
-            PlotController.RunOnUIThread(() =>
-            {
+            PlotController.RunOnUIThread(() => {
                 ps = new(this, Name, NextColor(), Range, Growing);
                 SeriesList.Add(ps);
                 SeriesListBox?.Items.Add(ps);
             });
 
-            if (PlotController.SlowMode)
-            {
+            if (PlotController.SlowMode) {
                 ps.IsVisible = false;
             }
 
             return ps;
         }
 
-        private Color NextColor()
-        {
+        private Color NextColor() {
             int max = WpfPlot.Plot.Palette.Count();
             Color[] colors = WpfPlot.Plot.Palette.GetColors(max);
 
             ip++;
 
-            if (ip == max)
-            {
+            if (ip == max) {
                 ip = 0;
                 ipb++;
             }
 
             Color color = colors[ip];
 
-            for (int i = 0; i < ipb; i++)
-            {
+            for (int i = 0; i < ipb; i++) {
                 color = color.Blend(colors[rand.Next(0, max)], 0.5 + (rand.NextDouble() / 2));
             }
 
