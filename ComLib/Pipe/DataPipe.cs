@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace Pipe
 {
-    public delegate void SerialDataDelegate(string SendingPipeID, byte[] Data);
+    public delegate void DelegateSerialData(string SendingPipeID, byte[] Data);
 
     public class DataPipe
     {
@@ -17,8 +17,8 @@ namespace Pipe
         private readonly string PipeName;
         private readonly string SendingPipeID;
         private readonly PipeDirection direction;
-        private NamedPipeServerStream pipeServer;
-        private readonly SerialDataDelegate DataReceiver;
+        private NamedPipeServerStream InfoPipeServer, DataPipeServer;
+        private readonly DelegateSerialData DataReceiver;
 
         public DataPipe(string PipeName, string PipeID)
         {
@@ -27,7 +27,7 @@ namespace Pipe
             direction = PipeDirection.Out;
         }
 
-        public DataPipe(string PipeName, SerialDataDelegate receiver)
+        public DataPipe(string PipeName, DelegateSerialData receiver)
         {
             this.PipeName = PipeName;
             DataReceiver = receiver;
@@ -36,7 +36,7 @@ namespace Pipe
 
         public bool Connected()
         {
-            return pipeServer != null && pipeServer.IsConnected;
+            return DataPipeServer != null && DataPipeServer.IsConnected;
         }
 
         public void SendData(string msg)
@@ -48,7 +48,7 @@ namespace Pipe
         public void SendData(byte[] Data)
         {
             if (direction == PipeDirection.Out)
-                pipeServer.WriteAsync(Data, 0, Data.Length);
+                InfoPipeServer.WriteAsync(Data, 0, Data.Length);
         }
 
         public bool WaitForConnection(int retries = 5)
@@ -59,8 +59,8 @@ namespace Pipe
             {
                 try
                 {
-                    pipeServer = new NamedPipeServerStream(PipeName, direction, direction == PipeDirection.In ? MAX_CONNECTIONS : 1, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
-                    pipeServer.BeginWaitForConnection(new AsyncCallback(ConnectionCallBack), pipeServer);
+                    InfoPipeServer = new NamedPipeServerStream(PipeName, direction, direction == PipeDirection.In ? MAX_CONNECTIONS : 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+                    InfoPipeServer.BeginWaitForConnection(new AsyncCallback(InfoConnectionCallBack), InfoPipeServer);
                     return true;
                 }
                 catch (Exception oEX)
@@ -73,15 +73,15 @@ namespace Pipe
             return false;
         }
 
-        private void ConnectionCallBack(IAsyncResult iar)
+        private void InfoConnectionCallBack(IAsyncResult iar)
         {
             NamedPipeServerStream localPipeServer = (NamedPipeServerStream)iar.AsyncState;
             localPipeServer.EndWaitForConnection(iar);
 
             if (direction == PipeDirection.In)
             {
-                pipeServer = new NamedPipeServerStream(PipeName, direction, MAX_CONNECTIONS, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
-                pipeServer.BeginWaitForConnection(new AsyncCallback(ConnectionCallBack), pipeServer);
+                InfoPipeServer = new NamedPipeServerStream(PipeName, direction, MAX_CONNECTIONS, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+                InfoPipeServer.BeginWaitForConnection(new AsyncCallback(InfoConnectionCallBack), InfoPipeServer);
 
                 string SendingPipeID = null;
                 MemoryStream memoryStream = new MemoryStream();
@@ -108,7 +108,7 @@ namespace Pipe
             {
                 SendData(SendingPipeID);
                 while (localPipeServer.IsConnected) { }
-                pipeServer.Close();
+                InfoPipeServer.Close();
                 WaitForConnection();
             }
         }
