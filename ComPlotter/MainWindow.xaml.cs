@@ -56,9 +56,7 @@ namespace ComPlotter
 
             Toaster = new(FindResource("MahApps.Brushes.AccentBase") as SolidColorBrush, new(SwatchHelper.Lookup[MaterialDesignColor.Red600]), new(SwatchHelper.Lookup[MaterialDesignColor.Amber600]), new(SwatchHelper.Lookup[MaterialDesignColor.Purple600]));
 
-            Loaded += (_, _) => { Toaster.Toast("Loaded"); };
-
-            new Test(PlotManager, Toaster);
+            //new Test(PlotManager, Toaster);
         }
 
         private void UpdateSelectedPlotSeries(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
