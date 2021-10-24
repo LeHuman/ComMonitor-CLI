@@ -41,7 +41,7 @@
             <ColumnDefinition Width="0*" x:Name="AboutCol" />
             <ColumnDefinition Width="45*" />
             <ColumnDefinition Width="10*" />
-            <ColumnDefinition Width="*" x:Name="SettingsCol" />
+            <ColumnDefinition Width="0*" x:Name="SettingsCol" />
         </Grid.ColumnDefinitions>
 
         <Grid.Resources>
@@ -63,9 +63,25 @@
             </Storyboard>
         </Grid.Resources>
 
-        <Border Grid.Column="0" Margin="15,15,0,15">
+        <ScrollViewer Grid.Column="0" Margin="15,15,0,15" VerticalScrollBarVisibility="Auto">
             <Grid>
-                <StackPanel>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0" VerticalAlignment="Bottom" Margin="0 0 0 10">
+                    <TextBlock Text="Usage" FontSize="18" FontWeight="Bold" Margin="0 0 0 10" />
+                    <TextBlock FontSize="12" TextWrapping="Wrap">
+                        <TextBlock.Text>
+                            Here is a bunch of text that should describe how to use this application.
+                            I have yet to actually populate it with useful information.
+                            For now, this is just placeholder text. 😎
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Row="1" VerticalAlignment="Bottom" Margin="0 0 0 10">
                     <TextBlock Text="About" FontSize="18" FontWeight="Bold" Margin="0 0 0 10" />
                     <Image Margin="0 0 0 10" Source="{Binding AssemblyInformation.Image}" />
                     <TextBlock FontSize="14" FontWeight="SemiBold"  TextWrapping="Wrap" Margin="0 0 0 5">
@@ -78,7 +94,7 @@
                     </TextBlock>
                     <TextBlock Text="{Binding AssemblyInformation.Description}" FontSize="12" TextWrapping="Wrap" />
                 </StackPanel>
-                <StackPanel VerticalAlignment="Bottom">
+                <StackPanel Grid.Row="3">
                     <TextBlock FontSize="12"  Margin="0 0 0 5">
                         <Hyperlink NavigateUri="{Binding AssemblyInformation.RepoLink.Item2}" RequestNavigate="HyperlinkClick">
                             <TextBlock Text="{Binding AssemblyInformation.RepoLink.Item1}" />
@@ -94,7 +110,7 @@
                     </TextBlock>
                 </StackPanel>
             </Grid>
-        </Border>
+        </ScrollViewer>
 
         <WpfPlot Grid.Column="1" Name="MainPlot" MouseDown="UpdateMouseSelection" />
 
@@ -137,7 +153,7 @@
             </Grid>
         </Border>
 
-        <Border Grid.Column="3" Margin="10,15,15,15">
+        <ScrollViewer Grid.Column="3" Margin="10,15,15,15" VerticalScrollBarVisibility="Auto">
             <StackPanel>
                 <TextBlock Text="Settings" FontSize="18" FontWeight="Bold"  Margin="0 0 0 10" />
                 <ListBox Name="SettingsCheckList">
@@ -151,6 +167,6 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
             </StackPanel>
-        </Border>
+        </ScrollViewer>
     </Grid>
 </mah:MetroWindow>
