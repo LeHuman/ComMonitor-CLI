@@ -140,7 +140,7 @@ namespace ComPlotter.Plot
                 SeriesListBox?.Items.Add(ps);
             });
 
-            if (PlotController.SlowMode) // TODO: Show warning that new plots are being hidden
+            if (PlotController.SlowMode)
             {
                 ps.IsVisible = false;
             }

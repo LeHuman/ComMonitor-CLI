@@ -14,7 +14,7 @@ namespace ComPlotter.Plot
 
         internal readonly PlotControl _Control;
 
-        private int avgMS;
+        private int avgMS = 5;
         private bool RunRender;
         private readonly WpfPlot WpfPlot;
         private readonly ListBox ListBox;
@@ -84,12 +84,22 @@ namespace ComPlotter.Plot
         {
             while (RunRender)
             {
-                sw.Restart();
-                _Control.RunOnUIThread(Render);
-                sw.Stop();
-                avgMS = (avgMS + (int)sw.ElapsedMilliseconds) / 2;
-                _Control.LowQualityRender = avgMS > 10;
-                _Control.SlowMode = avgMS > 30;
+                if (!_Control._DisableSlowMode)
+                {
+                    sw.Restart();
+                    _Control.RunOnUIThread(Render);
+                    sw.Stop();
+                    avgMS = (avgMS + (int)sw.ElapsedMilliseconds) / 2;
+                    _Control.LowQualityRender = avgMS > 10;
+                    _Control.SlowMode = avgMS > 30;
+                    SlowModeAnnotation.IsVisible = false;
+                    SlowModeAnnotation.Background = false;
+                }
+                else
+                {
+                    _Control.RunOnUIThread(Render);
+                    avgMS = 5;
+                }
                 SlowModeAnnotation.IsVisible = _Control.LowQualityRender;
                 SlowModeAnnotation.Background = _Control.SlowMode;
                 Thread.Sleep(avgMS);

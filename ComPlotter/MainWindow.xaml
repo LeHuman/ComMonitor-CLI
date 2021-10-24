@@ -41,7 +41,7 @@
             <ColumnDefinition Width="0*" x:Name="AboutCol" />
             <ColumnDefinition Width="45*" />
             <ColumnDefinition Width="10*" />
-            <ColumnDefinition Width="10*" x:Name="SettingsCol" />
+            <ColumnDefinition Width="0*" x:Name="SettingsCol" />
         </Grid.ColumnDefinitions>
 
         <Grid.Resources>
@@ -123,7 +123,7 @@
                             <DataTemplate>
                                 <StackPanel>
                                     <CheckBox Content="{Binding CheckBox.Name}" IsChecked="{Binding CheckBox.IsChecked}" Background="{Binding CheckBox.Brush}" />
-                                    <Label Content="{Binding CheckBox.Status}" />
+                                    <TextBlock Text="{Binding CheckBox.Status}" TextWrapping="Wrap" />
                                 </StackPanel>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
@@ -145,7 +145,7 @@
                         <DataTemplate>
                             <StackPanel>
                                 <CheckBox Content="{Binding Name}" IsChecked="{Binding IsChecked}" />
-                                <Label Content="{Binding Status}" />
+                                <TextBlock Text="{Binding Status}" TextWrapping="Wrap" />
                             </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>

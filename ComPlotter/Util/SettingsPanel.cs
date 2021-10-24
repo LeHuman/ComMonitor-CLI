@@ -1,4 +1,5 @@
 ﻿using System.Windows.Controls;
+using WCheckBox = ComPlotter.Wpf.CheckBox;
 
 namespace ComPlotter.Util
 {
@@ -9,8 +10,13 @@ namespace ComPlotter.Util
         public SettingsPanel(ListBox listBox)
         {
             ListBox = listBox;
-            CheckBox c = new CheckBox("TestBox");
-            ListBox.Items.Add(c);
+        }
+
+        public WCheckBox AddCheckBox(string Name)
+        {
+            WCheckBox CheckBox = new(Name);
+            ListBox.Items.Add(CheckBox);
+            return CheckBox;
         }
     }
 }

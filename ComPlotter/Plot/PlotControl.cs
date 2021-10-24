@@ -24,7 +24,7 @@ namespace ComPlotter.Plot
         internal WpfPlot WpfPlot;
         internal bool _AutoRange = true;
         internal bool LowQualityRender = true;
-        internal bool SlowMode;
+        internal bool SlowMode, _DisableSlowMode;
         internal ListBox SeriesListBox;
         internal ScatterPlot HighlightedPoint;
         internal int _Range = PlotSeries.InitHeap;
@@ -38,8 +38,14 @@ namespace ComPlotter.Plot
             SeriesListBox = listBox; // TODO: Programmaticlly setup the listbox
 
             WpfPlot.Configuration.MiddleClickAutoAxis = false;
-            //WpfPlot.Configuration.DoubleClickBenchmark = false;
+            WpfPlot.Configuration.DoubleClickBenchmark = false;
             WpfPlot.Configuration.WarnIfRenderNotCalledManually = false;
+            WpfPlot.Configuration.AxesChangedEventEnabled = false;
+            WpfPlot.Configuration.QualityConfiguration.AutoAxis = RenderType.ProcessMouseEventsOnly;
+            WpfPlot.Configuration.QualityConfiguration.BenchmarkToggle = RenderType.ProcessMouseEventsOnly;
+            WpfPlot.Configuration.QualityConfiguration.MouseInteractiveDropped = RenderType.ProcessMouseEventsOnly;
+            WpfPlot.Configuration.QualityConfiguration.MouseWheelScrolled = RenderType.ProcessMouseEventsOnly;
+            WpfPlot.Configuration.QualityConfiguration.MouseInteractiveDragged = RenderType.ProcessMouseEventsOnly;
 
             EnableInput(false);
 
@@ -52,12 +58,28 @@ namespace ComPlotter.Plot
             HighlightedPoint.IsVisible = false;
         }
 
-        private void EnableInput(bool enable)
+        private void EnableInput(bool enable) // TODO: Show in about how auto fit disables mouse
         {
+            WpfPlot.Configuration.UseRenderQueue = !enable;
             WpfPlot.Configuration.LeftClickDragPan = enable;
             WpfPlot.Configuration.MiddleClickDragZoom = enable;
             WpfPlot.Configuration.RightClickDragZoom = enable;
             WpfPlot.Configuration.ScrollWheelZoom = enable;
+        }
+
+        public void EnableBenchmark(bool Enabled)
+        {
+            WpfPlot.Plot.Benchmark(Enabled);
+        }
+
+        public void DisableSlowMode(bool Disable)
+        {
+            _DisableSlowMode = Disable;
+            if (Disable)
+            {
+                LowQualityRender = false;
+                SlowMode = false;
+            }
         }
 
         public void ClearAll()

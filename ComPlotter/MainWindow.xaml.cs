@@ -1,5 +1,6 @@
 ﻿using ComPlotter.Plot;
 using ComPlotter.Util;
+using ComPlotter.Wpf;
 using MahApps.Metro.Controls;
 using System.Diagnostics;
 using System.Reflection;
@@ -33,6 +34,14 @@ namespace ComPlotter
             AssemblyInformation.RepoLink = new("Github", new("https://github.com/LeHuman/ComMonitor-CLI"));
 
             Settings = new SettingsPanel(SettingsCheckList);
+
+            CheckBox SlowModeCheck = Settings.AddCheckBox("Disable Slow Mode");
+            SlowModeCheck.Status = "Slow mode helps prevent freezing on high loads";
+            SlowModeCheck.SetCallback(IsChecked => { PlotManager.Control.DisableSlowMode(IsChecked); });
+
+            CheckBox BenchmarkCheck = Settings.AddCheckBox("Enable Benchmark");
+            BenchmarkCheck.Status = "Show the render time for the last rendered frame";
+            BenchmarkCheck.SetCallback(IsChecked => { PlotManager.Control.EnableBenchmark(IsChecked); });
 
             new Test(PlotManager);
         }

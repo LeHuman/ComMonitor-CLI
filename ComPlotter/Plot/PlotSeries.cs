@@ -1,4 +1,4 @@
-﻿using ComPlotter.Util;
+﻿using ComPlotter.Wpf;
 using ScottPlot.Plottable;
 using System;
 using System.Drawing;
