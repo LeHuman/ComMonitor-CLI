@@ -4,13 +4,15 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
-    <StartupObject />
+    <StartupObject>ComPlotter.App</StartupObject>
     <Authors>LeHuman</Authors>
-    <Copyright>Copyright © 2021</Copyright>
-    <Version>1.0.0.0</Version>
-    <Company />
-    <Description>Plot data using ComMonitor</Description>
+    <Company>LeHuman</Company>
     <NeutralLanguage>en-US</NeutralLanguage>
+    <Description>Plot data using ComMonitor</Description>
+    <Copyright>Copyright © 2021</Copyright>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Version>1.0.0.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

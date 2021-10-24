@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("ComMonitor")]
 [assembly: AssemblyDescription("Monitor data over a Windows COM port")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("LeHuman")]
 [assembly: AssemblyProduct("ComMonitor")]
 [assembly: AssemblyCopyright("Copyright © 2021")]
 [assembly: AssemblyTrademark("")]
