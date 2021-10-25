@@ -18,6 +18,7 @@ namespace ComPlotter.Plot {
         private int ip = -1, ipb;
         private readonly ListBox SeriesListBox;
         private readonly Random rand = new(420);
+        private Dictionary<string, PlotSeries> ItemMemory = new();
 
         public PlotGroup(string Name, PlotControl PlotController, ListBox SeriesListBox = null) {
             WpfPlot = PlotController.WpfPlot;
@@ -25,6 +26,14 @@ namespace ComPlotter.Plot {
             this.Name = Name;
             this.SeriesListBox = SeriesListBox;
             this.PlotController = PlotController;
+        }
+
+        public void Update(string Name, double Value) {
+            if (!ItemMemory.TryGetValue(Name, out PlotSeries plotSeries)) {
+                plotSeries = CreateSeries(Name);
+                ItemMemory.Add(Name, plotSeries);
+            }
+            plotSeries.Update(Value);
         }
 
         internal void Delete() {

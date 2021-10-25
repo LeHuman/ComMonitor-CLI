@@ -13,6 +13,7 @@
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
     <Version>1.0.0.0</Version>
+    <Configurations>Debug;Release;Unga</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,5 +26,9 @@
 
   <ItemGroup>
     <Page Include="App.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ComLib\ComLib.csproj" />
   </ItemGroup>
 </Project>

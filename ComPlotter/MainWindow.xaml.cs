@@ -3,12 +3,20 @@ using ComPlotter.Util;
 using ComPlotter.Wpf;
 using MahApps.Metro.Controls;
 using MaterialDesignColors;
+using Serial;
+using System;
+using Pipe;
 using System.Diagnostics;
 using System.Reflection;
 using System.Windows;
+using System.Text.RegularExpressions;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Navigation;
+using static Pipe.PipeDataServer;
+using System.Text;
+using ControlzEx.Standard;
+using ScottPlot.Drawing.Colormaps;
 
 namespace ComPlotter {
 
@@ -19,6 +27,7 @@ namespace ComPlotter {
 
         public AssemblyInformation AssemblyInformation { get; private set; }
 
+        private PipeDataServer SerialPipe;
         private readonly Storyboard ToggleSettings, ToggleAbout;
 
         public MainWindow() {
@@ -54,7 +63,41 @@ namespace ComPlotter {
 
             Toaster = new(FindResource("MahApps.Brushes.AccentBase") as SolidColorBrush, new(SwatchHelper.Lookup[MaterialDesignColor.Red600]), new(SwatchHelper.Lookup[MaterialDesignColor.Amber600]), new(SwatchHelper.Lookup[MaterialDesignColor.Purple600]));
 
+            SetupPipes();
+
             //new Test(PlotManager, Toaster);
+        }
+
+        private string PortName;
+        private DataType dataType;
+
+        private static readonly string MessagePattern = @"([ \w\(\)\[\]]+)[ \t]([+-]?(?>[0-9]+(?>[.][0-9]*)?|[.][0-9]+))[\r\n]+";
+
+        private void ReceiveByteString(PlotGroup pg, byte[] Data) {
+            string msg = Encoding.UTF8.GetString(Data);
+            RegexOptions options = RegexOptions.Multiline;
+            foreach (Match m in Regex.Matches(msg, MessagePattern, options)) {
+                if (m.Groups.Count == 3)
+                    pg.Update(m.Groups[1].Value, double.Parse(m.Groups[2].Value));
+            }
+        }
+
+        private DelegateSerialData ReceiveInfo(string PipeName, int MaxBytes, string MetaData) {
+            PortName = PipeName;
+            dataType = Enum.Parse<DataType>(MetaData);
+            Toaster.DebugToast($"PipeInfoReceived {PipeName}");
+            PlotGroup pg = PlotManager.NewGroup(PipeName);
+            //SerialParser parser = new(Msg => { PlotData(PipeName, Msg); }, dataType, MaxBytes);
+            return Data => { ReceiveByteString(pg, Data); };
+        }
+
+        private void SetupPipes() {
+            SerialPipe = new PipeDataServer(ReceiveInfo);
+            if (!SerialPipe.Start()) {
+                Toaster.ErrorToast("Unable to wait for open system pipe for serial data");
+            } else {
+                Toaster.Toast("Waiting for pipe");
+            }
         }
 
         private void UpdateSelectedPlotSeries(object sender, System.Windows.Controls.SelectionChangedEventArgs e) {

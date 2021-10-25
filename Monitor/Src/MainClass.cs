@@ -24,8 +24,7 @@ namespace ComMonitor.Main {
         private static string PriorityPipeName = "ComMonitor";
         private static PingPipe priorityPipe;
 
-        private static readonly string SerialPipeName = "ComPlotter";
-        private static DataPipe SerialPipe;
+        private static PipeDataClient SerialPipe;
 
         private static string connectStr, waitStr, retryStr;
         private static readonly int[] waitAnimTime = { 80, 40, 30, 30, 20, 20, 10, 20, 20, 30, 30, 40 };
@@ -180,28 +179,31 @@ namespace ComMonitor.Main {
             #region Serial Data Pipe
 
             if (options.EnableSerialPipe || options.PlotData) {
-                SerialPipe = new DataPipe(SerialPipeName, SerialClient.portName);
+                SerialPipe = new(SerialClient.portName, options.SetMaxBytes, dataType.ToString());
                 // SerialClient.SerialDataReceived += (sender, e) => { SerialPipe.SendData(e.Data); }; // For piping raw data
-                SerialParser.SetParsedDataListener(msg => { if (SerialPipe.Connected()) SerialPipe.SendData(msg); });
-                if (!SerialPipe.WaitForConnection()) {
-                    Term.WriteLine("Warning: Unable to open system pipe for serial data.");
+                if (!SerialPipe.Start()) {
+                    Term.WriteLine("Warning: Unable to wait for open system pipe for serial data");
                     Term.WriteLine("Is another ComMonitor open?");
+                } else {
+                    SerialParser.SetParsedDataListener(SerialPipe.SendData);
+                    if (options.PlotData) {
+                        Process[] processes = Process.GetProcessesByName("ComPlotter");
+                        if (processes.Length == 0) {
+                            try {
+                                Process.Start(options.PlotterPath);
+                            } catch (SystemException) {
+                                throw new FileNotFoundException("Failed to launch Plotter");
+                            }
+                        } else {
+                            Term.ColorSingle(ConsoleColor.Blue, "Plotter already opened");
+                        }
+                        Term.ColorSingle(ConsoleColor.Yellow, "Waiting for system pipe for serial data");
+                        while (!SerialPipe.IsConnected) { }
+                    }
                 }
             }
 
             #endregion Serial Data Pipe
-
-            if (options.PlotData) {
-                Process[] processes = Process.GetProcessesByName("ComPlotter");
-                if (processes.Length == 0)
-                    try {
-                        Process.Start(options.PlotterPath);
-                    } catch (SystemException) {
-                        throw new FileNotFoundException("Failed to launch Plotter");
-                    }
-                else
-                    Term.ColorSingle(ConsoleColor.Blue, "Plotter already opened");
-            }
 
             waitStr = $"Waiting for connection to {SerialClient.portName} ";
             retryStr = $"Retrying to connect to {SerialClient.portName} ";
