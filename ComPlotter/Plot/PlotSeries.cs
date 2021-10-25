@@ -36,6 +36,7 @@ namespace ComPlotter.Plot {
             this.Manager = Manager;
             _Color = Color;
             CheckBox = new(Name, Color);
+            CheckBox.SetCallback(value => { _IsVisible = value; });
             ReloadPlot();
             SignalPlot.Color = Color;
             IsVisible = true;
