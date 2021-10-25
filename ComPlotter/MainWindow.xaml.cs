@@ -71,7 +71,7 @@ namespace ComPlotter {
         private string PortName;
         private DataType dataType;
 
-        private static readonly string MessagePattern = @"([ \w\(\)\[\]]+)[ \t]([+-]?(?>[0-9]+(?>[.][0-9]*)?|[.][0-9]+))[\r\n]+";
+        private static readonly string MessagePattern = @"([ \w\(\)\[\],:@#$%^&*!~\/\\\-\+]+)[ \t]([+-]?(?>[0-9]+(?>[.][0-9]*)?|[.][0-9]+))[\r\n]+";
 
         private void ReceiveByteString(PlotGroup pg, byte[] Data) {
             string msg = Encoding.UTF8.GetString(Data);

@@ -187,7 +187,7 @@ namespace ComMonitor.Main {
                 } else {
                     SerialParser.SetParsedDataListener(SerialPipe.SendData);
                     if (options.PlotData) {
-                        Process[] processes = Process.GetProcessesByName("ComPlotter");
+                        Process[] processes = Process.GetProcessesByName("ComPlotter"); // TODO: Only start if specifically asked to, otherwise just wait
                         if (processes.Length == 0) {
                             try {
                                 Process.Start(options.PlotterPath);
