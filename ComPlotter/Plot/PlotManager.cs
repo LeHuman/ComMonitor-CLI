@@ -19,6 +19,7 @@ namespace ComPlotter.Plot {
         private readonly ListBox ListBox;
         private readonly Thread RenderThread;
         private readonly Stopwatch sw = new();
+        private Dictionary<string, PlotGroup> GroupMap = new();
         private readonly ScottPlot.Plottable.Annotation SlowModeAnnotation;
 
         public PlotManager(WpfPlot WpfPlot, ListBox ListBox = null) {
@@ -62,8 +63,14 @@ namespace ComPlotter.Plot {
             _Control.RunOnUIThread(() => { _ = Groups.Remove(Group); });
         }
 
-        public PlotGroup NewGroup(string Name) {
-            PlotGroup pm = new(Name, _Control, ListBox); // TODO: Give each group their own list
+        public PlotGroup NewGroup(string Name) {// TODO: Give each group their own list
+            GroupMap.TryGetValue(Name, out PlotGroup pm);
+
+            if (pm == null) {
+                pm = new(Name, _Control, ListBox);
+                GroupMap.Add(Name, pm);
+            }
+
             _Control.RunOnUIThread(() => { Groups.Add(pm); });
             return pm;
         }
