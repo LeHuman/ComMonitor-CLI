@@ -20,7 +20,7 @@ namespace ComPlotter.Plot {
         private readonly ListBox SeriesListBox;
         private readonly Random rand = new(420);
 
-        //private readonly List<PlotSeries> DeleteSeriesList = new();
+        private readonly List<PlotSeries> DeleteSeriesList = new();
         private Dictionary<string, PlotSeries> ItemMemory = new();
 
         public PlotGroup(string Name, PlotControl PlotController, ListBox SeriesListBox = null) {
@@ -34,7 +34,6 @@ namespace ComPlotter.Plot {
         public void Update(string Name, double Value) {
             if (!ItemMemory.TryGetValue(Name, out PlotSeries plotSeries)) {
                 plotSeries = CreateSeries(Name);
-                ItemMemory.Add(Name, plotSeries);
             }
             plotSeries.Update(Value);
         }
@@ -84,35 +83,34 @@ namespace ComPlotter.Plot {
             }
         }
 
-        //private long AvgLastUpdate;
+        private const long StaleCutoff = TimeSpan.TicksPerSecond * 30;
 
-        internal void Update() { // TODO: Remove stale series
+        internal void Update() { // TODO: Better stale series detection
             if (Invalid) {
                 return;
             }
 
-            //long Now = DateTime.Now.Ticks;
+            long MaxTick = -1;
 
             foreach (PlotSeries s in SeriesList) {
                 s.Update();
-                //AvgLastUpdate += Now - s.LastUpdate;
+                if (s.LastUpdate > MaxTick)
+                    MaxTick = s.LastUpdate;
             }
 
-            //AvgLastUpdate /= 1 + SeriesList.Count;
+            if (PlotController._StaleSeries) {
+                foreach (PlotSeries s in SeriesList) {
+                    if (s.LastUpdate < MaxTick - StaleCutoff) {
+                        DeleteSeriesList.Add(s);
+                    }
+                }
 
-            //if (PlotController._StaleSeries) {
-            //    DeleteSeriesList.Clear();
+                foreach (PlotSeries s in DeleteSeriesList) {
+                    RemoveSeries(s);
+                }
 
-            //    foreach (PlotSeries s in SeriesList) {
-            //        if (Now - s.LastUpdate > TimeSpan.TicksPerMillisecond * 1000) {
-            //            DeleteSeriesList.Add(s);
-            //        }
-            //    }
-
-            //    foreach (PlotSeries s in DeleteSeriesList) {
-            //        RemoveSeries(s);
-            //    }
-            //}
+                DeleteSeriesList.Clear();
+            }
         }
 
         internal void RemovePlot(IPlottable plottable) {
@@ -129,6 +127,7 @@ namespace ComPlotter.Plot {
             plotSeries.Invalid = true;
             plotSeries.Clear();
             RemovePlot(plotSeries.SignalPlot);
+            ItemMemory.Remove(plotSeries.Name);
             PlotController.RunOnUIThread(() => { _ = SeriesList.Remove(plotSeries); SeriesListBox?.Items.Remove(plotSeries); });
         }
 
@@ -138,17 +137,20 @@ namespace ComPlotter.Plot {
             }
 
             PlotSeries ps = null;
+
             if (Range <= 1) {
                 Range = PlotController._Range;
             }
 
-            Name = $"{this.Name} : {Name}";
+            string LocName = $"{this.Name} : {Name}";
 
             PlotController.RunOnUIThread(() => {
-                ps = new(this, Name, NextColor(), Range, Growing);
+                ps = new(this, LocName, NextColor(), Range, Growing);
                 SeriesList.Add(ps);
                 SeriesListBox?.Items.Add(ps);
             });
+
+            ItemMemory.Add(Name, ps);
 
             if (PlotController.SlowMode) {
                 ps.IsVisible = false;
