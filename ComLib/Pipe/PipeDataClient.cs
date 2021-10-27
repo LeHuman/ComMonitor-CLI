@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.IO.Pipes;
 using System.Text;
 using System.Threading.Tasks;
@@ -46,7 +47,12 @@ namespace Pipe {
 
         public void SendData(byte[] Data) {
             if (IsConnected)
-                PipeClient.Write(Data, 0, Data.Length);
+                try {
+                    PipeClient.Write(Data, 0, Data.Length);
+                } catch (IOException) {
+                    Stop();
+                    Start();
+                }
         }
 
         private void SendInfo() {
