@@ -182,8 +182,8 @@ namespace ComMonitor.Main {
                 SerialPipe = new(SerialClient.portName, options.SetMaxBytes, dataType.ToString());
                 // SerialClient.SerialDataReceived += (sender, e) => { SerialPipe.SendData(e.Data); }; // For piping raw data
                 if (!SerialPipe.Start()) {
-                    Term.WriteLine("Warning: Unable to wait for open system pipe for serial data");
-                    Term.WriteLine("Is another ComMonitor open?");
+                    Term.ColorSingle(ConsoleColor.Yellow, "Unable to wait for open system pipe for serial data");
+                    Term.ColorSingle(ConsoleColor.Yellow, "Is another ComMonitor open?");
                 } else {
                     SerialParser.SetParsedDataListener(SerialPipe.SendData);
                     if (options.PlotData) {
@@ -192,13 +192,13 @@ namespace ComMonitor.Main {
                             try {
                                 Process.Start(options.PlotterPath);
                             } catch (SystemException) {
-                                throw new FileNotFoundException("Failed to launch Plotter");
+                                Term.ColorSingle(ConsoleColor.Red, "Failed to launch Plotter");
                             }
                         } else {
                             Term.ColorSingle(ConsoleColor.Blue, "Plotter already opened");
-                        }
-                        Term.ColorSingle(ConsoleColor.Yellow, "Waiting for system pipe for serial data");
-                        while (!SerialPipe.IsConnected) { }
+                        } // TODO: add option to wait for plotter
+                        //Term.ColorSingle(ConsoleColor.Yellow, "Waiting for system pipe for serial data");
+                        //while (!SerialPipe.IsConnected) { }
                     }
                 }
             }

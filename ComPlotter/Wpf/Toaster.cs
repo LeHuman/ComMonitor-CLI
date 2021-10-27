@@ -6,14 +6,15 @@ using System.Windows.Media;
 namespace ComPlotter.Wpf {
 
     public class Toaster {
-        private readonly SolidColorBrush DefaultBrush, ErrorBrush, WarningBrush, DebugBrush;
+        private readonly SolidColorBrush DefaultBrush, SuccessBrush, ErrorBrush, WarningBrush, DebugBrush;
 
         public bool Enable { get; set; } = true;
 
         public ObservableCollection<Toast> Messages { get; } = new();
 
-        public Toaster(SolidColorBrush DefaultBrush, SolidColorBrush ErrorBrush, SolidColorBrush WarningBrush, SolidColorBrush DebugBrush) {
+        public Toaster(SolidColorBrush DefaultBrush, SolidColorBrush SuccessBrush, SolidColorBrush ErrorBrush, SolidColorBrush WarningBrush, SolidColorBrush DebugBrush) {
             this.DefaultBrush = DefaultBrush;
+            this.SuccessBrush = SuccessBrush;
             this.ErrorBrush = ErrorBrush;
             this.WarningBrush = WarningBrush;
             this.DebugBrush = DebugBrush;
@@ -21,6 +22,10 @@ namespace ComPlotter.Wpf {
 
         public void Toast(string message, int DurationMilliseconds = 2000) {
             NewToast(new(message, DefaultBrush), DurationMilliseconds);
+        }
+
+        public void SuccessToast(string message, int DurationMilliseconds = 2000) {
+            NewToast(new(message, SuccessBrush), DurationMilliseconds);
         }
 
         public void ErrorToast(string message, int DurationMilliseconds = 2000) {

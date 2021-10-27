@@ -61,7 +61,13 @@ namespace ComPlotter {
             NotifyCheck.Status = "Notifications temporarily show info on the bottom left of the application";
             NotifyCheck.SetCallback(v => { Toaster.Enable = v; });
 
-            Toaster = new(FindResource("MahApps.Brushes.AccentBase") as SolidColorBrush, new(SwatchHelper.Lookup[MaterialDesignColor.Red600]), new(SwatchHelper.Lookup[MaterialDesignColor.Amber600]), new(SwatchHelper.Lookup[MaterialDesignColor.Purple600]));
+            Toaster = new(
+                FindResource("MahApps.Brushes.AccentBase") as SolidColorBrush,
+                new(SwatchHelper.Lookup[MaterialDesignColor.Green600]),
+                new(SwatchHelper.Lookup[MaterialDesignColor.Red600]),
+                new(SwatchHelper.Lookup[MaterialDesignColor.Amber600]),
+                new(SwatchHelper.Lookup[MaterialDesignColor.Purple600]
+            ));
 
             SetupPipes();
 
@@ -85,14 +91,22 @@ namespace ComPlotter {
         private DelegateSerialData ReceiveInfo(string PipeName, int MaxBytes, string MetaData) {
             PortName = PipeName;
             dataType = Enum.Parse<DataType>(MetaData);
-            Toaster.DebugToast($"PipeInfoReceived {PipeName}");
+            Toaster.WarnToast($"PipeInfoReceived {PipeName}");
             PlotGroup pg = PlotManager.NewGroup(PipeName);
             //SerialParser parser = new(Msg => { PlotData(PipeName, Msg); }, dataType, MaxBytes);
             return Data => { ReceiveByteString(pg, Data); };
         }
 
+        private void PrintPipeStatus(string PipeName, bool IsConnected) {
+            if (IsConnected)
+                Toaster.SuccessToast($"Pipe Opened {PipeName}");
+            else
+                Toaster.ErrorToast($"Pipe Closed {PipeName}");
+        }
+
         private void SetupPipes() {
             SerialPipe = new PipeDataServer(ReceiveInfo);
+            SerialPipe.SetStatusListener(PrintPipeStatus);
             if (!SerialPipe.Start()) {
                 Toaster.ErrorToast("Unable to wait for open system pipe for serial data");
             } else {

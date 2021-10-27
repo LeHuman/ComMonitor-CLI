@@ -2,7 +2,7 @@
   "profiles": {
     "ComMonitor": {
       "commandName": "Project",
-      "commandLineArgs": "COM3 115200 -tMapped -m8 --jsonPath C:\\GitHub\\SAEGit\\IIT-SAE-ECU\\log_lookup.json -r -w -lC:\\GitHub\\SAEGit\\IIT-SAE-ECU\\logs --logTime --input D -g --graphPath C:\\GitHub\\ComMonitor\\ComPlotter\\bin\\Debug\\net5.0-windows\\ComPlotter.exe",
+      "commandLineArgs": "COM3 115200 -tMapped -m8 --jsonPath C:\\GitHub\\SAEGit\\IIT-SAE-ECU\\log_lookup.json -r -w -lC:\\GitHub\\SAEGit\\IIT-SAE-ECU\\logs --logTime --input D -g",
       "remoteDebugEnabled": false,
       "nativeDebugging": true
     }

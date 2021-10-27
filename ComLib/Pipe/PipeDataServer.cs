@@ -12,6 +12,8 @@ namespace Pipe {
 
         public delegate void DelegateSerialData(byte[] Data);
 
+        public delegate void DelegateSerialStatus(string PipeName, bool IsConnected);
+
         public delegate DelegateSerialData DelegateSerialInfo(string PipeName, int MaxBytes, string MetaData);
 
         internal const int BUFFER_SIZE = 4096;
@@ -19,12 +21,17 @@ namespace Pipe {
         internal const string INFO_PIPE_NAME = "ComInfoPipe";
 
         private readonly DelegateSerialInfo InfoReceiver;
+        private DelegateSerialStatus SerialStatusListener;
         private NamedPipeServerStream InfoPipeServer;
         private readonly Thread ServerThread;
 
         public PipeDataServer(DelegateSerialInfo InfoReceiver) {
             this.InfoReceiver = InfoReceiver;
             ServerThread = new(RunThread);
+        }
+
+        public void SetStatusListener(DelegateSerialStatus SerialStatusListener) {
+            this.SerialStatusListener = SerialStatusListener;
         }
 
         public bool Start() {
@@ -65,32 +72,39 @@ namespace Pipe {
 
                     string[] PipeData = Encoding.UTF8.GetString(memoryStream.ToArray()).Split(',', 3);
                     SendReply(PipeData[0]);
-                    Task.Run(() => { ReceiveData(PipeData[0], InfoReceiver.Invoke(PipeData[0], int.Parse(PipeData[1]), PipeData[2])); });
-                } catch (SystemException) { 
+                    Task.Run(() => { ReceiveData(PipeData[0], InfoReceiver.Invoke(PipeData[0], int.Parse(PipeData[1]), PipeData[2]), SerialStatusListener); });
+                } catch (SystemException) {
                     Stop();
                     InfoPipeServer = new(INFO_PIPE_NAME, PipeDirection.InOut, MAX_CONNECTIONS, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
                 }
             }
         }
 
-        private static void ReceiveData(string PipeName, DelegateSerialData SerialDataReceiver) {
+        private static void ReceiveData(string PipeName, DelegateSerialData SerialDataReceiver, DelegateSerialStatus SerialClosedHandle) {
             NamedPipeServerStream DataPipeServer = new NamedPipeServerStream(PipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
             DataPipeServer.WaitForConnection();
+
+            SerialClosedHandle?.Invoke(PipeName, true);
 
             MemoryStream memoryStream = new();
             byte[] buffer = new byte[BUFFER_SIZE];
 
-            while (DataPipeServer.IsConnected || !DataPipeServer.IsMessageComplete) {
-                memoryStream.SetLength(0);
-                do {
-                    memoryStream.Write(buffer, 0, DataPipeServer.Read(buffer, 0, buffer.Length));
-                } while (!DataPipeServer.IsMessageComplete);
+            try {
+                while (DataPipeServer.IsConnected || !DataPipeServer.IsMessageComplete) {
+                    memoryStream.SetLength(0);
+                    do {
+                        memoryStream.Write(buffer, 0, DataPipeServer.Read(buffer, 0, buffer.Length));
+                    } while (!DataPipeServer.IsMessageComplete);
 
-                SerialDataReceiver.Invoke(memoryStream.ToArray());
+                    SerialDataReceiver.Invoke(memoryStream.ToArray());
+                }
+
+                DataPipeServer.Close();
+            } catch (IOException) {
+            } finally {
+                DataPipeServer.Dispose();
+                SerialClosedHandle?.Invoke(PipeName, false);
             }
-
-            DataPipeServer.Close();
-            DataPipeServer.Dispose();
         }
     }
 }
