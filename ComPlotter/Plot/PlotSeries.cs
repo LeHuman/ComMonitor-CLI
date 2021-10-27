@@ -19,6 +19,7 @@ namespace ComPlotter.Plot {
         internal Color _Color;
         internal bool _IsVisible;
         internal long Counter, LastUpdate;
+        internal readonly string InternalName;
 
         internal SignalPlot SignalPlot;
         internal double[] Data = new double[InitHeap];
@@ -29,8 +30,9 @@ namespace ComPlotter.Plot {
         private int MinRender, MaxRender;
         private readonly PlotGroup Manager;
 
-        internal PlotSeries(PlotGroup Manager, string Name, Color Color, int Range, bool Growing) {
+        internal PlotSeries(PlotGroup Manager, string Name, string InternalName, Color Color, int Range, bool Growing) {
             this.Name = Name;
+            this.InternalName = InternalName;
             this.Range = Range;
             this.Growing = Growing;
             this.Manager = Manager;

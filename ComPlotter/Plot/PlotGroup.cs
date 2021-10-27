@@ -127,7 +127,7 @@ namespace ComPlotter.Plot {
             plotSeries.Invalid = true;
             plotSeries.Clear();
             RemovePlot(plotSeries.SignalPlot);
-            ItemMemory.Remove(plotSeries.Name);
+            ItemMemory.Remove(plotSeries.InternalName);
             PlotController.RunOnUIThread(() => { _ = SeriesList.Remove(plotSeries); SeriesListBox?.Items.Remove(plotSeries); });
         }
 
@@ -145,12 +145,12 @@ namespace ComPlotter.Plot {
             string LocName = $"{this.Name} : {Name}";
 
             PlotController.RunOnUIThread(() => {
-                ps = new(this, LocName, NextColor(), Range, Growing);
+                ps = new(this, LocName, Name, NextColor(), Range, Growing);
                 SeriesList.Add(ps);
                 SeriesListBox?.Items.Add(ps);
             });
 
-            ItemMemory.Add(Name, ps);
+            ItemMemory.Add(ps.InternalName, ps);
 
             if (PlotController.SlowMode) {
                 ps.IsVisible = false;
