@@ -53,13 +53,17 @@ namespace ComPlotter {
             BenchmarkCheck.Status = "Show the render time for the last rendered frame";
             BenchmarkCheck.SetCallback(IsChecked => { PlotManager.Control.EnableBenchmark(IsChecked); });
 
-            // TODO: implement the following
+            CheckBox StaleCheck = Settings.AddCheckBox("Remove Stale Series");
+            StaleCheck.Status = "Automaticlly purge the data of series that have not sent data in a while";
+            StaleCheck.SetCallback(IsChecked => PlotManager.Control.StaleSeries = IsChecked);
+
             CheckBox PurgeCheck = Settings.AddCheckBox("Auto Purge");
             PurgeCheck.Status = "Automaticlly purge the data of ports that have been disconnected";
+            BenchmarkCheck.SetCallback(IsChecked => PlotManager.Control.AutoPurge = IsChecked);
 
             CheckBox NotifyCheck = Settings.AddCheckBox("Enable Notifications", true);
             NotifyCheck.Status = "Notifications temporarily show info on the bottom left of the application";
-            NotifyCheck.SetCallback(v => { Toaster.Enable = v; });
+            NotifyCheck.SetCallback(IsChecked => { Toaster.Enable = IsChecked; });
 
             Toaster = new(
                 FindResource("MahApps.Brushes.AccentBase") as SolidColorBrush,
@@ -98,10 +102,11 @@ namespace ComPlotter {
         }
 
         private void PrintPipeStatus(string PipeName, bool IsConnected) {
-            if (IsConnected)
+            if (IsConnected) {
                 Toaster.SuccessToast($"Pipe Opened {PipeName}");
-            else
+            } else {
                 Toaster.ErrorToast($"Pipe Closed {PipeName}");
+            }
         }
 
         private void SetupPipes() {

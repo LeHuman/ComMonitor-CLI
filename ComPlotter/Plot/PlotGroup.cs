@@ -1,4 +1,5 @@
 ﻿using ScottPlot;
+using ScottPlot.Drawing.Colormaps;
 using ScottPlot.Plottable;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,8 @@ namespace ComPlotter.Plot {
         private int ip = -1, ipb;
         private readonly ListBox SeriesListBox;
         private readonly Random rand = new(420);
+
+        //private readonly List<PlotSeries> DeleteSeriesList = new();
         private Dictionary<string, PlotSeries> ItemMemory = new();
 
         public PlotGroup(string Name, PlotControl PlotController, ListBox SeriesListBox = null) {
@@ -81,18 +84,45 @@ namespace ComPlotter.Plot {
             }
         }
 
-        internal void Update() {
+        //private long AvgLastUpdate;
+
+        internal void Update() { // TODO: Remove stale series
             if (Invalid) {
                 return;
             }
 
+            //long Now = DateTime.Now.Ticks;
+
             foreach (PlotSeries s in SeriesList) {
                 s.Update();
+                //AvgLastUpdate += Now - s.LastUpdate;
             }
+
+            //AvgLastUpdate /= 1 + SeriesList.Count;
+
+            //if (PlotController._StaleSeries) {
+            //    DeleteSeriesList.Clear();
+
+            //    foreach (PlotSeries s in SeriesList) {
+            //        if (Now - s.LastUpdate > TimeSpan.TicksPerMillisecond * 1000) {
+            //            DeleteSeriesList.Add(s);
+            //        }
+            //    }
+
+            //    foreach (PlotSeries s in DeleteSeriesList) {
+            //        RemoveSeries(s);
+            //    }
+            //}
         }
 
         internal void RemovePlot(IPlottable plottable) {
             PlotController.RunOnUIThread(() => { WpfPlot.Plot.Remove(plottable); });
+        }
+
+        internal SignalPlot NewPlot(double[] DataPointer) {
+            SignalPlot signalPlot = null;
+            PlotController.RunOnUIThread(() => { signalPlot = WpfPlot.Plot.AddSignal(DataPointer); });
+            return signalPlot;
         }
 
         internal void RemoveSeries(PlotSeries plotSeries) {
@@ -100,12 +130,6 @@ namespace ComPlotter.Plot {
             plotSeries.Clear();
             RemovePlot(plotSeries.SignalPlot);
             PlotController.RunOnUIThread(() => { _ = SeriesList.Remove(plotSeries); SeriesListBox?.Items.Remove(plotSeries); });
-        }
-
-        internal SignalPlot NewPlot(double[] DataPointer) {
-            SignalPlot signalPlot = null;
-            PlotController.RunOnUIThread(() => { signalPlot = WpfPlot.Plot.AddSignal(DataPointer); });
-            return signalPlot;
         }
 
         internal PlotSeries CreateSeries(string Name, int Range = 0, bool Growing = false) {

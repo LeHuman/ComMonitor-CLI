@@ -1,4 +1,5 @@
-﻿using ScottPlot;
+﻿using Newtonsoft.Json.Linq;
+using ScottPlot;
 using ScottPlot.Plottable;
 using System;
 using System.Collections.Generic;
@@ -17,16 +18,18 @@ namespace ComPlotter.Plot {
         public event PropertyChangedEventHandler PropertyChanged;
 
         public string HighlightedPointStatus { get; private set; }
+        public bool AutoPurge { get => _AutoPurge; set => _AutoPurge = value; }
+        public bool StaleSeries { get => _StaleSeries; set => _StaleSeries = value; }
         public int Range { get => _Range; set { _Range = value; SetRangeAll(value); } } // TODO: enable range for individual series
         public bool AutoRange { get => _AutoRange; set { _AutoRange = value; EnableInput(!value); if (value) { RunOnUIThread(() => { WpfPlot.Plot.AxisAuto(0.1, 0.5); }); } } }
 
         internal WpfPlot WpfPlot;
-        internal bool _AutoRange = true;
-        internal bool LowQualityRender = true;
-        internal bool SlowMode, _DisableSlowMode;
         internal ListBox SeriesListBox;
+        internal bool _AutoRange = true;
         internal ScatterPlot HighlightedPoint;
+        internal bool LowQualityRender = true;
         internal int _Range = PlotSeries.InitHeap;
+        internal bool SlowMode, _DisableSlowMode, _AutoPurge, _StaleSeries;
 
         private readonly List<PlotGroup> PlotGroups;
 

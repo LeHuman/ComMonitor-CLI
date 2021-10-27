@@ -16,9 +16,9 @@ namespace ComPlotter.Plot {
         public int LastX { get => nextDataIndex - 1; }
         public int Range { get => _Range; set => _Range = Math.Max(value, 0); }
 
-        internal long Counter;
-        internal bool _IsVisible;
         internal Color _Color;
+        internal bool _IsVisible;
+        internal long Counter, LastUpdate;
 
         internal SignalPlot SignalPlot;
         internal double[] Data = new double[InitHeap];
@@ -51,6 +51,8 @@ namespace ComPlotter.Plot {
                 IncreaseBuffer();
                 OffsetX += MinRender;
             }
+
+            LastUpdate = DateTime.Now.Ticks;
 
             Data[nextDataIndex] = Growing ? Data[nextDataIndex - 1] + value : value;
 
