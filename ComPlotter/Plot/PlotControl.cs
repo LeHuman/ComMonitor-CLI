@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using ScottPlot;
+﻿using ScottPlot;
 using ScottPlot.Plottable;
 using System;
 using System.Collections.Generic;
@@ -17,7 +16,7 @@ namespace ComPlotter.Plot {
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public string HighlightedPointStatus { get; private set; }
+        public string HighlightedPointStatus { get; private set; } = "No Point Highlighted";
         public bool AutoPurge { get => _AutoPurge; set => _AutoPurge = value; }
         public bool StaleSeries { get => _StaleSeries; set => _StaleSeries = value; }
         public bool VisibleDefault { get => _VisibleDefault; set => _VisibleDefault = value; }

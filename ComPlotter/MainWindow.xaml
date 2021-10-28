@@ -77,22 +77,33 @@
                     <RowDefinition Height="Auto"></RowDefinition>
                     <RowDefinition Height="Auto"></RowDefinition>
                 </Grid.RowDefinitions>
-                <StackPanel Grid.Row="0" VerticalAlignment="Top" Margin="0 0 0 20">
+                <StackPanel Grid.Row="0" VerticalAlignment="Top" Margin="0 0 0 10">
                     <TextBlock Text="Usage" FontSize="18" FontWeight="Bold" Margin="0 0 0 10" />
-                    <TextBlock FontSize="12" TextWrapping="Wrap">
+                    <TextBlock FontSize="12" TextWrapping="Wrap" Margin="0 0 0 15">
                         Double click an entry to focus on that entry.
-                        This will disable new entries from being visible.
+                        <LineBreak />
+                        This will also disable new entries from being visible.
                         <LineBreak />
                         <LineBreak />
                         The Slider on the top right sets the maximum number of sample points to be displayed per entry.
                         <LineBreak />
                         <LineBreak />
+                        Each entry is grouped up by which pipe it came from.
+                        <LineBreak />
+                        <LineBreak />
                         Sending data to this plotter is done through the a
                         <Hyperlink NavigateUri="https://docs.microsoft.com/en-us/windows/win32/ipc/named-pipe-client" RequestNavigate="HyperlinkClick">Named Pipe Client</Hyperlink>.
-                        More info on the repository.
+                    </TextBlock>
+                    <TextBlock Text="Basic Plot Controls" FontSize="14" FontWeight="DemiBold" Margin="0 0 0 10" />
+                    <TextBlock FontSize="12" TextWrapping="Wrap" Margin="0 0 0 10">
+                        When <Bold>Auto Fit</Bold> is not enabled, the plot can be manually controlled.
                         <LineBreak />
                         <LineBreak />
-                        Each entry is grouped up by which pipe it came from.
+                        Drag Mouse Left: Pan
+                        <LineBreak />
+                        Drag Mouse Right: Zoom
+                        <LineBreak />
+                        Drag Mouse Middle: Zoom Region
                     </TextBlock>
                 </StackPanel>
                 <StackPanel Grid.Row="1" Margin="0 0 0 10">
@@ -152,43 +163,34 @@
         <Border Grid.Column="2" Margin="5,15,15,15">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="40*" />
-                    <RowDefinition Height="40" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <Grid Grid.Row="0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="95" />
-                        <RowDefinition Height="40*" />
-                    </Grid.RowDefinitions>
-                    <StackPanel Grid.Row="0">
-                        <TextBlock >Sample Range (2^n)</TextBlock>
-                        <DockPanel VerticalAlignment="Center" Margin="5,0,5,0">
-                            <TextBox Text="{Binding ElementName=SampleSlider, Path=Value, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Right" TextAlignment="Right" Width="40" />
-                            <Slider Name="SampleSlider" Value="9" Minimum="1" Maximum="19" TickPlacement="BottomRight" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="UpdateSampleSize" />
-                        </DockPanel>
-                        <CheckBox Margin="0,10,0,0" IsChecked="{Binding PlotManager.Control.AutoRange,Mode=TwoWay}">Auto Fit</CheckBox>
-                        <Label Content="{Binding PlotManager.Control.HighlightedPointStatus}" />
-                    </StackPanel>
-                    <ListBox Name="SeriesListBox" Grid.Row="1" Margin="0 5" SelectionChanged="UpdateSelectedPlotSeries" MouseDoubleClick="SeriesDoubleClick">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel>
-                                    <CheckBox IsChecked="{Binding CheckBox.IsChecked}" Background="{Binding CheckBox.Brush}" MouseDoubleClick="SeriesDoubleClick">
-                                        <TextBlock>
-                                            <AccessText TextWrapping="Wrap" Text="{Binding CheckBox.Name}" />
-                                        </TextBlock>
-                                    </CheckBox>
-                                    <TextBlock Text="{Binding CheckBox.Status}" TextWrapping="Wrap" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </Grid>
-                <Border Grid.Row="1">
-                    <StackPanel>
-                        <Button Margin="0 5 0 0" Command="{Binding PlotManager.Control.ClearCommand}" VerticalAlignment="Bottom" >Clear</Button>
-                    </StackPanel>
-                </Border>
+                <StackPanel Grid.Row="0" Margin="5 0">
+                    <TextBlock  Margin="0 0 0 5">Sample Range (2^n)</TextBlock>
+                    <DockPanel>
+                        <TextBox Text="{Binding ElementName=SampleSlider, Path=Value, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Right" TextAlignment="Right" Width="30" />
+                        <Slider Name="SampleSlider" Value="9" Minimum="1" Maximum="19" TickPlacement="BottomRight" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="UpdateSampleSize" />
+                    </DockPanel>
+                    <CheckBox IsChecked="{Binding PlotManager.Control.AutoRange,Mode=TwoWay}" Margin="3 10 0 5">Auto Fit</CheckBox>
+                    <Label Content="{Binding PlotManager.Control.HighlightedPointStatus}" />
+                </StackPanel>
+                <ListBox Grid.Row="1" Name="SeriesListBox" SelectionChanged="UpdateSelectedPlotSeries" MouseDoubleClick="SeriesDoubleClick">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <CheckBox IsChecked="{Binding CheckBox.IsChecked}" Background="{Binding CheckBox.Brush}" MouseDoubleClick="SeriesDoubleClick">
+                                    <TextBlock>
+                                        <AccessText TextWrapping="Wrap" Text="{Binding CheckBox.Name}" />
+                                    </TextBlock>
+                                </CheckBox>
+                                <TextBlock Text="{Binding CheckBox.Status}" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <Button Grid.Row="2" Command="{Binding PlotManager.Control.ClearCommand}" VerticalAlignment="Bottom" >Clear</Button>
             </Grid>
         </Border>
 
