@@ -2,6 +2,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:s="clr-namespace:System;assembly=mscorlib"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local="clr-namespace:ComPlotter"
@@ -11,7 +12,7 @@
     x:Class="ComPlotter.MainWindow"
         GlowBrush="{DynamicResource AccentColorBrush}"
         d:DataContext="{d:DesignData Type=local:MainWindow, IsDesignTimeCreatable=False}"
-        Title="ComPlotter" Height="480" Width="1128" TitleCharacterCasing="Normal">
+        Title="ComPlotter" Height="480" Width="1200" TitleCharacterCasing="Normal">
 
     <mah:MetroWindow.LeftWindowCommands>
         <mah:WindowCommands>
@@ -24,14 +25,10 @@
     <mah:MetroWindow.RightWindowCommands>
         <mah:WindowCommands>
             <Button Click="SettingsBtn">
-                <Button.ContentTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconModern Width="20" Height="20" VerticalAlignment="Center" Kind="Settings" />
-                            <TextBlock Margin="4 0 0 0" VerticalAlignment="Center" Text="{Binding}" />
-                        </StackPanel>
-                    </DataTemplate>
-                </Button.ContentTemplate>
+                <iconPacks:PackIconModern Width="20" Height="20" VerticalAlignment="Center" Kind="Settings" />
+            </Button>
+            <Button Click="ListBtn">
+                <iconPacks:PackIconModern Width="20" Height="20" VerticalAlignment="Center" Kind="List" />
             </Button>
         </mah:WindowCommands>
     </mah:MetroWindow.RightWindowCommands>
@@ -39,8 +36,8 @@
     <Grid Name="MainGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="0*" x:Name="AboutCol" />
-            <ColumnDefinition Width="45*" />
-            <ColumnDefinition Width="10*" />
+            <ColumnDefinition Width="30*" />
+            <ColumnDefinition Width="10*" x:Name="ListCol" />
             <ColumnDefinition Width="0*" x:Name="SettingsCol" />
         </Grid.ColumnDefinitions>
 
@@ -61,6 +58,14 @@
                 To="10*"
                 Duration="0:0:0.3" />
             </Storyboard>
+            <Storyboard x:Key="ListPanelToggle">
+                <wpf:GridLengthAnimation
+                Storyboard.TargetProperty="Width"
+                Storyboard.TargetName="ListCol"
+                From="0*"
+                To="10*"
+                Duration="0:0:0.3" />
+            </Storyboard>
         </Grid.Resources>
 
         <ScrollViewer Grid.Column="0" Margin="15,15,0,15" VerticalScrollBarVisibility="Auto">
@@ -72,20 +77,25 @@
                     <RowDefinition Height="Auto"></RowDefinition>
                     <RowDefinition Height="Auto"></RowDefinition>
                 </Grid.RowDefinitions>
-                <StackPanel Grid.Row="0" VerticalAlignment="Bottom" Margin="0 0 0 10">
+                <StackPanel Grid.Row="0" VerticalAlignment="Top" Margin="0 0 0 20">
                     <TextBlock Text="Usage" FontSize="18" FontWeight="Bold" Margin="0 0 0 10" />
                     <TextBlock FontSize="12" TextWrapping="Wrap">
-                        <TextBlock.Text>
-
-                            Double click an entry to focus on that entry
-
-                            Here is a bunch of text that should describe how to use this application.
-                            I have yet to actually populate it with useful information.
-                            For now, this is just placeholder text. 😎
-                        </TextBlock.Text>
+                        Double click an entry to focus on that entry.
+                        This will disable new entries from being visible.
+                        <LineBreak />
+                        <LineBreak />
+                        The Slider on the top right sets the maximum number of sample points to be displayed per entry.
+                        <LineBreak />
+                        <LineBreak />
+                        Sending data to this plotter is done through the a
+                        <Hyperlink NavigateUri="https://docs.microsoft.com/en-us/windows/win32/ipc/named-pipe-client" RequestNavigate="HyperlinkClick">Named Pipe Client</Hyperlink>.
+                        More info on the repository.
+                        <LineBreak />
+                        <LineBreak />
+                        Each entry is grouped up by which pipe it came from.
                     </TextBlock>
                 </StackPanel>
-                <StackPanel Grid.Row="1" VerticalAlignment="Bottom" Margin="0 0 0 10">
+                <StackPanel Grid.Row="1" Margin="0 0 0 10">
                     <TextBlock Text="About" FontSize="18" FontWeight="Bold" Margin="0 0 0 10" />
                     <Image Margin="0 0 0 10" Source="{Binding AssemblyInformation.Image}" />
                     <TextBlock FontSize="14" FontWeight="SemiBold"  TextWrapping="Wrap" Margin="0 0 0 5">
@@ -189,7 +199,7 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <TextBlock Grid.Row="0" Text="Settings" FontSize="18" FontWeight="Bold" Margin="0 0 0 10" />
-                <ListBox Grid.Row="1" Name="SettingsCheckList">
+                <ListBox Grid.Row="1" Name="SettingsCheckList" ScrollViewer.VerticalScrollBarVisibility="Auto">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel>

@@ -26,7 +26,7 @@ namespace ComPlotter {
 
         private PipeDataServer SerialPipe;
         private readonly CheckBox VisibleCheck;
-        private readonly Storyboard ToggleSettings, ToggleAbout;
+        private readonly Storyboard ToggleSettings, ToggleAbout, ToggleList;
 
         public MainWindow() {
             InitializeComponent();
@@ -37,6 +37,7 @@ namespace ComPlotter {
 
             ToggleSettings = MainGrid.Resources["SettingsPanelToggle"] as Storyboard;
             ToggleAbout = MainGrid.Resources["AboutPanelToggle"] as Storyboard;
+            ToggleList = MainGrid.Resources["ListPanelToggle"] as Storyboard;
 
             AssemblyInformation = new(Assembly.GetExecutingAssembly());
             AssemblyInformation.RepoLink = new("Github", new("https://github.com/LeHuman/ComMonitor-CLI"));
@@ -137,6 +138,10 @@ namespace ComPlotter {
 
         private void UpdateMouseSelection(object sender, System.Windows.Input.MouseButtonEventArgs e) {
             PlotManager.UpdateHighlight();
+        }
+
+        private void ListBtn(object sender, RoutedEventArgs e) {
+            ToggleList.Begin();
         }
 
         private void AboutBtn(object sender, RoutedEventArgs e) {
