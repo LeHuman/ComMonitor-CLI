@@ -80,8 +80,6 @@ namespace ComPlotter {
             SetupPipes();
 
             Loaded += (_, _) => PlotManager.Start();
-
-            _ = new Test(PlotManager, Toaster);
         }
 
         //private string PortName;
