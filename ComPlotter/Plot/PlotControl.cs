@@ -1,11 +1,17 @@
-﻿using ScottPlot;
+﻿using Microsoft.Win32;
+using ScottPlot;
 using ScottPlot.Plottable;
+using ScottPlot.Styles;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.IO;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 using CommandBinding = ComPlotter.Wpf.CommandBinding;
 
 namespace ComPlotter.Plot {
@@ -47,6 +53,8 @@ namespace ComPlotter.Plot {
             WpfPlot.Configuration.QualityConfiguration.MouseInteractiveDropped = RenderType.ProcessMouseEventsOnly;
             WpfPlot.Configuration.QualityConfiguration.MouseWheelScrolled = RenderType.ProcessMouseEventsOnly;
             WpfPlot.Configuration.QualityConfiguration.MouseInteractiveDragged = RenderType.ProcessMouseEventsOnly;
+            WpfPlot.RightClicked -= WpfPlot.DefaultRightClickEvent;
+            WpfPlot.RightClicked += RightClick_Menu_Options;
 
             EnableInput(false);
 
@@ -57,15 +65,6 @@ namespace ComPlotter.Plot {
             HighlightedPoint.MarkerSize = 10;
             HighlightedPoint.MarkerShape = MarkerShape.openCircle;
             HighlightedPoint.IsVisible = false;
-        }
-
-        private void EnableInput(bool enable) // TODO: Show in about how auto fit disables mouse
-        {
-            WpfPlot.Configuration.UseRenderQueue = !enable;
-            WpfPlot.Configuration.LeftClickDragPan = enable;
-            WpfPlot.Configuration.MiddleClickDragZoom = enable;
-            WpfPlot.Configuration.RightClickDragZoom = enable;
-            WpfPlot.Configuration.ScrollWheelZoom = enable;
         }
 
         public void EnableBenchmark(bool Enabled) {
@@ -115,6 +114,64 @@ namespace ComPlotter.Plot {
 
         private void SetupCommands() {
             ClearCommand = new CommandBinding(ClearAll);
+        }
+
+        private void EnableInput(bool enable) {
+            WpfPlot.Configuration.UseRenderQueue = !enable;
+            WpfPlot.Configuration.LeftClickDragPan = enable;
+            WpfPlot.Configuration.MiddleClickDragZoom = enable;
+            WpfPlot.Configuration.RightClickDragZoom = enable;
+            WpfPlot.Configuration.ScrollWheelZoom = enable;
+        }
+
+        private void RightClick_Menu_Options(object sender, EventArgs e) {
+            MenuItem addSaveImageMenuItem = new() { Header = "Save Image" };
+            addSaveImageMenuItem.Click += (_, _) => Task.Run(SaveGraph);
+            //MenuItem addCopyImageMenuItem = new() { Header = "Copy Image" };
+            //addCopyImageMenuItem.Click += (_, _) => Task.Run(CopyGraph);
+
+            ContextMenu rightClickMenu = new();
+            rightClickMenu.Items.Add(addSaveImageMenuItem);
+            //rightClickMenu.Items.Add(addCopyImageMenuItem);
+            rightClickMenu.IsOpen = true;
+        }
+
+        //private void CopyGraph() {
+        //    Bitmap Graph_Image = null;
+
+        //    RunOnUIThread(() => { Graph_Image = WpfPlot.Plot.Render(); });
+
+        //    MemoryStream Image_Memory = new();
+        //    Graph_Image.Save(Image_Memory, System.Drawing.Imaging.ImageFormat.Png);
+
+        //    BitmapImage Graph_Bitmap = new();
+        //    Graph_Bitmap.BeginInit();
+        //    Graph_Bitmap.StreamSource = new MemoryStream(Image_Memory.ToArray());
+        //    Graph_Bitmap.EndInit();
+
+        //    Clipboard.SetImage(Graph_Bitmap);
+
+        //    Graph_Image.Dispose();
+        //    Image_Memory.Dispose();
+        //    Graph_Bitmap.Freeze();
+        //}
+
+        private void SaveGraph() {
+            try {
+                var Save_Image_Window = new SaveFileDialog
+                {
+                    FileName = "Graph Plot_" + DateTime.Now.ToString("yyyy-MM-dd h-mm-ss tt") + ".png",
+                    Filter = "PNG Files (*.png)|*.png;*.png" +
+                      "|JPG Files (*.jpg, *.jpeg)|*.jpg;*.jpeg" +
+                      "|BMP Files (*.bmp)|*.bmp;*.bmp" +
+                      "|All files (*.*)|*.*"
+                };
+
+                if (Save_Image_Window.ShowDialog() is true) {
+                    RunOnUIThread(() => { WpfPlot.Plot.SaveFig(Save_Image_Window.FileName); });
+                }
+            } catch (Exception) {
+            }
         }
     }
 }
