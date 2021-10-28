@@ -13,7 +13,7 @@ namespace ComPlotter.Plot {
 
         internal readonly PlotControl _Control;
 
-        private int avgMS = -30;
+        private int avgMS = 5;
         private bool RunRender;
         private readonly WpfPlot WpfPlot;
         private readonly ListBox ListBox;
@@ -86,7 +86,7 @@ namespace ComPlotter.Plot {
         }
 
         private void RenderRunner() {
-            //Thread.Sleep(1000); // Wait for a second just to settle
+            Thread.Sleep(500); // Wait for half a second just to settle
             while (RunRender) {
                 if (!_Control._DisableSlowMode) {
                     sw.Restart();
