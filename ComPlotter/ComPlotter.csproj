@@ -24,8 +24,8 @@
     <PackageReference Include="MahApps.Metro" Version="2.4.9" />
     <PackageReference Include="MahApps.Metro.IconPacks" Version="4.11.0" />
     <PackageReference Include="MaterialDesignThemes.MahApps" Version="0.1.9" />
-    <PackageReference Include="ScottPlot" Version="4.1.26" />
-    <PackageReference Include="ScottPlot.WPF" Version="4.1.26" />
+    <PackageReference Include="ScottPlot" Version="4.1.27" />
+    <PackageReference Include="ScottPlot.WPF" Version="4.1.27" />
   </ItemGroup>
 
   <ItemGroup>
