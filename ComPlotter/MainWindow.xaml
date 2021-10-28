@@ -173,7 +173,7 @@
                         <TextBox Text="{Binding ElementName=SampleSlider, Path=Value, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Right" TextAlignment="Right" Width="30" />
                         <Slider Name="SampleSlider" Value="9" Minimum="1" Maximum="19" TickPlacement="BottomRight" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="UpdateSampleSize" />
                     </DockPanel>
-                    <CheckBox IsChecked="{Binding PlotManager.Control.AutoRange,Mode=TwoWay}" Margin="3 10 0 5">Auto Fit</CheckBox>
+                    <CheckBox IsChecked="{Binding PlotManager.Control.AutoRange}" Margin="3 10 0 5">Auto Fit</CheckBox>
                     <Label Content="{Binding PlotManager.Control.HighlightedPointStatus}" />
                 </StackPanel>
                 <ListBox Grid.Row="1" Name="SeriesListBox" SelectionChanged="UpdateSelectedPlotSeries" MouseDoubleClick="SeriesDoubleClick">
