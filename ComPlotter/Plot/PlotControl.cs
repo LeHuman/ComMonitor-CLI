@@ -28,7 +28,7 @@ namespace ComPlotter.Plot {
         internal bool _AutoRange = true;
         internal bool _VisibleDefault = true;
         internal bool LowQualityRender = true;
-        internal ScatterPlot HighlightedPoint;
+        internal MarkerPlot HighlightedPoint;
         internal int _Range = PlotSeries.InitHeap;
         internal bool SlowMode, _DisableSlowMode, _AutoPurge, _StaleSeries;
         private readonly List<PlotGroup> PlotGroups;
@@ -98,8 +98,8 @@ namespace ComPlotter.Plot {
                 return;
             }
             (double pointX, double pointY, int _) = SelectedPlot.GetPointNearestX(mouseCoordX);
-            HighlightedPoint.Xs[0] = pointX;
-            HighlightedPoint.Ys[0] = pointY;
+            HighlightedPoint.X = pointX;
+            HighlightedPoint.Y = pointY;
             HighlightedPoint.IsVisible = true;
             HighlightedPointStatus = $"Highlight: {Math.Round(pointY, 8)}";
             OnPropertyChanged("HighlightedPointStatus");

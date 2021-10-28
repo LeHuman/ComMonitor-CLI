@@ -2,7 +2,6 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:s="clr-namespace:System;assembly=mscorlib"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local="clr-namespace:ComPlotter"
@@ -17,7 +16,8 @@
     <mah:MetroWindow.LeftWindowCommands>
         <mah:WindowCommands>
             <Button Click="AboutBtn">
-                <iconPacks:PackIconModern Width="20" Height="20" VerticalAlignment="Center" Kind="InformationCircle" />
+                <Image Source="/Resources/PlotterPngs/COMPlotterBar.png" Width="20" Height="20" VerticalAlignment="Center" />
+                <!--<iconPacks:PackIconModern Width="20" Height="20" VerticalAlignment="Center" Kind="InformationCircle" />-->
             </Button>
         </mah:WindowCommands>
     </mah:MetroWindow.LeftWindowCommands>
@@ -108,7 +108,8 @@
                 </StackPanel>
                 <StackPanel Grid.Row="1" Margin="0 0 0 10">
                     <TextBlock Text="About" FontSize="18" FontWeight="Bold" Margin="0 0 0 10" />
-                    <Image Margin="0 0 0 10" Source="{Binding AssemblyInformation.Image}" />
+                    <!--<Image Margin="0 0 0 10" Source="{Binding AssemblyInformation.Image}" />-->
+                    <Image Margin="0,0,15,10" Source="/Resources/PlotterPngs/COM_Plotter_Icon256.png" HorizontalAlignment="Left" MaxHeight="256" MinHeight="32" />
                     <TextBlock FontSize="14" FontWeight="SemiBold"  TextWrapping="Wrap" Margin="0 0 0 5">
                         <TextBlock.Text>
                             <MultiBinding StringFormat="{}{0} {1}">

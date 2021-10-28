@@ -14,6 +14,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Navigation;
 using static Pipe.PipeDataServer;
 using System.Text;
+using System.Windows.Media.Imaging;
 
 namespace ComPlotter {
 
@@ -41,7 +42,7 @@ namespace ComPlotter {
 
             AssemblyInformation = new(Assembly.GetExecutingAssembly());
             AssemblyInformation.RepoLink = new("Github", new("https://github.com/LeHuman/ComMonitor-CLI"));
-
+            //AssemblyInformation.Image = (BitmapImage)FindResource("COM_Plotter_Icon256.png");
             Settings = new SettingsPanel(SettingsCheckList);
 
             CheckBox SlowModeCheck = Settings.AddCheckBox("Disable Slow Mode");
@@ -164,11 +165,11 @@ namespace ComPlotter {
         private void SeriesDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) {
             PlotSeries ps = null;
             try {
-                if (sender is System.Windows.Controls.ListBox) {
-                    ps = (PlotSeries)((System.Windows.Controls.ListBox)sender).SelectedItem;
-                } else if (sender is System.Windows.Controls.CheckBox) {
+                if (sender is System.Windows.Controls.ListBox box) {
+                    ps = (PlotSeries)box.SelectedItem;
+                } else if (sender is System.Windows.Controls.CheckBox box1) {
                     SeriesListBox.UnselectAll();
-                    ps = (PlotSeries)((System.Windows.Controls.CheckBox)sender).DataContext;
+                    ps = (PlotSeries)box1.DataContext;
                 }
             } catch (InvalidCastException) {
             }

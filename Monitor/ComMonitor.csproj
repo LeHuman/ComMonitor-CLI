@@ -27,7 +27,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Resources\Comx.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\COMMonitor.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>ComMonitor.Main.MainClass</StartupObject>

@@ -14,11 +14,23 @@
     <FileVersion>1.0.0.0</FileVersion>
     <Version>1.0.0.0</Version>
     <Configurations>Debug;Release;Unga</Configurations>
+    <ApplicationIcon>Resources\COMPlotter.ico</ApplicationIcon>
+    <Win32Resource />
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <Optimize>true</Optimize>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\PlotterPngs\COMPlotterBar.png" />
+    <None Remove="Resources\PlotterPngs\COM_Plotter_Icon256.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\PlotterPngs\COMPlotterBar.png" />
+    <Resource Include="Resources\PlotterPngs\COM_Plotter_Icon256.png" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="MahApps.Metro" Version="2.4.9" />
