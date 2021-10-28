@@ -21,7 +21,7 @@ namespace ComPlotter.Plot {
         private readonly Random rand = new(420);
 
         private readonly List<PlotSeries> DeleteSeriesList = new();
-        private Dictionary<string, PlotSeries> ItemMemory = new();
+        private readonly Dictionary<string, PlotSeries> ItemMemory = new();
 
         public PlotGroup(string Name, PlotControl PlotController, ListBox SeriesListBox = null) {
             WpfPlot = PlotController.WpfPlot;
@@ -31,7 +31,15 @@ namespace ComPlotter.Plot {
             this.PlotController = PlotController;
         }
 
+        public void Focus(PlotSeries PlotSeries) {
+            foreach (PlotSeries s in SeriesList) {
+                s.CheckBox.SetChecked(s == PlotSeries);
+            }
+        }
+
         public void Update(string Name, double Value) {
+            if (Invalid)
+                return;
             if (!ItemMemory.TryGetValue(Name, out PlotSeries plotSeries)) {
                 plotSeries = CreateSeries(Name);
             }
@@ -152,7 +160,7 @@ namespace ComPlotter.Plot {
 
             ItemMemory.Add(ps.InternalName, ps);
 
-            if (PlotController.SlowMode) {
+            if (PlotController.SlowMode || !PlotController._VisibleDefault) {
                 ps.IsVisible = false;
             }
 

@@ -76,6 +76,9 @@
                     <TextBlock Text="Usage" FontSize="18" FontWeight="Bold" Margin="0 0 0 10" />
                     <TextBlock FontSize="12" TextWrapping="Wrap">
                         <TextBlock.Text>
+
+                            Double click an entry to focus on that entry
+
                             Here is a bunch of text that should describe how to use this application.
                             I have yet to actually populate it with useful information.
                             For now, this is just placeholder text. 😎
@@ -156,11 +159,15 @@
                         <CheckBox Margin="0,10,0,0" IsChecked="{Binding PlotManager.Control.AutoRange,Mode=TwoWay}">Auto Fit</CheckBox>
                         <Label Content="{Binding PlotManager.Control.HighlightedPointStatus}" />
                     </StackPanel>
-                    <ListBox Name="SeriesListBox" Grid.Row="1" Margin="0 5" SelectionChanged="UpdateSelectedPlotSeries">
+                    <ListBox Name="SeriesListBox" Grid.Row="1" Margin="0 5" SelectionChanged="UpdateSelectedPlotSeries" MouseDoubleClick="SeriesDoubleClick">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel>
-                                    <CheckBox Content="{Binding CheckBox.Name}" IsChecked="{Binding CheckBox.IsChecked}" Background="{Binding CheckBox.Brush}" />
+                                    <CheckBox IsChecked="{Binding CheckBox.IsChecked}" Background="{Binding CheckBox.Brush}" MouseDoubleClick="SeriesDoubleClick">
+                                        <TextBlock>
+                                            <AccessText TextWrapping="Wrap" Text="{Binding CheckBox.Name}" />
+                                        </TextBlock>
+                                    </CheckBox>
                                     <TextBlock Text="{Binding CheckBox.Status}" TextWrapping="Wrap" />
                                 </StackPanel>
                             </DataTemplate>
@@ -175,20 +182,28 @@
             </Grid>
         </Border>
 
-        <ScrollViewer Grid.Column="3" Margin="10,15,15,15" VerticalScrollBarVisibility="Auto">
-            <StackPanel>
-                <TextBlock Text="Settings" FontSize="18" FontWeight="Bold" Margin="0 0 0 10" />
-                <ListBox Name="SettingsCheckList">
+        <Border Grid.Column="3" Margin="10,15,15,15">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Text="Settings" FontSize="18" FontWeight="Bold" Margin="0 0 0 10" />
+                <ListBox Grid.Row="1" Name="SettingsCheckList">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel>
-                                <CheckBox Content="{Binding Name}" IsChecked="{Binding IsChecked}" />
+                                <CheckBox IsChecked="{Binding IsChecked}">
+                                    <TextBlock>
+                                            <AccessText TextWrapping="Wrap" Text="{Binding Name}" />
+                                    </TextBlock>
+                                </CheckBox>
                                 <TextBlock Text="{Binding Status}" TextWrapping="Wrap" />
                             </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
-            </StackPanel>
-        </ScrollViewer>
+            </Grid>
+        </Border>
     </Grid>
 </mah:MetroWindow>

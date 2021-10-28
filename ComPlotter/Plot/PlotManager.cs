@@ -13,13 +13,13 @@ namespace ComPlotter.Plot {
 
         internal readonly PlotControl _Control;
 
-        private int avgMS = 5;
+        private int avgMS = -30;
         private bool RunRender;
         private readonly WpfPlot WpfPlot;
         private readonly ListBox ListBox;
         private readonly Thread RenderThread;
         private readonly Stopwatch sw = new();
-        private Dictionary<string, PlotGroup> GroupMap = new();
+        private readonly Dictionary<string, PlotGroup> GroupMap = new();
         private readonly ScottPlot.Plottable.Annotation SlowModeAnnotation;
 
         public PlotManager(WpfPlot WpfPlot, ListBox ListBox = null) {
@@ -46,7 +46,6 @@ namespace ComPlotter.Plot {
 
             RenderThread = new(RenderRunner);
             RenderThread.Name = "Render Thread";
-            Start();
         }
 
         public void Start() {
@@ -61,6 +60,12 @@ namespace ComPlotter.Plot {
         public void RemoveGroup(PlotGroup Group) {
             Group.Delete();
             _Control.RunOnUIThread(() => { _ = Groups.Remove(Group); });
+        }
+
+        public void FocusSeries(PlotSeries PlotSeries) {// TODO: Select Per List
+            foreach (PlotGroup SeriesGroup in Groups) {
+                SeriesGroup.Focus(PlotSeries);
+            }
         }
 
         public PlotGroup NewGroup(string Name) {// TODO: Give each group their own list
@@ -81,6 +86,7 @@ namespace ComPlotter.Plot {
         }
 
         private void RenderRunner() {
+            //Thread.Sleep(1000); // Wait for a second just to settle
             while (RunRender) {
                 if (!_Control._DisableSlowMode) {
                     sw.Restart();

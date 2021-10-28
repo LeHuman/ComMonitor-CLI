@@ -3,7 +3,6 @@ using ComPlotter.Util;
 using ComPlotter.Wpf;
 using MahApps.Metro.Controls;
 using MaterialDesignColors;
-using Serial;
 using System;
 using Pipe;
 using System.Diagnostics;
@@ -15,8 +14,6 @@ using System.Windows.Media.Animation;
 using System.Windows.Navigation;
 using static Pipe.PipeDataServer;
 using System.Text;
-using ControlzEx.Standard;
-using ScottPlot.Drawing.Colormaps;
 
 namespace ComPlotter {
 
@@ -28,6 +25,7 @@ namespace ComPlotter {
         public AssemblyInformation AssemblyInformation { get; private set; }
 
         private PipeDataServer SerialPipe;
+        private readonly CheckBox VisibleCheck;
         private readonly Storyboard ToggleSettings, ToggleAbout;
 
         public MainWindow() {
@@ -65,6 +63,10 @@ namespace ComPlotter {
             NotifyCheck.Status = "Notifications temporarily show info on the bottom left of the application";
             NotifyCheck.SetCallback(IsChecked => { Toaster.Enable = IsChecked; });
 
+            VisibleCheck = Settings.AddCheckBox("New series are visible", true);
+            VisibleCheck.Status = "When a new series is added, automaticlly show it";
+            VisibleCheck.SetCallback(IsChecked => { PlotManager.Control.VisibleDefault = IsChecked; });
+
             Toaster = new(
                 FindResource("MahApps.Brushes.AccentBase") as SolidColorBrush,
                 new(SwatchHelper.Lookup[MaterialDesignColor.Green600]),
@@ -75,15 +77,17 @@ namespace ComPlotter {
 
             SetupPipes();
 
-            //new Test(PlotManager, Toaster);
+            Loaded += (_, _) => PlotManager.Start();
+
+            _ = new Test(PlotManager, Toaster);
         }
 
-        private string PortName;
-        private DataType dataType;
+        //private string PortName;
+        //private DataType dataType;
 
         private static readonly string MessagePattern = @"([ \w\(\)\[\],:@#$%^&*!~\/\\\-\+]+)[ \t]([+-]?(?>[0-9]+(?>[.][0-9]*)?|[.][0-9]+))[\r\n]+";
 
-        private void ReceiveByteString(PlotGroup pg, byte[] Data) {
+        private static void ReceiveByteString(PlotGroup pg, byte[] Data) {
             string msg = Encoding.UTF8.GetString(Data);
             RegexOptions options = RegexOptions.Multiline;
             foreach (Match m in Regex.Matches(msg, MessagePattern, options)) {
@@ -93,9 +97,9 @@ namespace ComPlotter {
         }
 
         private DelegateSerialData ReceiveInfo(string PipeName, int MaxBytes, string MetaData) {
-            PortName = PipeName;
-            dataType = Enum.Parse<DataType>(MetaData);
-            Toaster.WarnToast($"PipeInfoReceived {PipeName}");
+            //PortName = PipeName;
+            //dataType = Enum.Parse<DataType>(MetaData);
+            Toaster.WarnToast($"Pipe Info Received {PipeName}");
             PlotGroup pg = PlotManager.NewGroup(PipeName);
             //SerialParser parser = new(Msg => { PlotData(PipeName, Msg); }, dataType, MaxBytes);
             return Data => { ReceiveByteString(pg, Data); };
@@ -115,7 +119,7 @@ namespace ComPlotter {
             if (!SerialPipe.Start()) {
                 Toaster.ErrorToast("Unable to wait for open system pipe for serial data");
             } else {
-                Toaster.Toast("Waiting for pipe");
+                Toaster.Toast("Waiting for pipe", 1000);
             }
         }
 
@@ -150,6 +154,24 @@ namespace ComPlotter {
 
         private void ListView_ScrollChanged(object sender, System.Windows.Controls.ScrollChangedEventArgs e) {
             ((System.Windows.Controls.ScrollViewer)e.OriginalSource).ScrollToBottom();
+        }
+
+        private void SeriesDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) {
+            PlotSeries ps = null;
+            try {
+                if (sender is System.Windows.Controls.ListBox) {
+                    ps = (PlotSeries)((System.Windows.Controls.ListBox)sender).SelectedItem;
+                } else if (sender is System.Windows.Controls.CheckBox) {
+                    SeriesListBox.UnselectAll();
+                    ps = (PlotSeries)((System.Windows.Controls.CheckBox)sender).DataContext;
+                }
+            } catch (InvalidCastException) {
+            }
+            if (ps != null) {
+                PlotManager.FocusSeries(ps);
+                VisibleCheck.SetChecked(false);
+                e.Handled = true;
+            }
         }
     }
 }

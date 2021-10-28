@@ -20,17 +20,18 @@ namespace ComPlotter.Plot {
         public string HighlightedPointStatus { get; private set; }
         public bool AutoPurge { get => _AutoPurge; set => _AutoPurge = value; }
         public bool StaleSeries { get => _StaleSeries; set => _StaleSeries = value; }
+        public bool VisibleDefault { get => _VisibleDefault; set => _VisibleDefault = value; }
         public int Range { get => _Range; set { _Range = value; SetRangeAll(value); } } // TODO: enable range for individual series
         public bool AutoRange { get => _AutoRange; set { _AutoRange = value; EnableInput(!value); if (value) { RunOnUIThread(() => { WpfPlot.Plot.AxisAuto(0.1, 0.5); }); } } }
 
         internal WpfPlot WpfPlot;
         internal ListBox SeriesListBox;
         internal bool _AutoRange = true;
-        internal ScatterPlot HighlightedPoint;
+        internal bool _VisibleDefault = true;
         internal bool LowQualityRender = true;
+        internal ScatterPlot HighlightedPoint;
         internal int _Range = PlotSeries.InitHeap;
         internal bool SlowMode, _DisableSlowMode, _AutoPurge, _StaleSeries;
-
         private readonly List<PlotGroup> PlotGroups;
 
         internal PlotControl(WpfPlot WpfPlot, List<PlotGroup> PlotGroups, ListBox listBox) {

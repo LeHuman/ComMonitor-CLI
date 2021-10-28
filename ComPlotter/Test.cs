@@ -65,6 +65,7 @@ namespace ComPlotter {
                 }
                 if (PlotManager.Groups.Count != 0)
                     NOP(0.0001);
+                await Task.Delay(0);
             }
         }
     }

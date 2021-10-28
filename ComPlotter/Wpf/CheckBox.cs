@@ -31,6 +31,11 @@ namespace ComPlotter.Wpf {
             Brush = new(ToMediaColor(BrushColor));
         }
 
+        public void SetChecked(bool Checked) {
+            IsChecked = Checked;
+            OnPropertyChanged("IsChecked");
+        }
+
         internal void SetCallback(CheckBoxCallback Callback) {
             this.Callback = Callback;
         }
