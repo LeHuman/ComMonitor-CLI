@@ -28,6 +28,7 @@ namespace Pipe {
         public PipeDataServer(DelegateSerialInfo InfoReceiver) {
             this.InfoReceiver = InfoReceiver;
             ServerThread = new(RunThread);
+            ServerThread.Name = "Pipe Server Thread";
         }
 
         public void SetStatusListener(DelegateSerialStatus SerialStatusListener) {
@@ -36,7 +37,7 @@ namespace Pipe {
 
         public bool Start() {
             try {
-                InfoPipeServer = new(INFO_PIPE_NAME, PipeDirection.InOut, MAX_CONNECTIONS, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
+                InfoPipeServer = new(INFO_PIPE_NAME, PipeDirection.InOut, MAX_CONNECTIONS, PipeTransmissionMode.Message);
                 ServerThread.Start();
                 return true;
             } catch (Exception oEX) {
@@ -61,9 +62,12 @@ namespace Pipe {
             MemoryStream memoryStream = new();
             byte[] buffer = new byte[BUFFER_SIZE];
 
+            bool cont = false;
+
             while (true) {
                 try {
-                    InfoPipeServer.WaitForConnection();
+                    if (!InfoPipeServer.IsConnected)
+                        InfoPipeServer.WaitForConnection();
                     memoryStream.SetLength(0);
 
                     do {
@@ -71,17 +75,25 @@ namespace Pipe {
                     } while (InfoPipeServer.IsMessageComplete == false);
 
                     string[] PipeData = Encoding.UTF8.GetString(memoryStream.ToArray()).Split(',', 3);
+                    if (PipeData.Length != 3)
+                        continue;
                     SendReply(PipeData[0]);
-                    Task.Run(() => { ReceiveData(PipeData[0], InfoReceiver.Invoke(PipeData[0], int.Parse(PipeData[1]), PipeData[2]), SerialStatusListener); });
+                    cont = false;
+                    Task.Run(() => { string[] _PipeData = PipeData; cont = true; ReceiveData(_PipeData[0], InfoReceiver.Invoke(_PipeData[0], int.Parse(_PipeData[1]), _PipeData[2]), SerialStatusListener); });
+                    while (!cont) { }
+                    InfoPipeServer.Disconnect();
                 } catch (SystemException) {
                     Stop();
-                    InfoPipeServer = new(INFO_PIPE_NAME, PipeDirection.InOut, MAX_CONNECTIONS, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
+                    try {
+                        InfoPipeServer = new(INFO_PIPE_NAME, PipeDirection.InOut, MAX_CONNECTIONS, PipeTransmissionMode.Message);
+                    } catch (Exception) {
+                    }
                 }
             }
         }
 
         private static void ReceiveData(string PipeName, DelegateSerialData SerialDataReceiver, DelegateSerialStatus SerialClosedHandle) {
-            NamedPipeServerStream DataPipeServer = new NamedPipeServerStream(PipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
+            NamedPipeServerStream DataPipeServer = new NamedPipeServerStream(PipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Message);
             DataPipeServer.WaitForConnection();
 
             SerialClosedHandle?.Invoke(PipeName, true);
@@ -98,7 +110,6 @@ namespace Pipe {
 
                     SerialDataReceiver.Invoke(memoryStream.ToArray());
                 }
-
                 DataPipeServer.Close();
             } catch (IOException) {
             } finally {
