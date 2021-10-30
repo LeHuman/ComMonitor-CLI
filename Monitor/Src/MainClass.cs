@@ -178,7 +178,7 @@ namespace ComMonitor.Main {
             #region Serial Data Pipe
 
             if (options.EnableSerialPipe || options.PlotData) {
-                SerialPipe = new(SerialClient.PortName, options.SetMaxBytes, dataType.ToString());
+                SerialPipe = new PipeDataClient(SerialClient.PortName, options.SetMaxBytes, dataType.ToString());
                 // SerialClient.SerialDataReceived += (sender, e) => { SerialPipe.SendData(e.Data); }; // For piping raw data
                 if (!SerialPipe.Start()) {
                     Term.ColorSingle(ConsoleColor.Yellow, "Unable to wait for open system pipe for serial data");

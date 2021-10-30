@@ -12,7 +12,7 @@ namespace Pipe {
         public bool IsConnected { get => DataPipe != null && DataPipe.IsConnected; }
 
         private bool Started;
-        private string PipeName, MaxBytes, MetaData;
+        private readonly string PipeName, MaxBytes, MetaData;
         private NamedPipeClientStream InfoPipe, DataPipe;
         private static readonly char[] Trimmed = new char[] { '\r', '\n' };
 
@@ -55,7 +55,7 @@ namespace Pipe {
         private void WaitForInfoClient() { // TODO: instead, periodiclly check if any new pipes with INFO_PIPE_NAME are accepting input
             while (true) {
                 try {
-                    InfoPipe = new(PipeDataServer.INFO_PIPE_NAME);
+                    InfoPipe = new NamedPipeClientStream(PipeDataServer.INFO_PIPE_NAME);
                     InfoPipe.Connect(TIMEOUT_MS);
                     SendInfo();
                     WaitForReply();

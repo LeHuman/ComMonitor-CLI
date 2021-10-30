@@ -23,12 +23,15 @@ namespace Pipe {
         private readonly DelegateSerialInfo InfoReceiver;
         private DelegateSerialStatus SerialStatusListener;
         private NamedPipeServerStream InfoPipeServer;
+        private static readonly char[] InfoSplit = { ',' };
         private readonly Thread ServerThread;
 
         public PipeDataServer(DelegateSerialInfo InfoReceiver) {
             this.InfoReceiver = InfoReceiver;
-            ServerThread = new(RunThread);
-            ServerThread.Name = "Pipe Server Thread";
+            ServerThread = new Thread(RunThread)
+            {
+                Name = "Pipe Server Thread"
+            };
         }
 
         public void SetStatusListener(DelegateSerialStatus SerialStatusListener) {
@@ -37,7 +40,7 @@ namespace Pipe {
 
         public bool Start() {
             try {
-                InfoPipeServer = new(INFO_PIPE_NAME, PipeDirection.InOut, MAX_CONNECTIONS, PipeTransmissionMode.Message);
+                InfoPipeServer = new NamedPipeServerStream(INFO_PIPE_NAME, PipeDirection.InOut, MAX_CONNECTIONS, PipeTransmissionMode.Message);
                 ServerThread.Start();
                 return true;
             } catch (Exception oEX) {
@@ -74,7 +77,7 @@ namespace Pipe {
                         memoryStream.Write(buffer, 0, InfoPipeServer.Read(buffer, 0, buffer.Length));
                     } while (InfoPipeServer.IsMessageComplete == false);
 
-                    string[] PipeData = Encoding.UTF8.GetString(memoryStream.ToArray()).Split(',', 3);
+                    string[] PipeData = Encoding.UTF8.GetString(memoryStream.ToArray()).Split(InfoSplit, 3);
                     if (PipeData.Length != 3)
                         continue;
                     SendReply(PipeData[0]);
@@ -85,7 +88,7 @@ namespace Pipe {
                 } catch (SystemException) {
                     Stop();
                     try {
-                        InfoPipeServer = new(INFO_PIPE_NAME, PipeDirection.InOut, MAX_CONNECTIONS, PipeTransmissionMode.Message);
+                        InfoPipeServer = new NamedPipeServerStream(INFO_PIPE_NAME, PipeDirection.InOut, MAX_CONNECTIONS, PipeTransmissionMode.Message);
                     } catch (Exception) {
                     }
                 }

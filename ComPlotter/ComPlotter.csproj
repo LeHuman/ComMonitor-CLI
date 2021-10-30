@@ -13,7 +13,7 @@
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
     <Version>1.0.0.0</Version>
-    <Configurations>Debug;Release;Unga</Configurations>
+    <Configurations>Debug;Release</Configurations>
     <ApplicationIcon>Resources\COMPlotter.ico</ApplicationIcon>
     <Win32Resource />
   </PropertyGroup>

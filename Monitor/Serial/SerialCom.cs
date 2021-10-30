@@ -209,7 +209,11 @@ namespace ComMonitor.Serial {
                     byte[] buf = new byte[count];
                     int readBytes = 0;
                     if (count > 0) {
+#if NET461
+                        readBytes = await serialPort.ReadAsync(buf, 0, buf.Length);
+#else
                         readBytes = await serialPort.ReadAsync(buf.AsMemory(0, count));
+#endif
                         OnSerialReceiving(buf);
                     }
 
