@@ -1,6 +1,6 @@
 ﻿using CommandLine;
 using RJCP.IO.Ports;
-using Serial;
+using ComMonitor.Serial;
 
 namespace ComMonitor.Main {
 

@@ -1,9 +1,9 @@
-﻿using Log;
-using Serial;
+﻿using ComMonitor.Log;
+using ComMonitor.Serial;
 using System;
 using System.Collections.Generic;
 
-namespace Terminal {
+namespace ComMonitor.Terminal {
 
     public static class Term {
 
@@ -11,14 +11,16 @@ namespace Terminal {
 
         public static readonly ConsoleColor DefaultConsoleColor = ConsoleColor.White;
 
-        private static DataType inputDataType = DataType.None;
-        private static bool enableInputPrompt = false;
         private static bool checkInput = false;
+        private static bool enableInputPrompt = false;
+        private static DataType inputDataType = DataType.None;
 
         private static bool colorEnabled = false;
         private static bool logColorEnabled = false;
+        private static bool alreadyChecking = false;
 
-        private static readonly Dictionary<string, ConsoleColor> logLevels = new Dictionary<string, ConsoleColor>{
+        private static readonly Dictionary<string, ConsoleColor> logLevels = new()
+        {
             { "[DEBUG]", ConsoleColor.Magenta },
             { "[FATAL]", ConsoleColor.DarkRed },
             { "[ERROR]", ConsoleColor.Red },
@@ -30,15 +32,17 @@ namespace Terminal {
 
         #region Color
 
-        public static void ColorEnable(bool enabled) {
-            colorEnabled = enabled;
-            Console.CancelKeyPress += delegate { Console.ResetColor(); };
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.ForegroundColor = DefaultConsoleColor;
+        public static void ColorConsole() {
+            ColorConsole(DefaultConsoleColor);
         }
 
         public static void EnableLogColor(bool enabled) {
             logColorEnabled = colorEnabled && enabled;
+        }
+
+        public static void ColorConsole(ConsoleColor color) {
+            if (colorEnabled)
+                Console.ForegroundColor = color;
         }
 
         public static void ColorSingle(ConsoleColor color, string line) {
@@ -47,13 +51,11 @@ namespace Terminal {
             ColorConsole();
         }
 
-        public static void ColorConsole(ConsoleColor color) {
-            if (colorEnabled)
-                Console.ForegroundColor = color;
-        }
-
-        public static void ColorConsole() {
-            ColorConsole(DefaultConsoleColor);
+        public static void ColorEnable(bool enabled) {
+            colorEnabled = enabled;
+            Console.CancelKeyPress += delegate { Console.ResetColor(); };
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.ForegroundColor = DefaultConsoleColor;
         }
 
         public static void ColorLogLevel(string str) {
@@ -72,17 +74,6 @@ namespace Terminal {
         #endregion Color
 
         #region Input
-
-        public static void EnableInput(DataType inputDataType, bool enableInputPrompt) {
-            Term.inputDataType = inputDataType;
-            Term.enableInputPrompt = enableInputPrompt;
-            checkInput = inputDataType != DataType.None && inputDataType != DataType.Mapped;
-
-            if (checkInput)
-                ConsoleInput.Start();
-        }
-
-        private static bool alreadyChecking = false;
 
         public static void CheckInputLine() {
             if (!checkInput || !enableInputPrompt || alreadyChecking)
@@ -114,9 +105,27 @@ namespace Terminal {
             }
         }
 
+        public static void EnableInput(DataType inputDataType, bool enableInputPrompt) {
+            Term.inputDataType = inputDataType;
+            Term.enableInputPrompt = enableInputPrompt;
+            checkInput = inputDataType != DataType.None && inputDataType != DataType.Mapped;
+
+            if (checkInput)
+                ConsoleInput.Start();
+        }
+
         #endregion Input
 
         #region Output
+
+        public static void ExceptionPrint(Exception ex) {
+            if (colorEnabled)
+                Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(ex.Message);
+            Console.WriteLine(ex.StackTrace);
+            if (colorEnabled)
+                Console.ForegroundColor = DefaultConsoleColor;
+        }
 
         public static void Write(string str, bool Log = false) {
             WriteInternal(str, false, Log);
@@ -141,15 +150,6 @@ namespace Terminal {
                 }
                 ColorConsole();
             }
-        }
-
-        public static void ExceptionPrint(Exception ex) {
-            if (colorEnabled)
-                Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(ex.Message);
-            Console.WriteLine(ex.StackTrace);
-            if (colorEnabled)
-                Console.ForegroundColor = DefaultConsoleColor;
         }
 
         #endregion Output

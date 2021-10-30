@@ -28,7 +28,7 @@ namespace Pipe {
             while (retries > 0) {
                 try {
                     // Create the new async pipe
-                    NamedPipeServerStream pipeServer = new NamedPipeServerStream(PipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+                    NamedPipeServerStream pipeServer = new(PipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
                     // Wait for a connection
                     pipeServer.BeginWaitForConnection(new AsyncCallback(WaitForConnectionPingCallBack), pipeServer);
                     return true;
@@ -57,7 +57,7 @@ namespace Pipe {
 
         public bool Ping(int TimeOut = 1000) {
             try {
-                NamedPipeClientStream pipeStream = new NamedPipeClientStream(".", PipeName, PipeDirection.Out);
+                NamedPipeClientStream pipeStream = new(".", PipeName, PipeDirection.Out);
 
                 pipeStream.Connect(TimeOut);
                 Debug.WriteLine("[Client] Pipe connection Pinged");

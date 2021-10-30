@@ -1,14 +1,13 @@
 ﻿using CommandLine;
-using Log;
-using MsgMap;
+using ComMonitor.Log;
+using ComMonitor.MsgMap;
 using Pipe;
-using Serial;
+using ComMonitor.Serial;
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading;
-using Terminal;
+using ComMonitor.Terminal;
 
 namespace ComMonitor.Main {
 
@@ -67,7 +66,7 @@ namespace ComMonitor.Main {
                 if (initalWait)
                     RetryWait(true);
                 else
-                    throw new SerialException($"Unable to find port: {SerialClient.portName}");
+                    throw new SerialException($"Unable to find port: {SerialClient.PortName}");
             }
 
             while (true) {
@@ -105,7 +104,7 @@ namespace ComMonitor.Main {
                 FileLog.Flush();
             } catch (Exception) {
             }
-            throw new SerialException($"Another instance has taken priority over the current port: {SerialClient.portName}");
+            throw new SerialException($"Another instance has taken priority over the current port: {SerialClient.PortName}");
         }
 
         private static void UnhandledExceptionTrapper(object sender, UnhandledExceptionEventArgs e) {
@@ -150,7 +149,7 @@ namespace ComMonitor.Main {
             #region File Logging
 
             FileLog.SetFile(options.Logging, options.SingleLogging);
-            FileLog.EnableTimeStamp(options.LogTime);
+            FileLog.TimestampEnabled = options.LogTime;
             if (dataType == DataType.Mapped)
                 JSONMap.LogMap();
 
@@ -158,7 +157,7 @@ namespace ComMonitor.Main {
 
             #region Priority Queue Setup
 
-            PriorityPipeName += SerialClient.portName;
+            PriorityPipeName += SerialClient.PortName;
             priorityPipe = new PingPipe(PriorityPipeName);
             if (options.Priority) {
                 if (priorityPipe.Ping()) {
@@ -179,7 +178,7 @@ namespace ComMonitor.Main {
             #region Serial Data Pipe
 
             if (options.EnableSerialPipe || options.PlotData) {
-                SerialPipe = new(SerialClient.portName, options.SetMaxBytes, dataType.ToString());
+                SerialPipe = new(SerialClient.PortName, options.SetMaxBytes, dataType.ToString());
                 // SerialClient.SerialDataReceived += (sender, e) => { SerialPipe.SendData(e.Data); }; // For piping raw data
                 if (!SerialPipe.Start()) {
                     Term.ColorSingle(ConsoleColor.Yellow, "Unable to wait for open system pipe for serial data");
@@ -205,9 +204,9 @@ namespace ComMonitor.Main {
 
             #endregion Serial Data Pipe
 
-            waitStr = $"Waiting for connection to {SerialClient.portName} ";
-            retryStr = $"Retrying to connect to {SerialClient.portName} ";
-            connectStr = $"Connecting to {SerialClient.portName} @ {SerialClient.baudRate}\np:{SerialClient.parity} d:{SerialClient.dataBits} s:{SerialClient.stopBits} cf:{SerialClient.freqCriticalLimit} {(options.SetMaxBytes > 0 ? "j:" + options.SetMaxBytes : "")}\n";
+            waitStr = $"Waiting for connection to {SerialClient.PortName} ";
+            retryStr = $"Retrying to connect to {SerialClient.PortName} ";
+            connectStr = $"Connecting to {SerialClient.PortName} @ {SerialClient.BaudRate}\np:{SerialClient.Parity} d:{SerialClient.DataBits} s:{SerialClient.StopBits} cf:{SerialClient.FreqCriticalLimit} {(options.SetMaxBytes > 0 ? "j:" + options.SetMaxBytes : "")}\n";
         }
 
         private static void Main(string[] args) {

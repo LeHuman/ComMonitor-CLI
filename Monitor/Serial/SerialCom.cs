@@ -13,7 +13,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 
-namespace Serial {
+namespace ComMonitor.Serial {
 
     public class DataStreamEventArgs : EventArgs {
         public byte[] Data { get; set; }
@@ -23,18 +23,18 @@ namespace Serial {
 
         #region Defines
 
-        public static string portName { get; private set; }
-        public static int baudRate { get; private set; } = 9600;
-        public static Parity parity { get; private set; } = Parity.None;
-        public static int dataBits { get; private set; } = 8;
-        public static StopBits stopBits { get; private set; } = StopBits.One;
-        public static int freqCriticalLimit { get; private set; } = 20; // The Critical Frequency of Communication to Avoid Any Lag
+        public static string PortName { get; private set; }
+        public static int BaudRate { get; private set; } = 9600;
+        public static Parity Parity { get; private set; } = Parity.None;
+        public static int DataBits { get; private set; } = 8;
+        public static StopBits StopBits { get; private set; } = StopBits.One;
+        public static int FreqCriticalLimit { get; private set; } = 20; // The Critical Frequency of Communication to Avoid Any Lag
 
-        private static SerialPortStream serialPort;
-        private static int writeTimeout = -1;
         private static Thread serThread;
         private static double packetsRate;
         private static DateTime lastReceive;
+        private static int writeTimeout = -1;
+        private static SerialPortStream serialPort;
 
         #endregion Defines
 
@@ -47,24 +47,24 @@ namespace Serial {
         #region Setups
 
         public static void Setup(string port) {
-            portName = port;
-        }
-
-        public static void Setup(string Port, int baudRate) {
-            Setup(Port);
-            SerialClient.baudRate = baudRate;
-        }
-
-        public static void Setup(string Port, int baudRate, Parity parity, int dataBits, StopBits stopBits, int freqCriticalLimit) {
-            Setup(Port, baudRate);
-            SerialClient.parity = parity;
-            SerialClient.dataBits = dataBits;
-            SerialClient.stopBits = stopBits;
-            SerialClient.freqCriticalLimit = Math.Max(1, freqCriticalLimit);
+            PortName = port;
         }
 
         public static void SetWriteTimeout(int timeout) {
             writeTimeout = timeout;
+        }
+
+        public static void Setup(string Port, int baudRate) {
+            Setup(Port);
+            SerialClient.BaudRate = baudRate;
+        }
+
+        public static void Setup(string Port, int baudRate, Parity parity, int dataBits, StopBits stopBits, int freqCriticalLimit) {
+            Setup(Port, baudRate);
+            SerialClient.Parity = parity;
+            SerialClient.DataBits = dataBits;
+            SerialClient.StopBits = stopBits;
+            SerialClient.FreqCriticalLimit = Math.Max(1, freqCriticalLimit);
         }
 
         #endregion Setups
@@ -73,13 +73,46 @@ namespace Serial {
 
         #region Port Control
 
+        public static bool IsAlive() {
+            return serialPort.IsOpen;
+        }
+
+        public static bool ResetConn() {
+            CloseConn();
+            return OpenConn();
+        }
+
+        public static bool OpenConn(string port, int baudRate) {
+            PortName = port;
+            SerialClient.BaudRate = baudRate;
+
+            return OpenConn();
+        }
+
+        public static bool PortAvailable() {
+            try {
+                return SerialPortStream.GetPortNames().Contains(PortName);
+            } catch (Win32Exception) {
+                return false;
+            }
+        }
+
+        public static void CloseConn() {
+            if (serialPort != null && serialPort.IsOpen) {// Stop thread here
+                                                          // serThread.Interrupt();
+
+                // if (serThread.ThreadState == ThreadState.Aborted)
+                serialPort.Close();
+            }
+        }
+
         public static bool OpenConn() {
             try {
                 if (serialPort == null)
-                    serialPort = new SerialPortStream(portName, baudRate, dataBits, parity, stopBits);
+                    serialPort = new SerialPortStream(PortName, BaudRate, DataBits, Parity, StopBits);
 
                 if (!PortAvailable())
-                    throw new SerialException(string.Format("Port is not available: {0}", portName));
+                    throw new SerialException(string.Format("Port is not available: {0}", PortName));
 
                 if (!serialPort.IsOpen) {
                     serialPort.ReadTimeout = -1;
@@ -88,7 +121,7 @@ namespace Serial {
                     serialPort.Open();
 
                     if (!serialPort.IsOpen)
-                        throw new SerialException(string.Format("Could not open serial port: {0}", portName));
+                        throw new SerialException(string.Format("Could not open serial port: {0}", PortName));
 
                     packetsRate = 0;
                     lastReceive = DateTime.MinValue;
@@ -108,39 +141,6 @@ namespace Serial {
             }
 
             return true;
-        }
-
-        public static bool OpenConn(string port, int baudRate) {
-            portName = port;
-            SerialClient.baudRate = baudRate;
-
-            return OpenConn();
-        }
-
-        public static void CloseConn() {
-            if (serialPort != null && serialPort.IsOpen) {// Stop thread here
-                                                          // serThread.Interrupt();
-
-                // if (serThread.ThreadState == ThreadState.Aborted)
-                serialPort.Close();
-            }
-        }
-
-        public static bool ResetConn() {
-            CloseConn();
-            return OpenConn();
-        }
-
-        public static bool PortAvailable() {
-            try {
-                return SerialPortStream.GetPortNames().Contains(portName);
-            } catch (Win32Exception) {
-                return false;
-            }
-        }
-
-        public static bool IsAlive() {
-            return serialPort.IsOpen;
         }
 
         #endregion Port Control
@@ -171,9 +171,9 @@ namespace Serial {
         #region Threading Loops
 
         public static bool AddFreq(int freq) {
-            if (freqCriticalLimit == 1)
+            if (FreqCriticalLimit == 1)
                 return false;
-            freqCriticalLimit = Math.Max(freqCriticalLimit + freq, 1);
+            FreqCriticalLimit = Math.Max(FreqCriticalLimit + freq, 1);
             return true;
         }
 
@@ -209,7 +209,7 @@ namespace Serial {
                     byte[] buf = new byte[count];
                     int readBytes = 0;
                     if (count > 0) {
-                        readBytes = await serialPort.ReadAsync(buf, 0, count);
+                        readBytes = await serialPort.ReadAsync(buf.AsMemory(0, count));
                         OnSerialReceiving(buf);
                     }
 
@@ -219,7 +219,7 @@ namespace Serial {
                     lastReceive = DateTime.Now;
 
                     if (tmpInterval.Milliseconds > 0 && (double)(readBytes + serialPort.BytesToRead) / 2 <= packetsRate)
-                        Thread.Sleep(tmpInterval.Milliseconds > freqCriticalLimit ? freqCriticalLimit : tmpInterval.Milliseconds);
+                        Thread.Sleep(tmpInterval.Milliseconds > FreqCriticalLimit ? FreqCriticalLimit : tmpInterval.Milliseconds);
 
                     #endregion Frequency Control
                 } catch (Exception e) {

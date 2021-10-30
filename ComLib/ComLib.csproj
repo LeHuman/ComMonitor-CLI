@@ -18,8 +18,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="SerialPortStream" Version="2.3.1" />
-    <PackageReference Include="TextCopy" Version="4.3.1" />
+    <PackageReference Include="System.IO.Pipes" Version="4.3.0" />
   </ItemGroup>
 </Project>

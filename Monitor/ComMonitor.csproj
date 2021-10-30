@@ -66,10 +66,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\Comx.ico" />
-    <Content Include="Resources\Comx.png" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="CommandLineParser">
       <Version>2.8.0</Version>
     </PackageReference>

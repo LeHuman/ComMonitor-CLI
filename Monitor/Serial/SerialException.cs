@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace Serial {
+namespace ComMonitor.Serial {
 
     [Serializable]
     public class SerialException : Exception {

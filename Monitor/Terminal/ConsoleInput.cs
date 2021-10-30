@@ -3,25 +3,17 @@ using System.IO;
 using System.Threading;
 using TextCopy;
 
-namespace Terminal {
+namespace ComMonitor.Terminal {
 
     public delegate void DelegateConsoleInput(string msg);
 
     public delegate void DelegateConsoleUpdate();
 
     public static class ConsoleInput {
-        private static readonly Thread Observer = new Thread(new ThreadStart(ObserveInput));
-        private static readonly Stream Input = Console.OpenStandardInput();
         private static bool EnableInput = false;
         private static string currentInput = "";
-
-        public static void Start() {
-            if (Input.CanRead) {
-                Observer.Start();
-            } else {
-                Console.WriteLine("Console does not support reading");
-            }
-        }
+        private static readonly Stream Input = Console.OpenStandardInput();
+        private static readonly Thread Observer = new(new ThreadStart(ObserveInput));
 
         public static string GetCurrentInput() {
             if (currentInput == "")
@@ -31,6 +23,14 @@ namespace Terminal {
 
         public static void Enable(bool enable) {
             EnableInput = enable;
+        }
+
+        public static void Start() {
+            if (Input.CanRead) {
+                Observer.Start();
+            } else {
+                Console.WriteLine("Console does not support reading");
+            }
         }
 
         public static void ObserveInput() {
@@ -49,7 +49,7 @@ namespace Terminal {
                         Term.SendMsg(clip);
                 } else if (keyInfo.Key == ConsoleKey.Backspace) {
                     if (currentInput.Length > 0) {
-                        currentInput = currentInput.Substring(0, currentInput.Length - 1);
+                        currentInput = currentInput[0..^1];
                         Term.CheckInputLine();
                     }
                 } else {

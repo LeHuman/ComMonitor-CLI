@@ -1,39 +1,19 @@
-﻿using Log;
-using MsgMap;
-using Serial;
+﻿using ComMonitor.Log;
+using ComMonitor.MsgMap;
+using ComMonitor.Terminal;
 using System;
 using System.Collections.Generic;
-using Terminal;
 
-namespace Serial {
+namespace ComMonitor.Serial {
 
     public delegate void DelegateParsedData(string Message);
 
     public static class SerialParser {
         public static int MaxBytes { get; private set; } = 8;
+
         private static Func<byte[], string> dataFunction;
         private static DelegateParsedData ParsedDataListener;
-
-        public static EventHandler<DataStreamEventArgs> LoadParser(DataType dataType, int MaxBytes) {
-            SerialParser.MaxBytes = MaxBytes;
-            dataFunction = SerialType.getTypeFunction(dataType);
-
-            if (dataType == DataType.Ascii) {
-                return AsciiDataReceived;
-            } else {
-                if (dataType == DataType.Mapped) {
-                    return SerialMappedDataReceived;
-                } else if (MaxBytes > 0) {
-                    return SerialChunkedDataReceived;
-                } else {
-                    return SerialDataReceived;
-                }
-            }
-        }
-
-        public static void SetParsedDataListener(DelegateParsedData ParsedDataListener) {
-            SerialParser.ParsedDataListener = ParsedDataListener;
-        }
+        private static readonly List<byte> saveBuffer = new();
 
         private static void PrintMessage(string Message, bool Log = true) {
             Term.WriteLine(Message, Log);
@@ -42,7 +22,7 @@ namespace Serial {
         }
 
         private static void AsciiDataReceived(object sender, DataStreamEventArgs e) {
-            string data = SerialType.getAscii(e.Data);
+            string data = SerialType.GetAscii(e.Data);
             if (data.IndexOf('\n') < data.Length - 1) {
                 string[] lines = data.Split('\n');
                 foreach (string line in lines) {
@@ -59,6 +39,10 @@ namespace Serial {
             PrintMessage(msg);
         }
 
+        public static void SetParsedDataListener(DelegateParsedData ParsedDataListener) {
+            SerialParser.ParsedDataListener = ParsedDataListener;
+        }
+
         private static void SerialChunkedDataReceived(object sender, DataStreamEventArgs e) {
             Span<byte> rawData = e.Data.AsSpan();
             int remain = rawData.Length;
@@ -69,12 +53,27 @@ namespace Serial {
                 i += MaxBytes;
             }
             if (remain > 0) {
-                PrintMessage(dataFunction(rawData.Slice(i).ToArray()));
+                PrintMessage(dataFunction(rawData[i..].ToArray()));
             }
             FileLog.Flush();
         }
 
-        private static List<byte> saveBuffer = new List<byte>();
+        public static EventHandler<DataStreamEventArgs> LoadParser(DataType dataType, int MaxBytes) {
+            SerialParser.MaxBytes = MaxBytes;
+            dataFunction = SerialType.GetTypeFunction(dataType);
+
+            if (dataType == DataType.Ascii) {
+                return AsciiDataReceived;
+            } else {
+                if (dataType == DataType.Mapped) {
+                    return SerialMappedDataReceived;
+                } else if (MaxBytes > 0) {
+                    return SerialChunkedDataReceived;
+                } else {
+                    return SerialDataReceived;
+                }
+            }
+        }
 
         private static void SerialMappedDataReceived(object sender, DataStreamEventArgs e) {
             if (e.Data.Length % MaxBytes != 0)
@@ -101,7 +100,7 @@ namespace Serial {
                 i += MaxBytes;
             }
             if (remain > 0) {
-                saveBuffer.AddRange(rawData.Slice(i).ToArray());
+                saveBuffer.AddRange(rawData[i..].ToArray());
             }
             FileLog.Flush();
         }

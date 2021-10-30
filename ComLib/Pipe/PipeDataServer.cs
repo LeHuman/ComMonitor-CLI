@@ -93,7 +93,7 @@ namespace Pipe {
         }
 
         private static void ReceiveData(string PipeName, DelegateSerialData SerialDataReceiver, DelegateSerialStatus SerialClosedHandle) {
-            NamedPipeServerStream DataPipeServer = new NamedPipeServerStream(PipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Message);
+            NamedPipeServerStream DataPipeServer = new(PipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Message);
             DataPipeServer.WaitForConnection();
 
             SerialClosedHandle?.Invoke(PipeName, true);
