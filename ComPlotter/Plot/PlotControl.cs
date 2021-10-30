@@ -23,7 +23,6 @@ namespace ComPlotter.Plot {
         public event PropertyChangedEventHandler PropertyChanged;
 
         public string HighlightedPointStatus { get; private set; } = "No Point Highlighted";
-        public bool AutoPurge { get => _AutoPurge; set => _AutoPurge = value; }
         public bool StaleSeries { get => _StaleSeries; set => _StaleSeries = value; }
         public bool VisibleDefault { get => _VisibleDefault; set => _VisibleDefault = value; }
         public int Range { get => _Range; set { _Range = value; SetRangeAll(value); } } // TODO: enable range for individual series
@@ -36,7 +35,7 @@ namespace ComPlotter.Plot {
         internal bool LowQualityRender = true;
         internal MarkerPlot HighlightedPoint;
         internal int _Range = PlotSeries.InitHeap;
-        internal bool SlowMode, _DisableSlowMode, _AutoPurge, _StaleSeries;
+        internal bool SlowMode, _DisableSlowMode, _StaleSeries;
         private readonly List<PlotGroup> PlotGroups;
 
         internal PlotControl(WpfPlot WpfPlot, List<PlotGroup> PlotGroups, ListBox listBox) {

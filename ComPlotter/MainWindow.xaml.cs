@@ -25,6 +25,7 @@ namespace ComPlotter {
 
         public AssemblyInformation AssemblyInformation { get; private set; }
 
+        private bool AutoPurge;
         private PipeDataServer SerialPipe;
         private readonly CheckBox VisibleCheck;
         private readonly Storyboard ToggleSettings, ToggleAbout, ToggleList;
@@ -59,7 +60,7 @@ namespace ComPlotter {
 
             CheckBox PurgeCheck = Settings.AddCheckBox("Auto Purge");
             PurgeCheck.Status = "Automaticlly purge the data of ports that have been disconnected";
-            PurgeCheck.SetCallback(IsChecked => PlotManager.Control.AutoPurge = IsChecked);
+            PurgeCheck.SetCallback(IsChecked => AutoPurge = IsChecked);
 
             CheckBox NotifyCheck = Settings.AddCheckBox("Enable Notifications", true);
             NotifyCheck.Status = "Notifications temporarily show info on the bottom left of the application";
@@ -110,6 +111,9 @@ namespace ComPlotter {
                 Toaster.SuccessToast($"Pipe Opened {PipeName}");
             } else {
                 Toaster.ErrorToast($"Pipe Closed {PipeName}");
+                if (AutoPurge) {
+                    PlotManager.RemoveGroup(PipeName);
+                }
             }
         }
 

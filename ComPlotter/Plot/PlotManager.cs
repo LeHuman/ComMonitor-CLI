@@ -59,7 +59,14 @@ namespace ComPlotter.Plot {
 
         public void RemoveGroup(PlotGroup Group) {
             Group.Delete();
+            GroupMap.Remove(Group.Name);
             _Control.RunOnUIThread(() => { _ = Groups.Remove(Group); });
+        }
+
+        public void RemoveGroup(string GroupName) {
+            GroupMap.TryGetValue(GroupName, out PlotGroup pg);
+            if (pg != null)
+                RemoveGroup(pg);
         }
 
         public void FocusSeries(PlotSeries PlotSeries) {// TODO: Select Per List
