@@ -191,7 +191,7 @@ namespace ComMonitor.Main {
                             try {
                                 Process.Start(options.PlotterPath);
                             } catch (SystemException) {
-                                Term.ColorSingle(ConsoleColor.Red, "Failed to launch Plotter");
+                                Term.ColorSingle(ConsoleColor.Red, "Failed to launch Plotter, will connect when available");
                             }
                         } else {
                             Term.ColorSingle(ConsoleColor.Blue, "Plotter already opened");

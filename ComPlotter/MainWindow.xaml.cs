@@ -14,7 +14,6 @@ using System.Windows.Media.Animation;
 using System.Windows.Navigation;
 using static Pipe.PipeDataServer;
 using System.Text;
-using System.Windows.Media.Imaging;
 
 namespace ComPlotter {
 
@@ -29,8 +28,15 @@ namespace ComPlotter {
         private PipeDataServer SerialPipe;
         private readonly CheckBox VisibleCheck;
         private readonly Storyboard ToggleSettings, ToggleAbout, ToggleList;
+        private static readonly string MessagePattern = @"([ \w\(\)\[\],:@#$%^&*!~\/\\\-\+]+)[ \t]([+-]?(?>[0-9]+(?>[.][0-9]*)?|[.][0-9]+))[\r\n]+";
 
         public MainWindow() {
+            if (Process.GetProcessesByName(System.IO.Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location)).Length > 1) {
+                Debug.WriteLine("Instance of ComPlotter already exists, use the same instead instance");
+                //new ToastContentBuilder().AddText("Something copied to clipboard").Show();
+                Process.GetCurrentProcess().Kill();
+            }
+
             InitializeComponent();
 
             PlotManager = new(MainPlot, SeriesListBox);
@@ -83,11 +89,6 @@ namespace ComPlotter {
             Loaded += (_, _) => PlotManager.Start();
         }
 
-        //private string PortName;
-        //private DataType dataType;
-
-        private static readonly string MessagePattern = @"([ \w\(\)\[\],:@#$%^&*!~\/\\\-\+]+)[ \t]([+-]?(?>[0-9]+(?>[.][0-9]*)?|[.][0-9]+))[\r\n]+";
-
         private static void ReceiveByteString(PlotGroup pg, byte[] Data) {
             string msg = Encoding.UTF8.GetString(Data);
             RegexOptions options = RegexOptions.Multiline;
@@ -98,11 +99,8 @@ namespace ComPlotter {
         }
 
         private DelegateSerialData ReceiveInfo(string PipeName, int MaxBytes, string MetaData) {
-            //PortName = PipeName;
-            //dataType = Enum.Parse<DataType>(MetaData);
             Toaster.WarnToast($"Pipe Info Received {PipeName}");
             PlotGroup pg = PlotManager.NewGroup(PipeName);
-            //SerialParser parser = new(Msg => { PlotData(PipeName, Msg); }, dataType, MaxBytes);
             return Data => { ReceiveByteString(pg, Data); };
         }
 
