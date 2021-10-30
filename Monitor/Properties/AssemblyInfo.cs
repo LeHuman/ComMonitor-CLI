@@ -5,7 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
+#if NETFRAMEWORK
+[assembly: AssemblyTitle("ComMonitor-Compat")]
+#else
 [assembly: AssemblyTitle("ComMonitor")]
+#endif
 [assembly: AssemblyDescription("Monitor data over a Windows COM port")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("LeHuman")]
