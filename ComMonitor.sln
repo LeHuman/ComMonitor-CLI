@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30503.244
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComMonitor", "Monitor\ComMonitor.csproj", "{CFCB6716-7F4B-4A12-AD90-EA34DFEF48D1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComLib", "ComLib\ComLib.csproj", "{548162A2-2AF9-40B3-B9CA-0F9E68CA0D93}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComPipe", "ComLib\ComPipe.csproj", "{548162A2-2AF9-40B3-B9CA-0F9E68CA0D93}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComPlotter", "ComPlotter\ComPlotter.csproj", "{B7F81EB0-AADC-499B-A7CB-495C69A1E721}"
 EndProject
