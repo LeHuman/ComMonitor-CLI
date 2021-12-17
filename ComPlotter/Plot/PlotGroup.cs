@@ -1,5 +1,4 @@
 ﻿using ScottPlot;
-using ScottPlot.Drawing.Colormaps;
 using ScottPlot.Plottable;
 using System;
 using System.Collections.Generic;

@@ -7,9 +7,9 @@
    Over The Standard C# Serial Component
 */
 
-using RJCP.IO.Ports;
 using System;
 using System.ComponentModel;
+using System.IO.Ports;
 using System.Linq;
 using System.Threading;
 
@@ -34,7 +34,7 @@ namespace ComMonitor.Serial {
         private static double packetsRate;
         private static DateTime lastReceive;
         private static int writeTimeout = -1;
-        private static SerialPortStream serialPort;
+        private static SerialPort serialPort;
 
         #endregion Defines
 
@@ -91,7 +91,7 @@ namespace ComMonitor.Serial {
 
         public static bool PortAvailable() {
             try {
-                return SerialPortStream.GetPortNames().Contains(PortName);
+                return SerialPort.GetPortNames().Contains(PortName);
             } catch (Win32Exception) {
                 return false;
             }
@@ -109,7 +109,7 @@ namespace ComMonitor.Serial {
         public static bool OpenConn() {
             try {
                 if (serialPort == null)
-                    serialPort = new SerialPortStream(PortName, BaudRate, DataBits, Parity, StopBits);
+                    serialPort = new SerialPort(PortName, BaudRate, Parity, DataBits, StopBits);
 
                 if (!PortAvailable())
                     throw new SerialException(string.Format("Port is not available: {0}", PortName));
@@ -209,11 +209,7 @@ namespace ComMonitor.Serial {
                     byte[] buf = new byte[count];
                     int readBytes = 0;
                     if (count > 0) {
-#if NETFRAMEWORK
-                        readBytes = await serialPort.ReadAsync(buf, 0, buf.Length);
-#else
-                        readBytes = await serialPort.ReadAsync(buf.AsMemory(0, count));
-#endif
+                        readBytes = await serialPort.BaseStream.ReadAsync(buf, 0, count);
                         OnSerialReceiving(buf);
                     }
 
