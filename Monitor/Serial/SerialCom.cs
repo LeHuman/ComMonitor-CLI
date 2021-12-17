@@ -209,7 +209,7 @@ namespace ComMonitor.Serial {
                     byte[] buf = new byte[count];
                     int readBytes = 0;
                     if (count > 0) {
-#if NET462
+#if NETFRAMEWORK
                         readBytes = await serialPort.ReadAsync(buf, 0, buf.Length);
 #else
                         readBytes = await serialPort.ReadAsync(buf.AsMemory(0, count));
