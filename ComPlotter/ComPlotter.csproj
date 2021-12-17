@@ -10,9 +10,9 @@
     <NeutralLanguage>en-US</NeutralLanguage>
     <Description>Plot data using ComMonitor</Description>
     <Copyright>Copyright © 2021</Copyright>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
-    <Version>1.0.0.0</Version>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
+    <FileVersion>1.0.1.0</FileVersion>
+    <Version>1.0.1.0</Version>
     <Configurations>Debug;Release</Configurations>
     <ApplicationIcon>Resources\COMPlotter.ico</ApplicationIcon>
     <Win32Resource />

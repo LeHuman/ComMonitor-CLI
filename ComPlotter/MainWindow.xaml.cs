@@ -31,11 +31,7 @@ namespace ComPlotter {
         private static readonly string MessagePattern = @"([ \w\(\)\[\],:@#$%^&*!~\/\\\-\+]+)[ \t]([+-]?(?>[0-9]+(?>[.][0-9]*)?|[.][0-9]+))[\r\n]+";
 
         public MainWindow() {
-            if (Process.GetProcessesByName(System.IO.Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location)).Length > 1) {
-                Debug.WriteLine("Instance of ComPlotter already exists, use the same instead instance");
-                //new ToastContentBuilder().AddText("Something copied to clipboard").Show();
-                Process.GetCurrentProcess().Kill();
-            }
+            CheckForInstance();
 
             InitializeComponent();
 
@@ -87,6 +83,18 @@ namespace ComPlotter {
             SetupPipes();
 
             Loaded += (_, _) => PlotManager.Start();
+        }
+
+        private static void CheckForInstance() {
+            if (Process.GetProcessesByName(System.IO.Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location)).Length > 1) {
+                Debug.WriteLine("Instance of ComPlotter already exists, use the same instead instance");
+                Process.GetCurrentProcess().Kill();
+            }
+
+            PingPipe SingleInstanceCheck = new("ComPlotter");
+            SingleInstanceCheck.SetCallback(Process.GetCurrentProcess().Kill);
+            if (!SingleInstanceCheck.Ping())
+                SingleInstanceCheck.ListenForPing();
         }
 
         private static void ReceiveByteString(PlotGroup pg, byte[] Data) {

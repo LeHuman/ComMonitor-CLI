@@ -4,7 +4,7 @@ A Console application to monitor data over a Windows serial port
 
 ## Requirements
 
-* Microsoft .NET Framework 4.5
+* Microsoft .NET 5.0 or .NET Framework 4.6.2
 * An open COM port to read from
 
 ## Usage
