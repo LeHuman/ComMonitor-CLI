@@ -42,7 +42,7 @@ namespace ComMonitor.Log {
         public static void SetFile(string path, bool singular) {
             try {
                 if (!Directory.Exists(path))
-                    throw new IOException();
+                    Directory.CreateDirectory(path);
 
                 int epoch = (int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
                 path = Path.Combine(path, $"{FILENAME}{(singular ? "" : $"_{epoch}")}.log");
@@ -50,7 +50,7 @@ namespace ComMonitor.Log {
                 _Enabled = Available();
             } catch (IOException) {
                 if (path.Length != 0)
-                    throw new SystemException($"Logging path does not exist: {path}");
+                    throw new SystemException($"Unable to create or access logging directory: {path}");
                 return;
             }
         }
