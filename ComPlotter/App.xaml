@@ -26,25 +26,25 @@
             </ResourceDictionary.MergedDictionaries>
 
             <!-- MahApps Brushes -->
-            <SolidColorBrush x:Key="MahApps.Brushes.Highlight" Color="{DynamicResource Primary700}" />
-            <SolidColorBrush x:Key="MahApps.Brushes.AccentBase" Color="{DynamicResource Primary600}" />
-            <SolidColorBrush x:Key="MahApps.Brushes.Accent" Color="{DynamicResource Primary500}" />
-            <SolidColorBrush x:Key="MahApps.Brushes.Accent2" Color="{DynamicResource Primary400}" />
-            <SolidColorBrush x:Key="MahApps.Brushes.Accent3" Color="{DynamicResource Primary300}" />
-            <SolidColorBrush x:Key="MahApps.Brushes.Accent4" Color="{DynamicResource Primary200}" />
-            <SolidColorBrush x:Key="MahApps.Brushes.WindowTitle" Color="{DynamicResource Primary700}" />
-            <SolidColorBrush x:Key="MahApps.Brushes.Selected.Foreground" Color="{DynamicResource Primary500Foreground}" />
+            <SolidColorBrush x:Key="MahApps.Brushes.Highlight" Color="{StaticResource Primary700}" />
+            <SolidColorBrush x:Key="MahApps.Brushes.AccentBase" Color="{StaticResource Primary600}" />
+            <SolidColorBrush x:Key="MahApps.Brushes.Accent" Color="{StaticResource Primary500}" />
+            <SolidColorBrush x:Key="MahApps.Brushes.Accent2" Color="{StaticResource Primary400}" />
+            <SolidColorBrush x:Key="MahApps.Brushes.Accent3" Color="{StaticResource Primary300}" />
+            <SolidColorBrush x:Key="MahApps.Brushes.Accent4" Color="{StaticResource Primary200}" />
+            <SolidColorBrush x:Key="MahApps.Brushes.WindowTitle" Color="{StaticResource Primary700}" />
+            <SolidColorBrush x:Key="MahApps.Brushes.Selected.Foreground" Color="{StaticResource Primary500Foreground}" />
             <LinearGradientBrush x:Key="MahApps.Brushes.Progress" EndPoint="0.001,0.5" StartPoint="1.002,0.5">
-                <GradientStop Color="{DynamicResource Primary700}" Offset="0" />
-                <GradientStop Color="{DynamicResource Primary300}" Offset="1" />
+                <GradientStop Color="{StaticResource Primary700}" Offset="0" />
+                <GradientStop Color="{StaticResource Primary300}" Offset="1" />
             </LinearGradientBrush>
-            <SolidColorBrush x:Key="MahApps.Brushes.CheckmarkFill" Color="{DynamicResource Primary500}" />
-            <SolidColorBrush x:Key="MahApps.Brushes.RightArrowFill" Color="{DynamicResource Primary500}" />
-            <SolidColorBrush x:Key="MahApps.Brushes.IdealForeground" Color="{DynamicResource Primary500Foreground}" />
-            <SolidColorBrush x:Key="MahApps.Brushes.IdealForegroundDisabled" Color="{DynamicResource Primary500}" Opacity="0.4" />
-            <SolidColorBrush x:Key="MahApps.Metro.Brushes.ToggleSwitchButton.OnSwitchBrush.Win10" Color="{DynamicResource Primary500}" />
-            <SolidColorBrush x:Key="MahApps.Metro.Brushes.ToggleSwitchButton.OnSwitchMouseOverBrush.Win10" Color="{DynamicResource Primary400}" />
-            <SolidColorBrush x:Key="MahApps.Metro.Brushes.ToggleSwitchButton.ThumbIndicatorCheckedBrush.Win10" Color="{DynamicResource Primary500Foreground}" />
+            <SolidColorBrush x:Key="MahApps.Brushes.CheckmarkFill" Color="{StaticResource Primary500}" />
+            <SolidColorBrush x:Key="MahApps.Brushes.RightArrowFill" Color="{StaticResource Primary500}" />
+            <SolidColorBrush x:Key="MahApps.Brushes.IdealForeground" Color="{StaticResource Primary500Foreground}" />
+            <SolidColorBrush x:Key="MahApps.Brushes.IdealForegroundDisabled" Color="{StaticResource Primary500}" Opacity="0.4" />
+            <SolidColorBrush x:Key="MahApps.Metro.Brushes.ToggleSwitchButton.OnSwitchBrush.Win10" Color="{StaticResource Primary500}" />
+            <SolidColorBrush x:Key="MahApps.Metro.Brushes.ToggleSwitchButton.OnSwitchMouseOverBrush.Win10" Color="{StaticResource Primary400}" />
+            <SolidColorBrush x:Key="MahApps.Metro.Brushes.ToggleSwitchButton.ThumbIndicatorCheckedBrush.Win10" Color="{StaticResource Primary500Foreground}" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
