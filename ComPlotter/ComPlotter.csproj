@@ -9,10 +9,10 @@
     <Company>LeHuman</Company>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Description>Plot data using ComMonitor</Description>
-    <Copyright>Copyright © 2021</Copyright>
-    <AssemblyVersion>1.0.1.0</AssemblyVersion>
-    <FileVersion>1.0.1.0</FileVersion>
-    <Version>1.0.1.0</Version>
+    <Copyright>Copyright © 2022</Copyright>
+    <AssemblyVersion>1.0.1.2</AssemblyVersion>
+    <FileVersion>1.0.1.2</FileVersion>
+    <Version>1.0.1.2</Version>
     <Configurations>Debug;Release</Configurations>
     <ApplicationIcon>Resources\COMPlotter.ico</ApplicationIcon>
     <Win32Resource />
@@ -35,9 +35,9 @@
   <ItemGroup>
     <PackageReference Include="MahApps.Metro" Version="2.4.9" />
     <PackageReference Include="MahApps.Metro.IconPacks" Version="4.11.0" />
-    <PackageReference Include="MaterialDesignThemes.MahApps" Version="0.1.9" />
-    <PackageReference Include="ScottPlot" Version="4.1.27" />
-    <PackageReference Include="ScottPlot.WPF" Version="4.1.27" />
+    <PackageReference Include="MaterialDesignThemes.MahApps" Version="0.2.0" />
+    <PackageReference Include="ScottPlot" Version="4.1.32" />
+    <PackageReference Include="ScottPlot.WPF" Version="4.1.32" />
   </ItemGroup>
 
   <ItemGroup>

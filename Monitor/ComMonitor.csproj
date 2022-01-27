@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net6.0-windows;net462</TargetFrameworks>
+    <TargetFrameworks>net6.0-windows;net48</TargetFrameworks>
 	<RuntimeIdentifiers>win10-x64;win7-x86</RuntimeIdentifiers>
     <OutputType>Exe</OutputType>
     <IsWebBootstrapper>false</IsWebBootstrapper>
@@ -59,7 +59,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0-windows|AnyCPU'">
     <Optimize>True</Optimize>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net462|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net48|AnyCPU'">
     <Optimize>True</Optimize>
   </PropertyGroup>
   <ItemGroup>
@@ -82,10 +82,10 @@
       <Version>13.0.1</Version>
     </PackageReference>
     <PackageReference Include="System.IO.Ports" Version="6.0.0" />
-    <PackageReference Include="TextCopy" Version="4.3.1" />
+    <PackageReference Include="TextCopy" Version="6.1.0" />
     <PackageReference Include="Theraot.Core" Version="3.2.11" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
     <PackageReference Include="Costura.Fody" Version="5.7.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>compile; runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
