@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net5.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <StartupObject>ComPlotter.App</StartupObject>
     <Authors>LeHuman</Authors>
@@ -10,9 +10,9 @@
     <NeutralLanguage>en-US</NeutralLanguage>
     <Description>Plot data using ComMonitor</Description>
     <Copyright>Copyright © 2022</Copyright>
-    <AssemblyVersion>1.0.1.2</AssemblyVersion>
-    <FileVersion>1.0.1.2</FileVersion>
-    <Version>1.0.1.2</Version>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <FileVersion>1.1.0.0</FileVersion>
+    <Version>1.1.0.0</Version>
     <Configurations>Debug;Release</Configurations>
     <ApplicationIcon>Resources\COMPlotter.ico</ApplicationIcon>
     <Win32Resource />
