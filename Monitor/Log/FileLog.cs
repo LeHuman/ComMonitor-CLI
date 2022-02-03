@@ -49,9 +49,9 @@ namespace ComMonitor.Log {
                 file = new StreamWriter(path);
                 _Enabled = Available();
             } catch (IOException) {
-                if (path.Length != 0)
-                    throw new SystemException($"Unable to create or access logging directory: {path}");
-                return;
+                throw new SystemException($"Unable to create or access logging directory: {path}");
+            } catch (ArgumentException) {
+                throw new ArgumentException($"Path is invalid for logging: {path}");
             }
         }
 

@@ -148,10 +148,12 @@ namespace ComMonitor.Main {
 
             #region File Logging
 
-            FileLog.SetFile(options.Logging, options.SingleLogging);
-            FileLog.TimestampEnabled = options.LogTime;
-            if (dataType == DataType.Mapped)
-                JSONMap.LogMap();
+            if (options.Logging != null) {
+                FileLog.SetFile(options.Logging, options.SingleLogging);
+                FileLog.TimestampEnabled = options.LogTime;
+                if (dataType == DataType.Mapped)
+                    JSONMap.LogMap();
+            }
 
             #endregion File Logging
 

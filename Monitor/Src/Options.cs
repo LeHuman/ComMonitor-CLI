@@ -48,7 +48,7 @@ namespace ComMonitor.Main {
         [Option('f', "frequency", HelpText = "Manually Set the critical frequency of communication (Hz)", Default = 20)]
         public int Frequency { get; set; }
 
-        [Option('l', "log", HelpText = "Enable logging to a file [Valid Directory Path]", Default = "")]
+        [Option('l', "log", HelpText = "Enable logging to a file [Valid Directory Path]")]
         public string Logging { get; set; }
 
         [Option('g', "graph", HelpText = "Graph received values using ComPlotter, refer to readme", Default = false)]
