@@ -108,7 +108,7 @@ namespace ComPlotter.Plot {
         }
 
         internal void RunOnUIThread(Action action) {
-            _ = WpfPlot.Dispatcher.InvokeAsync(action).Wait();
+            _ = WpfPlot.Dispatcher.InvokeAsync(action).Wait();  // TODO: actually use async
         }
 
         private void SetupCommands() {

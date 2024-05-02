@@ -22,7 +22,7 @@ namespace ComMonitor.Serial {
     }
 
     public static class SerialType {
-        private static readonly char[] lookup = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+        private static readonly char[] lookup = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'];
 
         public static string GetHex(byte[] data) {
             return ToHex(data, ' ');
@@ -152,7 +152,7 @@ namespace ComMonitor.Serial {
                     if (fullArr[i] != 0)
                         return fullArr.Take(i + 1).ToArray();
                 }
-                return new byte[] { 0 };
+                return [0];
             } catch (Exception) {
                 Console.WriteLine($"Failed to convert to long byte array: {decimalStr}");
             }

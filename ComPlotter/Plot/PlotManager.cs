@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Controls;
 
 namespace ComPlotter.Plot {
@@ -32,7 +33,7 @@ namespace ComPlotter.Plot {
             plt.Style(figureBackground: Color.Transparent, dataBackground: Color.Transparent);
             plt.XAxis.Grid(false);
 
-            SlowModeAnnotation = WpfPlot.Plot.AddAnnotation("Slow", -10, -10);
+            SlowModeAnnotation = WpfPlot.Plot.AddAnnotation("Slow", Alignment.LowerLeft);
             SlowModeAnnotation.IsVisible = false;
             SlowModeAnnotation.Font.Size = 14;
             SlowModeAnnotation.Font.Bold = true;
@@ -44,8 +45,10 @@ namespace ComPlotter.Plot {
 
             _Control = new(WpfPlot, Groups, ListBox);
 
-            RenderThread = new(RenderRunner);
-            RenderThread.Name = "Render Thread";
+            RenderThread = new(RenderRunner)
+            {
+                Name = "Render Thread"
+            };
         }
 
         public void Start() {
@@ -94,23 +97,27 @@ namespace ComPlotter.Plot {
 
         private void RenderRunner() {
             Thread.Sleep(500); // Wait for half a second just to settle
-            while (RunRender) {
-                if (!_Control._DisableSlowMode) {
-                    sw.Restart();
-                    _Control.RunOnUIThread(Render);
-                    sw.Stop();
-                    avgMS = (avgMS + (int)sw.ElapsedMilliseconds) / 2;
-                    _Control.LowQualityRender = avgMS > 10;
-                    _Control.SlowMode = avgMS > 30;
-                    SlowModeAnnotation.IsVisible = false;
-                    SlowModeAnnotation.Background = false;
-                } else {
-                    _Control.RunOnUIThread(Render);
-                    avgMS = 5;
+            try {
+                while (RunRender) {
+                    if (!_Control._DisableSlowMode) {
+                        sw.Restart();
+                        _Control.RunOnUIThread(Render);
+                        sw.Stop();
+                        avgMS = (avgMS + (int)sw.ElapsedMilliseconds) / 2;
+                        _Control.LowQualityRender = avgMS > 10;
+                        _Control.SlowMode = avgMS > 30;
+                        SlowModeAnnotation.IsVisible = false;
+                        SlowModeAnnotation.Background = false;
+                    } else {
+                        _Control.RunOnUIThread(Render);
+                        avgMS = 5;
+                    }
+                    SlowModeAnnotation.IsVisible = _Control.LowQualityRender;
+                    SlowModeAnnotation.Background = _Control.SlowMode;
+                    Thread.Sleep(avgMS);
                 }
-                SlowModeAnnotation.IsVisible = _Control.LowQualityRender;
-                SlowModeAnnotation.Background = _Control.SlowMode;
-                Thread.Sleep(avgMS);
+            } catch (TaskCanceledException _) {
+
             }
         }
 

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net5.0-windows;net48</TargetFrameworks>
-	<RuntimeIdentifiers>win10-x64;win7-x86</RuntimeIdentifiers>
+    <TargetFrameworks>net8.0;net48</TargetFrameworks>
+	<RuntimeIdentifiers>win-x64;win-x86</RuntimeIdentifiers>
     <OutputType>Exe</OutputType>
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
@@ -43,18 +43,31 @@
     <DelaySign>false</DelaySign>
     <AssemblyOriginatorKeyFile>VisualStudioSignKey.pfx</AssemblyOriginatorKeyFile>
     <Authors>LeHuman</Authors>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>none</ErrorReport>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+  <!--<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <Optimize>True</Optimize>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <DefineConstants />
     <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
+  </PropertyGroup>-->
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0-windows|AnyCPU'">
     <Optimize>True</Optimize>
+    <DebugType>portable</DebugType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net48|AnyCPU'">
     <Optimize>True</Optimize>
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0-windows|AnyCPU'">
+    <WarningLevel>9999</WarningLevel>
+    <NoWarn>1701;1702</NoWarn>
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net48|AnyCPU'">
+    <NoWarn>1701;1702</NoWarn>
+    <DebugType>portable</DebugType>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Resources\Comx.ico" />
@@ -62,14 +75,14 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommandLineParser">
-      <Version>2.8.0</Version>
+      <Version>2.9.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Newtonsoft.Json">
-      <Version>13.0.1</Version>
+      <Version>13.0.3</Version>
     </PackageReference>
-    <PackageReference Include="System.IO.Ports" Version="6.0.0" />
-    <PackageReference Include="TextCopy" Version="6.1.0" />
+    <PackageReference Include="System.IO.Ports" Version="8.0.0" />
+    <PackageReference Include="TextCopy" Version="6.2.1" />
     <PackageReference Include="Theraot.Core" Version="3.2.11" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
@@ -77,8 +90,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>compile; runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.Memory" Version="4.5.4" />
-    <PackageReference Include="Theraot.Core" Version="3.2.11" />
+    <PackageReference Include="System.Memory" Version="4.5.5" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ComLib\ComPipe.csproj" />

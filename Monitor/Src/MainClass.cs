@@ -26,8 +26,8 @@ namespace ComMonitor.Main {
         private static PipeDataClient SerialPipe;
 
         private static string connectStr, waitStr, retryStr;
-        private static readonly int[] waitAnimTime = { 80, 40, 30, 30, 20, 20, 10, 20, 20, 30, 30, 40 };
-        private static readonly string[] waitAnim = { "        ", "-       ", "--      ", "---     ", "----    ", " ----   ", "  ----  ", "   ---- ", "    ----", "     ---", "      --", "       -" };
+        private static readonly int[] waitAnimTime = [80, 40, 30, 30, 20, 20, 10, 20, 20, 30, 30, 40];
+        private static readonly string[] waitAnim = ["        ", "-       ", "--      ", "---     ", "----    ", " ----   ", "  ----  ", "   ---- ", "    ----", "     ---", "      --", "       -"];
 
         #endregion defines
 
@@ -140,7 +140,7 @@ namespace ComMonitor.Main {
 
             #region Setup SerialClient
 
-            SerialClient.Setup(options.PortName.ToUpper(), options.BaudRate, options.SetParity, options.SetDataBits, options.SetStopBits, options.Frequency);
+            SerialClient.Setup(options.PortName.ToUpper(), options.BaudRate, options.SetParity, options.SetDataBits, options.SetStopBits, !options.DisableDtr, options.Frequency);
             SerialClient.SetWriteTimeout(options.WaitTimeout);
             SerialClient.SerialDataReceived += SerialParser.LoadParser(dataType, options.SetMaxBytes);
 
@@ -208,7 +208,7 @@ namespace ComMonitor.Main {
 
             waitStr = $"Waiting for connection to {SerialClient.PortName} ";
             retryStr = $"Retrying to connect to {SerialClient.PortName} ";
-            connectStr = $"Connecting to {SerialClient.PortName} @ {SerialClient.BaudRate}\np:{SerialClient.Parity} d:{SerialClient.DataBits} s:{SerialClient.StopBits} cf:{SerialClient.FreqCriticalLimit} {(options.SetMaxBytes > 0 ? "j:" + options.SetMaxBytes : "")}\n";
+            connectStr = $"Connecting to {SerialClient.PortName} @ {SerialClient.BaudRate}\np:{SerialClient.Parity} d:{SerialClient.DataBits} s:{SerialClient.StopBits} dtr:{SerialClient.Dtr} cf:{SerialClient.FreqCriticalLimit} {(options.SetMaxBytes > 0 ? "j:" + options.SetMaxBytes : "")}\n";
         }
 
         private static void Main(string[] args) {

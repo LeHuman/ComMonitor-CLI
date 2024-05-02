@@ -7,20 +7,14 @@ using System.Threading.Tasks;
 
 namespace Pipe {
 
-    public class PipeDataClient {
+    public class PipeDataClient(string PipeName, int MaxBytes, string MetaData) {
         public const int TIMEOUT_MS = 5000;
         public bool IsConnected { get => DataPipe != null && DataPipe.IsConnected; }
 
         private bool Started;
-        private readonly string PipeName, MaxBytes, MetaData;
+        private readonly string PipeName = PipeName, MaxBytes = MaxBytes.ToString(), MetaData = MetaData;
         private NamedPipeClientStream InfoPipe, DataPipe;
-        private static readonly char[] Trimmed = new char[] { '\r', '\n' };
-
-        public PipeDataClient(string PipeName, int MaxBytes, string MetaData) {
-            this.PipeName = PipeName;
-            this.MaxBytes = MaxBytes.ToString();
-            this.MetaData = MetaData;
-        }
+        private static readonly char[] Trimmed = ['\r', '\n'];
 
         public void Stop() {
             DataPipe?.Close();
@@ -52,7 +46,7 @@ namespace Pipe {
             return false;
         }
 
-        private void WaitForInfoClient() { // TODO: instead, periodiclly check if any new pipes with INFO_PIPE_NAME are accepting input
+        private void WaitForInfoClient() { // TODO: instead, periodically check if any new pipes with INFO_PIPE_NAME are accepting input
             while (true) {
                 try {
                     InfoPipe = new NamedPipeClientStream(PipeDataServer.INFO_PIPE_NAME);

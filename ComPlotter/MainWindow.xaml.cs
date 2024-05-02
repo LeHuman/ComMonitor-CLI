@@ -36,6 +36,7 @@ namespace ComPlotter {
             InitializeComponent();
 
             PlotManager = new(MainPlot, SeriesListBox);
+            MainPlot.Dispatcher.ShutdownStarted += Dispatcher_ShutdownStarted;
 
             DataContext = this;
 
@@ -131,6 +132,11 @@ namespace ComPlotter {
             } else {
                 Toaster.Toast("Waiting for pipe", 1000);
             }
+        }
+
+        private void Dispatcher_ShutdownStarted(object sender, EventArgs e) {
+            SerialPipe?.Stop();
+            PlotManager?.Stop();
         }
 
         private void UpdateSelectedPlotSeries(object sender, System.Windows.Controls.SelectionChangedEventArgs e) {

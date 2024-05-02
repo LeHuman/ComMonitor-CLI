@@ -19,11 +19,12 @@ namespace Pipe {
         internal const int BUFFER_SIZE = 4096;
         internal const int MAX_CONNECTIONS = 64;
         internal const string INFO_PIPE_NAME = "ComInfoPipe";
+        internal bool ServerThreadRun = true;
 
         private readonly DelegateSerialInfo InfoReceiver;
         private DelegateSerialStatus SerialStatusListener;
         private NamedPipeServerStream InfoPipeServer;
-        private static readonly char[] InfoSplit = { ',' };
+        private static readonly char[] InfoSplit = [','];
         private readonly Thread ServerThread;
 
         public PipeDataServer(DelegateSerialInfo InfoReceiver) {
@@ -41,6 +42,7 @@ namespace Pipe {
         public bool Start() {
             try {
                 InfoPipeServer = new NamedPipeServerStream(INFO_PIPE_NAME, PipeDirection.InOut, MAX_CONNECTIONS, PipeTransmissionMode.Message);
+                ServerThreadRun = true;
                 ServerThread.Start();
                 return true;
             } catch (Exception oEX) {
@@ -52,6 +54,11 @@ namespace Pipe {
         public void Stop() {
             InfoPipeServer?.Close();
             InfoPipeServer?.Dispose();
+            ServerThreadRun = false;
+            using (NamedPipeClientStream npcs = new NamedPipeClientStream("ComInfoPipe")) {
+                npcs.Connect(-1);
+            }
+            ServerThread.Join();
         }
 
         private void SendReply(string msg) {
@@ -67,10 +74,10 @@ namespace Pipe {
 
             bool cont = false;
 
-            while (true) {
+            while (ServerThreadRun) {
                 try {
                     if (!InfoPipeServer.IsConnected)
-                        InfoPipeServer.WaitForConnection();
+                        InfoPipeServer.WaitForConnection(); // TODO: use async version
                     memoryStream.SetLength(0);
 
                     do {
@@ -86,7 +93,8 @@ namespace Pipe {
                     while (!cont) { }
                     InfoPipeServer.Disconnect();
                 } catch (SystemException) {
-                    Stop();
+                    InfoPipeServer?.Close();
+                    InfoPipeServer?.Dispose();
                     try {
                         InfoPipeServer = new NamedPipeServerStream(INFO_PIPE_NAME, PipeDirection.InOut, MAX_CONNECTIONS, PipeTransmissionMode.Message);
                     } catch (Exception) {
@@ -120,5 +128,6 @@ namespace Pipe {
                 SerialClosedHandle?.Invoke(PipeName, false);
             }
         }
+
     }
 }

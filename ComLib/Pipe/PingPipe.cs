@@ -10,15 +10,11 @@ namespace Pipe {
     // Delegate for notifying of connection or error
     public delegate void DelegateNotify();
 
-    public class PingPipe {
+    public class PingPipe(string PipeName) {
 
         private event DelegateNotify PipeConnect;
 
-        private readonly string PipeName;
-
-        public PingPipe(string PipeName) {
-            this.PipeName = PipeName;
-        }
+        private readonly string PipeName = PipeName;
 
         public void SetCallback(DelegateNotify callback) {
             PipeConnect = callback;

@@ -11,8 +11,10 @@ namespace ComPlotter.Util {
         }
 
         public WCheckBox AddCheckBox(string Name, bool Enabled = false) {
-            WCheckBox CheckBox = new(Name);
-            CheckBox._IsChecked = Enabled;
+            WCheckBox CheckBox = new(Name)
+            {
+                _IsChecked = Enabled
+            };
             ListBox.Items.Add(CheckBox);
             return CheckBox;
         }
