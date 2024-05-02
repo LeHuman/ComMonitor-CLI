@@ -30,6 +30,9 @@ namespace ComMonitor.Main {
         [Option('r', "retry", HelpText = "After connecting, if the port closes, keep the console open and wait for the port to reopen")]
         public bool Reconnect { get; set; }
 
+        [Option('D', "dtr", HelpText = "Disable the Data Terminal Ready (DTR) signal during serial communication")]
+        public bool DisableDtr { get; set; }
+
         [Option('w', "wait", HelpText = "If the port is not open when the console starts, wait for it to open")]
         public bool Wait { get; set; }
 

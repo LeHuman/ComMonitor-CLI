@@ -28,6 +28,8 @@ namespace ComMonitor.Serial {
         public static Parity Parity { get; private set; } = Parity.None;
         public static int DataBits { get; private set; } = 8;
         public static StopBits StopBits { get; private set; } = StopBits.One;
+
+        public static bool Dtr { get; private set; } = true;
         public static int FreqCriticalLimit { get; private set; } = 20; // The Critical Frequency of Communication to Avoid Any Lag
 
         private static Thread serThread;
@@ -59,11 +61,12 @@ namespace ComMonitor.Serial {
             SerialClient.BaudRate = baudRate;
         }
 
-        public static void Setup(string Port, int baudRate, Parity parity, int dataBits, StopBits stopBits, int freqCriticalLimit) {
+        public static void Setup(string Port, int baudRate, Parity parity, int dataBits, StopBits stopBits, bool enableDtr, int freqCriticalLimit) {
             Setup(Port, baudRate);
             SerialClient.Parity = parity;
             SerialClient.DataBits = dataBits;
             SerialClient.StopBits = stopBits;
+            SerialClient.Dtr = enableDtr;
             SerialClient.FreqCriticalLimit = Math.Max(1, freqCriticalLimit);
         }
 
@@ -108,8 +111,7 @@ namespace ComMonitor.Serial {
 
         public static bool OpenConn() {
             try {
-                if (serialPort == null)
-                    serialPort = new SerialPort(PortName, BaudRate, Parity, DataBits, StopBits);
+                serialPort ??= new SerialPort(PortName, BaudRate, Parity, DataBits, StopBits);
 
                 if (!PortAvailable())
                     throw new SerialException(string.Format("Port is not available: {0}", PortName));
@@ -117,6 +119,7 @@ namespace ComMonitor.Serial {
                 if (!serialPort.IsOpen) {
                     serialPort.ReadTimeout = -1;
                     serialPort.WriteTimeout = writeTimeout;
+                    serialPort.DtrEnable = Dtr;
 
                     serialPort.Open();
 
@@ -180,8 +183,7 @@ namespace ComMonitor.Serial {
         public static void SendString(string msg) // TODO: Async Writes
         {
             try {
-                if (serialPort != null)
-                    serialPort.Write(msg);
+                serialPort?.Write(msg);
             } catch (Exception e) {
                 Console.WriteLine($"Serial: Error Sending Data, {e.Message}");
             }
@@ -189,8 +191,7 @@ namespace ComMonitor.Serial {
 
         public static void SendBytes(byte[] msg) {
             try {
-                if (serialPort != null)
-                    serialPort.Write(msg, 0, msg.Length);
+                serialPort?.Write(msg, 0, msg.Length);
             } catch (Exception e) {
                 Console.WriteLine($"Serial: Error Sending Data, {e.Message}");
             }
@@ -202,7 +203,7 @@ namespace ComMonitor.Serial {
                 try {
                     count = serialPort.BytesToRead;
 
-                    /*Get Sleep Inteval*/
+                    /*Get Sleep Interval*/
                     TimeSpan tmpInterval = (DateTime.Now - lastReceive);
 
                     /*Form The Packet in The Buffer*/
