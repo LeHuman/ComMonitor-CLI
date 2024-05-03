@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using ComMonitor.Terminal;
+using System.IO.Ports;
 
 namespace ComMonitor.Main {
 
@@ -18,6 +19,7 @@ namespace ComMonitor.Main {
         private static int MAX_RETRY = 500; // We should give it a limit, just in case
         private static int retries = MAX_RETRY;
         private static bool reconnect = false;
+        private static int reconnectDelay = 0;
         private static bool initalWait = false;
 
         private static string PriorityPipeName = "ComMonitor";
@@ -46,8 +48,11 @@ namespace ComMonitor.Main {
                 for (int i = 0; i < waitAnimTime.Length; i++) {
                     Console.Write($"\r{waitMessage}{waitAnim[i]}");
                     Thread.Sleep(waitAnimTime[i]);
-                    if (SerialClient.PortAvailable())
-                        break;
+                    if (SerialClient.PortAvailable()) {
+                        Thread.Sleep(reconnectDelay);
+                        if (SerialClient.PortAvailable())
+                            break;
+                    }
                 }
             } while (!SerialClient.PortAvailable());
             Console.Write("\r");
@@ -123,13 +128,14 @@ namespace ComMonitor.Main {
 
             retries = MAX_RETRY;
             initalWait = options.Wait;
-            reconnect = options.Reconnect;
+            reconnect = options.Reconnect || (options.ReconnectDelay > 0);
+            reconnectDelay = options.ReconnectDelay;
             MAX_RETRY = options.MaxRetries;
 
             DataType dataType = options.SetDataType == DataType.None ? DataType.Ascii : options.SetDataType;
 
             Term.ColorEnable(!options.SetColor);
-            Term.EnableInput(options.EnableInput, options.DisableInputPrompt);
+            Term.EnableInput(options.EnableInput, !options.DisableInputPrompt);
 
             JSONMap.LoadJSONMap(options.JsonPath, options.JsonBlock, SerialParser.MaxBytes);
 
@@ -138,9 +144,15 @@ namespace ComMonitor.Main {
 
             Term.EnableLogColor(dataType == DataType.Ascii || (JSONMap.Loaded && dataType == DataType.Mapped));
 
+            if (options.PortName == null && !options.DisablePortScreen) {
+                var selector = new PortSelector();
+                selector.Start();
+                options.PortName = selector.Stop();
+            }
+
             #region Setup SerialClient
 
-            SerialClient.Setup(options.PortName.ToUpper(), options.BaudRate, options.SetParity, options.SetDataBits, options.SetStopBits, !options.DisableDtr, options.Frequency);
+            SerialClient.Setup(options.PortName?.ToUpper() ?? "", options.BaudRate ?? 9600, options.SetParity, options.SetDataBits, options.SetStopBits, !options.DisableDtr, options.Frequency);
             SerialClient.SetWriteTimeout(options.WaitTimeout);
             SerialClient.SerialDataReceived += SerialParser.LoadParser(dataType, options.SetMaxBytes);
 
