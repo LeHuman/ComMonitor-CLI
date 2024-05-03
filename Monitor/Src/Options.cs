@@ -78,7 +78,7 @@ namespace ComMonitor.Main {
         [Option("singleLog", HelpText = "If Logging is enabled, use a single file for logging, overwriting it each time", Default = false)]
         public bool SingleLogging { get; set; }
 
-        [Option("input", HelpText = "Enable input when connected to a port, refer to readme for formatting [(A)scii|(H)ex|(D)ecimal|(B)inary]", Default = DataType.None, FlagCounter = true)]
+        [Option("input", HelpText = "Enable input when connected to a port, refer to readme for formatting [(A)scii|(H)ex|(D)ecimal|(B)inary]", Default = DataType.None)]
         public DataType EnableInput { get; set; }
 
         [Option("disableInputPrompt", HelpText = "Disable the prompt that appears when inputting data, recommended to paste data instead", Default = false)]
