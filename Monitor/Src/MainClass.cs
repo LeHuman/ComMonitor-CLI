@@ -144,10 +144,15 @@ namespace ComMonitor.Main {
 
             Term.EnableLogColor(dataType == DataType.Ascii || (JSONMap.Loaded && dataType == DataType.Mapped));
 
-            if (options.PortName == null && !options.DisablePortScreen) {
-                var selector = new PortSelector();
-                selector.Start();
-                options.PortName = selector.Stop();
+            if (options.PortName == null) {
+                if (options.UseFirstFound) {
+                    string[] ports = SerialPort.GetPortNames();
+                    if (ports.Length > 0) { options.PortName = ports[0]; } // FIXME: Does not ensure that the port can be opened
+                } else if (!options.DisablePortScreen) {
+                    var selector = new PortSelector();
+                    selector.Start();
+                    options.PortName = selector.Stop();
+                }
             }
 
             #region Setup SerialClient

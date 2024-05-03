@@ -60,6 +60,9 @@ namespace ComMonitor.Main {
         [Option('g', "graph", HelpText = "Graph received values using ComPlotter, refer to readme", Default = false)]
         public bool PlotData { get; set; }
 
+        [Option("first", HelpText = "Connect to the first available port when no portName is set.", Default = false)]
+        public bool UseFirstFound { get; set; }
+
         [Option("disablePortScreen", HelpText = "Disable the selection screen from appearing when no option is given to portName", Default = false)]
         public bool DisablePortScreen { get; set; }
 
