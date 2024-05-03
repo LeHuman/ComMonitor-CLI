@@ -2,7 +2,6 @@
   "profiles": {
     "ComMonitor": {
       "commandName": "Project",
-      "commandLineArgs": "COM16 115200 -rw",
       "remoteDebugEnabled": false,
       "nativeDebugging": true
     }
