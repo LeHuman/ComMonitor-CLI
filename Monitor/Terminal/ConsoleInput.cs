@@ -10,7 +10,9 @@ namespace ComMonitor.Terminal {
     public delegate void DelegateConsoleUpdate();
 
     public static class ConsoleInput {
-        private static bool EnableInput = false;
+        public static bool Enable { get; set; }
+        public static bool DisableCarridgeReturn { get; set; }
+        public static bool EmptyBuffer { get; set; }
         private static string currentInput = "";
         private static readonly Stream Input = Console.OpenStandardInput();
         private static readonly Thread Observer = new(new ThreadStart(ObserveInput));
@@ -18,11 +20,8 @@ namespace ComMonitor.Terminal {
         public static string GetCurrentInput() {
             if (currentInput == "")
                 return "";
-            return $"Input: {currentInput}\r";
-        }
 
-        public static void Enable(bool enable) {
-            EnableInput = enable;
+            return $"Input: {currentInput}";
         }
 
         public static void Start() {
@@ -35,10 +34,11 @@ namespace ComMonitor.Terminal {
 
         public static void ObserveInput() {
             while (true) {
-                if (!EnableInput) {
+                if (!Enable) {
                     if (currentInput != "") {
                         currentInput = "";
-                        Term.CheckInputLine();
+                        Term.UpdateInputLine();
+                        EmptyBuffer = true;
                     }
                     continue;
                 }
@@ -50,22 +50,30 @@ namespace ComMonitor.Terminal {
                 } else if (keyInfo.Key == ConsoleKey.Backspace) {
                     if (currentInput.Length > 0) {
                         currentInput = currentInput[0..^1];
-                        Term.CheckInputLine();
+                        Term.UpdateInputLine();
+                    } else if (!EmptyBuffer) {
+                        Term.UpdateInputLine();
+                        EmptyBuffer = true;
                     }
                 } else {
                     char next = keyInfo.KeyChar;
                     if (next != -1) {
-                        if (next == '\r') {
+                        if (next == '\r') { // IMPROVE: Do we also check for '\n'?
                             if (currentInput == "") {
-                                Console.Write("\rInput Buffer is empty\r");
+                                if (DisableCarridgeReturn)
+                                    Console.WriteLine("Input Buffer is empty");
+                                else
+                                    Console.Write("\rInput Buffer is empty\r");
                                 continue;
                             }
                             Term.SendMsg(currentInput);
                             currentInput = "";
-                            Term.CheckInputLine();
+                            Term.UpdateInputLine();
+                            EmptyBuffer = true;
                         } else if (next != '\0') {
                             currentInput += next;
-                            Term.CheckInputLine();
+                            EmptyBuffer = false;
+                            Term.UpdateInputLine();
                         }
                     }
                 }

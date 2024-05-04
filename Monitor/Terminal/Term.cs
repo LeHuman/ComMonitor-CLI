@@ -2,6 +2,7 @@
 using ComMonitor.Serial;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace ComMonitor.Terminal {
 
@@ -11,13 +12,14 @@ namespace ComMonitor.Terminal {
 
         public static readonly ConsoleColor DefaultConsoleColor = ConsoleColor.White;
 
-        private static bool checkInput = false;
+        private static int lastInputLen = 0;
+        private static bool updateInput = false;
         private static bool enableInputPrompt = false;
         private static DataType inputDataType = DataType.None;
 
         private static bool colorEnabled = false;
         private static bool logColorEnabled = false;
-        private static bool alreadyChecking = false;
+        private static readonly object inputLock = new object();
 
         private static readonly Dictionary<string, ConsoleColor> logLevels = new()
         {
@@ -75,18 +77,43 @@ namespace ComMonitor.Terminal {
 
         #region Input
 
-        public static void CheckInputLine() {
-            if (!checkInput || !enableInputPrompt || alreadyChecking)
+        public static void ClearInputLine() {
+            if (!updateInput || !enableInputPrompt)
                 return;
-            alreadyChecking = true;
+
+            lock (inputLock) { // IMPROVE: Should this be a try instead?
+                if (Console.CursorTop == Console.WindowHeight - 1) {
+                    var cursorLeft = Console.CursorLeft;
+                    Console.CursorLeft = 0;
+                    Console.Write(new string(' ', Console.WindowWidth - 1));
+                    Console.CursorLeft = cursorLeft;
+                }
+            }
+        }
+
+        public static void UpdateInputLine() {
+            if (!updateInput || !enableInputPrompt || !Monitor.TryEnter(inputLock))
+                return;
+
             string input = ConsoleInput.GetCurrentInput();
 
-            if (input != "") {
-                Console.WriteLine();
-                Console.Write(input);
-                Console.CursorTop--;
+            if (!ConsoleInput.EmptyBuffer) {
+                if (input != "" && ConsoleInput.DisableCarridgeReturn) {
+                    Console.WriteLine(input);
+                } else { // IMPROVE: Can this throw if WindowHeight changes rapidly?
+                    int last = Console.CursorTop;
+                    var cursorLeft = Console.CursorLeft;
+
+                    Console.CursorTop = Console.WindowHeight - 1;
+                    Console.CursorLeft = 0;
+
+                    Console.Write(input + new string(' ', Console.WindowWidth - 1 - input.Length));
+                    Console.CursorTop = last;
+                    Console.CursorLeft = cursorLeft;
+                }
             }
-            alreadyChecking = false;
+
+            Monitor.Exit(inputLock);
         }
 
         internal static void SendMsg(string msg) {
@@ -108,9 +135,9 @@ namespace ComMonitor.Terminal {
         public static void EnableInput(DataType inputDataType, bool enableInputPrompt) {
             Term.inputDataType = inputDataType;
             Term.enableInputPrompt = enableInputPrompt;
-            checkInput = inputDataType != DataType.None && inputDataType != DataType.Mapped;
+            updateInput = inputDataType != DataType.None && inputDataType != DataType.Mapped;
 
-            if (checkInput)
+            if (updateInput)
                 ConsoleInput.Start();
         }
 
@@ -136,7 +163,7 @@ namespace ComMonitor.Terminal {
         }
 
         private static void WriteInternal(string str, bool newline, bool Log) {
-            CheckInputLine();
+            ClearInputLine();
             if (str.Length > 0) {
                 ColorLogLevel(str.ToUpper()); // TODO: trim to last bracket to reduce text that is searched
                 if (newline) {
@@ -150,6 +177,7 @@ namespace ComMonitor.Terminal {
                 }
                 ColorConsole();
             }
+            UpdateInputLine();
         }
 
         #endregion Output
