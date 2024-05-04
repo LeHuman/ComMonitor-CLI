@@ -77,7 +77,7 @@ namespace ComMonitor.Serial {
         #region Port Control
 
         public static bool IsAlive() {
-            return serialPort.IsOpen;
+            return serialPort?.IsOpen ?? false;
         }
 
         public static bool ResetConn() {
@@ -92,9 +92,9 @@ namespace ComMonitor.Serial {
             return OpenConn();
         }
 
-        public static bool PortAvailable() {
+        public static bool PortListed() {
             try {
-                return SerialPort.GetPortNames().Contains(PortName);
+                return SerialPort.GetPortNames().Contains(PortName); // NOTE: GetPortNames is wonky, at least on windows, does not update correctly
             } catch (Win32Exception) {
                 return false;
             }
@@ -109,38 +109,48 @@ namespace ComMonitor.Serial {
             }
         }
 
-        public static bool OpenConn() {
-            try {
-                serialPort ??= new SerialPort(PortName, BaudRate, Parity, DataBits, StopBits);
+        public static bool OpenConn(bool suppressMessage = false) {
+            serialPort ??= new SerialPort(PortName, BaudRate, Parity, DataBits, StopBits);
 
-                if (!PortAvailable())
-                    throw new SerialException(string.Format("Port is not available: {0}", PortName));
+            if (!PortListed()) {
+                if (!suppressMessage)
+                    Console.WriteLine(string.Format("Port is not available: {0}", PortName));
+                return false;
+            }
+
+            if (!serialPort.IsOpen) {
+                serialPort.ReadTimeout = -1;
+                serialPort.WriteTimeout = writeTimeout;
+                serialPort.DtrEnable = Dtr;
+
+                try {
+                    serialPort.Open();
+                } catch (UnauthorizedAccessException) {
+                    if (!suppressMessage)
+                        Console.WriteLine(string.Format("Serial port opened by another application: {0}", PortName));
+                    return false;
+                } catch (System.IO.FileNotFoundException) {
+                    if (!suppressMessage)
+                        Console.WriteLine(string.Format("Serial port not found: {0}", PortName));
+                    return false;
+                } catch {
+                }
 
                 if (!serialPort.IsOpen) {
-                    serialPort.ReadTimeout = -1;
-                    serialPort.WriteTimeout = writeTimeout;
-                    serialPort.DtrEnable = Dtr;
-
-                    serialPort.Open();
-
-                    if (!serialPort.IsOpen)
-                        throw new SerialException(string.Format("Could not open serial port: {0}", PortName));
-
-                    packetsRate = 0;
-                    lastReceive = DateTime.MinValue;
-
-                    serThread = new Thread(new ThreadStart(SerialReceiving))
-                    {
-                        Priority = ThreadPriority.AboveNormal
-                    };
-                    serThread.Name = "SerialHandle" + serThread.ManagedThreadId;
-                    serThread.Start(); /*Start The Communication Thread*/
+                    if (!suppressMessage)
+                        Console.WriteLine(string.Format("Could not open serial port: {0}", PortName));
+                    return false;
                 }
-            } catch (SerialException e) {
-                Console.WriteLine(e.Message);
-                return false;
-            } catch {
-                return false;
+
+                packetsRate = 0;
+                lastReceive = DateTime.MinValue;
+
+                serThread = new Thread(new ThreadStart(SerialReceiving))
+                {
+                    Priority = ThreadPriority.AboveNormal
+                };
+                serThread.Name = "SerialHandle" + serThread.ManagedThreadId;
+                serThread.Start(); /*Start The Communication Thread*/
             }
 
             return true;
@@ -161,10 +171,8 @@ namespace ComMonitor.Serial {
         public static void Dispose() {
             CloseConn();
 
-            if (serialPort != null) {
-                serialPort.Dispose();
-                serialPort = null;
-            }
+            serialPort?.Dispose();
+            serialPort = null;
         }
 
         #endregion IDisposable Methods

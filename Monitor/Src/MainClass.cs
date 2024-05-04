@@ -38,26 +38,30 @@ namespace ComMonitor.Main {
         #region Runtime Methods
 
         private static void RetryWait(bool firstWait = false) {
-            if (SerialClient.PortAvailable())
+            if (SerialClient.IsAlive())
                 return;
             Thread.Sleep(100);
             Term.ColorConsole(ConsoleColor.Blue);
             FileLog.Flush();
             string waitMessage = firstWait ? waitStr : retryStr;
+            Stopwatch sw = Stopwatch.StartNew();
             do {
                 for (int i = 0; i < waitAnimTime.Length; i++) {
                     Console.Write($"\r{waitMessage}{waitAnim[i]}");
-                    Thread.Sleep(waitAnimTime[i]);
-                    if (SerialClient.PortAvailable()) {
-                        Thread.Sleep(reconnectDelay);
-                        if (SerialClient.PortAvailable())
-                            break;
+                    Thread.Sleep(Math.Max(waitAnimTime[i] - (int)sw.ElapsedMilliseconds, 0));
+                    sw.Restart();
+                    // NOTE: Slower on retry as SerialClient.PortListed() does not work correctly on Windows
+                    if (SerialClient.OpenConn(true)) {
+                        // Thread.Sleep(reconnectDelay); // FIXME: Anyway to reintroduce delay with SerialClient.PortListed() being wonky?
+                        //if (SerialClient.PortListed())
+                        break;
                     }
                 }
-            } while (!SerialClient.PortAvailable());
+            } while (!SerialClient.IsAlive());
             Console.Write("\r");
             Console.Write(string.Concat(Enumerable.Repeat(" ", waitMessage.Length + waitAnim[0].Length)));
             Console.Write("\r");
+            // FIXME: Make retries limit optional, currently is being bypassed
             retries--;
             if (retries == 0) {
                 throw new Exception("Max number of retries reached");
@@ -67,7 +71,8 @@ namespace ComMonitor.Main {
         public static void Run() {
             Term.ColorSingle(ConsoleColor.Yellow, connectStr);
 
-            if (!SerialClient.PortAvailable()) {
+            // NOTE: initial usage of PortListed seems to work just fine
+            if (!SerialClient.PortListed()) {
                 if (initalWait)
                     RetryWait(true);
                 else
