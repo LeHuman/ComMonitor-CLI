@@ -7,6 +7,7 @@ using Pipe;
 using System;
 using System.Diagnostics;
 using System.IO.Ports;
+using System.Linq;
 using System.Threading;
 
 namespace ComMonitor.Main {
@@ -249,7 +250,7 @@ namespace ComMonitor.Main {
 
             waitStr = $"Waiting for connection to {SerialClient.PortName} ";
             retryStr = $"Retrying to connect to {SerialClient.PortName} ";
-            connectStr = $"Connecting to {SerialClient.PortName} @ {SerialClient.BaudRate}\np:{SerialClient.Parity} d:{SerialClient.DataBits} s:{SerialClient.StopBits} dtr:{SerialClient.Dtr} cf:{SerialClient.FreqCriticalLimit} {(options.SetMaxBytes > 0 ? "j:" + options.SetMaxBytes : "")}\n";
+            connectStr = $"Connecting to {SerialClient.PortName} @ {SerialClient.BaudRate}\np:{SerialClient.Parity} d:{SerialClient.DataBits} s:{SerialClient.StopBits} dtr:{SerialClient.Dtr} cf:{SerialClient.FreqCriticalLimit}{(options.SetMaxBytes > 0 ? " j:" + options.SetMaxBytes : null)}{(options.EnableInput != DataType.None ? $" i{(options.ExpandInput && (options.EnableInput == DataType.Ascii) ? 'e' : null)}:{options.EnableInput.ToString().First()}" : null)}\n";
         }
 
         private static void Main(string[] args) {
