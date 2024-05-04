@@ -33,20 +33,23 @@ namespace ComMonitor.Main {
         [Option('R', "retryDelay", HelpText = "Pass a value in milliseconds to delay reconnecting. Helpful if reconnecting immediately causes issues. Functions as -r if the value passed is > 0.", Default = 0)]
         public int ReconnectDelay { get; set; }
 
-        [Option('D', "dtr", HelpText = "Disable the Data Terminal Ready (DTR) signal during serial communication")]
+        [Option('D', "dtr", HelpText = "Disable the Data Terminal Ready (DTR) signal during serial communication.")]
         public bool DisableDtr { get; set; }
 
-        [Option('w', "wait", HelpText = "If the port is not open when the console starts, wait for it to open")]
+        [Option('w', "wait", HelpText = "If the port is not open when the console starts, wait for it to open.")]
         public bool Wait { get; set; }
 
-        [Option("retries", HelpText = "Set the number of retries for both -w -r options", Default = 200)]
+        [Option("retries", HelpText = "Set the number of retries for both -w -r options. Negative values means no limit.\nNOTE: Counter gets reset with each successful reconnection.", Default = -1)]
         public int MaxRetries { get; set; }
 
         [Option("timeout", HelpText = "Set the number of milliseconds before a time-out occurs when writing to serial", Default = -1)]
         public int WaitTimeout { get; set; }
 
-        [Option('c', "color", HelpText = "Disable console color, may help with latency", Default = false)]
+        [Option('c', "color", HelpText = "Disable console color, may help with latency.", Default = false)]
         public bool SetColor { get; set; }
+
+        [Option('a', "disableAnimation", HelpText = "Disable any text animation used and any text output that is not just a basic string. NOTE: Does not affect input prompt, see option disableInputPrompt.", Default = false)]
+        public bool DisableAnimation { get; set; }
 
         [Option("priority", HelpText = "Take priority of a port if another instance of ComMonitor has it open ( Does not apply to any other app )", Default = false)]
         public bool Priority { get; set; }
@@ -57,7 +60,7 @@ namespace ComMonitor.Main {
         [Option('l', "log", HelpText = "Enable logging to a file [Valid Directory Path]")]
         public string Logging { get; set; }
 
-        [Option('g', "graph", HelpText = "Graph received values using ComPlotter, refer to readme", Default = false)]
+        [Option('g', "graph", HelpText = "Graph incoming data using ComPlotter, refer to readme.", Default = false)]
         public bool PlotData { get; set; }
 
         [Option("first", HelpText = "Connect to the first available port when no portName is set.", Default = false)]
@@ -81,7 +84,7 @@ namespace ComMonitor.Main {
         [Option("input", HelpText = "Enable input when connected to a port, refer to readme for formatting [(A)scii|(H)ex|(D)ecimal|(B)inary]", Default = DataType.None)]
         public DataType EnableInput { get; set; }
 
-        [Option("disableInputPrompt", HelpText = "Disable the prompt that appears when inputting data, recommended to paste data instead", Default = false)]
+        [Option("disableInputPrompt", HelpText = "Disable the prompt that appears when inputting data, recommended to paste data instead.\n NOTE: On windows, right clicking a terminal with text in the clipboard should paste.", Default = false)]
         public bool DisableInputPrompt { get; set; }
 
         [Option("jsonPath", HelpText = "Point to a json file that contains a JSON object which maps strings to unique integers, allows non ascii modes to instead print out their matching string, option `m` and `jsonBlock` must be set, refer to readme")]

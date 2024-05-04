@@ -14,7 +14,7 @@ namespace ComMonitor.Main {
 
         public void Start() {
             // Get the names of all available serial ports
-            ports = SerialPort.GetPortNames();
+            ports = SerialPort.GetPortNames(); // NOTE: GetPortNames normally wonky but works fine here?
 
             stopRequested = false;
 
