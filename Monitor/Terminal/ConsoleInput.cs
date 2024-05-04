@@ -10,7 +10,7 @@ namespace ComMonitor.Terminal {
     public delegate void DelegateConsoleUpdate();
 
     public static class ConsoleInput {
-        public static bool Enable { get; set; }
+        public static bool Enable { get; set; } // IMPROVE: ClearInputBuffer on Enable?
         public static bool DisableCarridgeReturn { get; set; }
         public static bool EmptyBuffer { get; set; }
         private static string currentInput = "";
@@ -24,8 +24,17 @@ namespace ComMonitor.Terminal {
             return $"Input: {currentInput}";
         }
 
+        public static void ClearInputBuffer() {
+            while (Console.KeyAvailable) {
+                Console.ReadKey(true);
+            }
+        }
+
         public static void Start() {
             if (Input.CanRead) {
+                currentInput = "";
+                EmptyBuffer = true;
+                ClearInputBuffer();
                 Observer.Start();
             } else {
                 Console.WriteLine("Console does not support reading");
