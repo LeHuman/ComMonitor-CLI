@@ -30,6 +30,7 @@ namespace ComMonitor.Main {
         private static string connectStr, waitStr, retryStr;
         private static readonly int[] waitAnimTime = [120, 90, 80, 60, 45, 30, 25, 40, 55, 80, 90, 120, 90, 80, 60, 45, 30, 25, 40, 55, 80, 90];
         private static readonly string[] waitAnim = ["        ", "=       ", "-=      ", "--=     ", " --=    ", "  --=   ", "   --=  ", "   --= ", "     --=", "      --", "       -", "        ", "       =", "      =-", "     =--", "    =-- ", "   =--  ", "  =--   ", " =--    ", "=--     ", "--      ", "-       ",];
+        private static bool EnableAnimation = true;
 
         #endregion defines
 
@@ -45,11 +46,18 @@ namespace ComMonitor.Main {
             FileLog.Flush();
             string waitMessage = firstWait ? waitStr : retryStr;
             Stopwatch sw = Stopwatch.StartNew();
+            if (!EnableAnimation) {
+                Console.Write(waitMessage + '\n');
+            }
             do {
                 for (int i = 0; i < waitAnimTime.Length; i++) {
-                    Console.Write($"\r{waitMessage}{waitAnim[i]}");
-                    Thread.Sleep(Math.Max(waitAnimTime[i] - (int)sw.ElapsedMilliseconds, 0));
-                    sw.Restart();
+                    if (EnableAnimation) {
+                        Console.Write($"\r{waitMessage}{waitAnim[i]}");
+                        Thread.Sleep(Math.Max(waitAnimTime[i] - (int)sw.ElapsedMilliseconds, 0));
+                        sw.Restart();
+                    } else {
+                        Thread.Sleep(100);
+                    }
                     // NOTE: Slower on retry as SerialClient.PortListed() does not work correctly on Windows
                     if (SerialClient.OpenConn(true)) {
                         // Thread.Sleep(reconnectDelay); // FIXME: Anyway to reintroduce delay with SerialClient.PortListed() being wonky?
@@ -57,13 +65,18 @@ namespace ComMonitor.Main {
                         break;
                     }
                 }
-            } while (!SerialClient.IsAlive());
-            Console.Write("\r");
-            Console.Write(string.Concat(Enumerable.Repeat(" ", waitMessage.Length + waitAnim[0].Length)));
-            Console.Write("\r");
-            // FIXME: Make retries limit optional, currently is being bypassed
-            retries--;
-            if (retries == 0) {
+
+                if (retries > 0)
+                    retries--;
+            } while (!SerialClient.IsAlive() && retries != 0);
+
+            if (EnableAnimation) {
+                Console.Write("\r");
+                Console.Write(new string(' ', waitMessage.Length + waitAnim[0].Length));
+                Console.Write("\r");
+            }
+
+            if (!SerialClient.IsAlive() && retries == 0) {
                 throw new Exception("Max number of retries reached");
             }
         }
@@ -83,12 +96,12 @@ namespace ComMonitor.Main {
                 try {
                     if (SerialClient.OpenConn()) {
                         retries = MAX_RETRY; // Reset retry counter
-                        Term.ColorSingle(ConsoleColor.Green, "\r------[Connect]-------");
-                        ConsoleInput.Enable(true);
+                        Term.ColorSingle(ConsoleColor.Green, "------[Connect]-------"); // IMPROVE: Does this need an initial '/r'? Had one before.
+                        ConsoleInput.Enable = true;
                         while (SerialClient.IsAlive()) {
                             Thread.Sleep(400);
                         }
-                        ConsoleInput.Enable(false);
+                        ConsoleInput.Enable = false;
                         Term.ColorSingle(ConsoleColor.Red, "-----[Disconnect]-----");
                     }
                 } catch (SerialException e) {
@@ -100,7 +113,7 @@ namespace ComMonitor.Main {
                 }
                 if (!reconnect)
                     break;
-                ConsoleInput.Enable(false);
+                ConsoleInput.Enable = false;
                 RetryWait();
             }
         }
@@ -132,14 +145,16 @@ namespace ComMonitor.Main {
         private static void SetOptions(Options options) {
             AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionTrapper;
 
-            retries = MAX_RETRY;
             initalWait = options.Wait;
             reconnect = options.Reconnect || (options.ReconnectDelay > 0);
             reconnectDelay = options.ReconnectDelay;
             MAX_RETRY = options.MaxRetries;
+            retries = MAX_RETRY;
+            EnableAnimation = !options.DisableAnimation;
 
             DataType dataType = options.SetDataType == DataType.None ? DataType.Ascii : options.SetDataType;
 
+            ConsoleInput.DisableCarridgeReturn = options.DisableAnimation;
             Term.ColorEnable(!options.SetColor);
             Term.EnableInput(options.EnableInput, !options.DisableInputPrompt);
 
