@@ -1,17 +1,13 @@
 ﻿using Microsoft.Win32;
 using ScottPlot;
 using ScottPlot.Plottable;
-using ScottPlot.Styles;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.IO;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media.Imaging;
 using CommandBinding = ComPlotter.Wpf.CommandBinding;
 
 namespace ComPlotter.Plot {

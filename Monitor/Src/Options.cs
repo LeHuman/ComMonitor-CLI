@@ -1,6 +1,6 @@
 ﻿using CommandLine;
-using System.IO.Ports;
 using ComMonitor.Serial;
+using System.IO.Ports;
 
 namespace ComMonitor.Main {
 

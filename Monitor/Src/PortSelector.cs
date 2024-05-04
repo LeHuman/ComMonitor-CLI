@@ -3,6 +3,7 @@ using System.IO.Ports;
 using System.Threading;
 
 namespace ComMonitor.Main {
+
     internal class PortSelector {
         private int selectedIndex = 0;
         private string[] ports;
@@ -10,7 +11,7 @@ namespace ComMonitor.Main {
         private Timer timer;
         private bool stopRequested = false; // Flag to signal stop request
         private bool screenUpdateNeeded = true; // Flag to indicate if screen update is needed
-        private readonly object lockObject = new object(); // Object for synchronization
+        private readonly object lockObject = new(); // Object for synchronization
 
         public void Start() {
             // Get the names of all available serial ports
@@ -22,8 +23,10 @@ namespace ComMonitor.Main {
             timer = new Timer(RefreshSerialPorts, null, TimeSpan.Zero, TimeSpan.FromSeconds(2)); // Refresh every 5 seconds
 
             // Start a separate thread for handling user input
-            Thread userInputThread = new Thread(UserInputLoop);
-            userInputThread.IsBackground = true;
+            Thread userInputThread = new(UserInputLoop)
+            {
+                IsBackground = true
+            };
             userInputThread.Start();
 
             // Main thread updates the screen
@@ -101,7 +104,7 @@ namespace ComMonitor.Main {
             // Get the names of all available serial ports
             lock (lockObject) {
                 string[] newPorts = SerialPort.GetPortNames();
-                if (!ArrayEquals(ports, newPorts)) {
+                if (!PortSelector.ArrayEquals(ports, newPorts)) {
                     ports = newPorts;
                     screenUpdateNeeded = true; // Set flag to update screen
                     selectedIndex = Math.Max(0, Math.Min(selectedIndex, ports.Length - 1));
@@ -125,7 +128,7 @@ namespace ComMonitor.Main {
             }
         }
 
-        private bool ArrayEquals(string[] arr1, string[] arr2) {
+        private static bool ArrayEquals(string[] arr1, string[] arr2) {
             if (arr1.Length != arr2.Length) {
                 return false;
             }

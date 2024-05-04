@@ -13,7 +13,6 @@ namespace ComMonitor.Terminal {
 
         public static readonly ConsoleColor DefaultConsoleColor = ConsoleColor.White;
 
-        private static int lastInputLen = 0;
         private static bool updateInput = false;
         private static bool enableInputPrompt = false;
         private static bool expandInput;
@@ -21,7 +20,7 @@ namespace ComMonitor.Terminal {
 
         private static bool colorEnabled = false;
         private static bool logColorEnabled = false;
-        private static readonly object inputLock = new object();
+        private static readonly object inputLock = new();
 
         private static readonly Dictionary<string, ConsoleColor> logLevels = new()
         {

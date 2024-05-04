@@ -13,12 +13,11 @@ namespace ComMonitor.Serial {
 
         private static Func<byte[], string> dataFunction;
         private static DelegateParsedData ParsedDataListener;
-        private static readonly List<byte> saveBuffer = new();
+        private static readonly List<byte> saveBuffer = [];
 
         private static void PrintMessage(string Message, bool Log = true) {
             Term.WriteLine(Message, Log);
-            if (ParsedDataListener != null)
-                ParsedDataListener.Invoke(Message);
+            ParsedDataListener?.Invoke(Message);
         }
 
         private static void AsciiDataReceived(object sender, DataStreamEventArgs e) {

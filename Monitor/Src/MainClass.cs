@@ -1,14 +1,13 @@
 ﻿using CommandLine;
 using ComMonitor.Log;
 using ComMonitor.MsgMap;
-using Pipe;
 using ComMonitor.Serial;
+using ComMonitor.Terminal;
+using Pipe;
 using System;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using ComMonitor.Terminal;
 using System.IO.Ports;
+using System.Threading;
 
 namespace ComMonitor.Main {
 

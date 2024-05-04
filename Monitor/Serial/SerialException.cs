@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.Serialization;
 
 namespace ComMonitor.Serial {
 
@@ -13,9 +12,6 @@ namespace ComMonitor.Serial {
         }
 
         public SerialException(string message, Exception innerException) : base(message, innerException) {
-        }
-
-        protected SerialException(SerializationInfo info, StreamingContext context) : base(info, context) {
         }
     }
 }

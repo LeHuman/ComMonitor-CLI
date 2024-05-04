@@ -3,17 +3,18 @@ using ComPlotter.Util;
 using ComPlotter.Wpf;
 using MahApps.Metro.Controls;
 using MaterialDesignColors;
-using System;
 using Pipe;
+using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
-using System.Windows;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Navigation;
 using static Pipe.PipeDataServer;
-using System.Text;
 
 namespace ComPlotter {
 
@@ -44,8 +45,10 @@ namespace ComPlotter {
             ToggleAbout = MainGrid.Resources["AboutPanelToggle"] as Storyboard;
             ToggleList = MainGrid.Resources["ListPanelToggle"] as Storyboard;
 
-            AssemblyInformation = new(Assembly.GetExecutingAssembly());
-            AssemblyInformation.RepoLink = new("Github", new("https://github.com/LeHuman/ComMonitor-CLI"));
+            AssemblyInformation = new(Assembly.GetExecutingAssembly())
+            {
+                RepoLink = new("Github", new("https://github.com/LeHuman/ComMonitor-CLI"))
+            };
             //AssemblyInformation.Image = (BitmapImage)FindResource("COM_Plotter_Icon256.png");
             Settings = new SettingsPanel(SettingsCheckList);
 
@@ -101,7 +104,7 @@ namespace ComPlotter {
         private static void ReceiveByteString(PlotGroup pg, byte[] Data) {
             string msg = Encoding.UTF8.GetString(Data);
             RegexOptions options = RegexOptions.Multiline;
-            foreach (Match m in Regex.Matches(msg, MessagePattern, options)) {
+            foreach (Match m in Regex.Matches(msg, MessagePattern, options).Cast<Match>()) {
                 if (m.Groups.Count == 3)
                     pg.Update(m.Groups[1].Value, double.Parse(m.Groups[2].Value));
             }

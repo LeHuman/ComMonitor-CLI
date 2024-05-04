@@ -1,12 +1,12 @@
-﻿using Newtonsoft.Json;
+﻿using ComMonitor.Log;
+using ComMonitor.Terminal;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using ComMonitor.Terminal;
-using ComMonitor.Log;
 
 namespace ComMonitor.MsgMap {
 

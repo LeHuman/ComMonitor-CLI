@@ -55,7 +55,7 @@ namespace Pipe {
             InfoPipeServer?.Close();
             InfoPipeServer?.Dispose();
             ServerThreadRun = false;
-            using (NamedPipeClientStream npcs = new NamedPipeClientStream("ComInfoPipe")) {
+            using (NamedPipeClientStream npcs = new("ComInfoPipe")) {
                 npcs.Connect(-1);
             }
             ServerThread.Join();
@@ -128,6 +128,5 @@ namespace Pipe {
                 SerialClosedHandle?.Invoke(PipeName, false);
             }
         }
-
     }
 }
