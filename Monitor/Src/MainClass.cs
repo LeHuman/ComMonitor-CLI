@@ -175,6 +175,10 @@ namespace ComMonitor.Main {
                 }
             }
 
+            if (options.PortName == null) {
+                throw new ArgumentException("Port name is null");
+            }
+
             #region Priority Queue Setup
 
             PriorityPipeName += SerialClient.PortName;
@@ -197,7 +201,7 @@ namespace ComMonitor.Main {
 
             #region Setup SerialClient
 
-            SerialClient.Setup(options.PortName?.ToUpper() ?? "", options.BaudRate ?? 9600, options.SetParity, options.SetDataBits, options.SetStopBits, !options.DisableDtr, options.Frequency);
+            SerialClient.Setup(options.PortName.ToUpper(), options.BaudRate ?? 9600, options.SetParity, options.SetDataBits, options.SetStopBits, !options.DisableDtr, options.Frequency);
             SerialClient.SetWriteTimeout(options.WaitTimeout);
             SerialClient.SerialDataReceived += SerialParser.LoadParser(dataType, options.SetMaxBytes);
 
