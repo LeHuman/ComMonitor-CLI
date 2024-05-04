@@ -156,7 +156,7 @@ namespace ComMonitor.Main {
 
             ConsoleInput.DisableCarridgeReturn = options.DisableAnimation;
             Term.ColorEnable(!options.SetColor);
-            Term.EnableInput(options.EnableInput, !options.DisableInputPrompt);
+            Term.EnableInput(options.EnableInput, options.ExpandInput, !options.DisableInputPrompt);
 
             JSONMap.LoadJSONMap(options.JsonPath, options.JsonBlock, SerialParser.MaxBytes);
 

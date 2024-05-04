@@ -63,6 +63,12 @@ namespace ComMonitor.Main {
         [Option('g', "graph", HelpText = "Graph incoming data using ComPlotter, refer to readme.", Default = false)]
         public bool PlotData { get; set; }
 
+        [Option('i', "input", HelpText = "Enable input when connected to a port, refer to readme for formatting [(A)scii|(H)ex|(D)ecimal|(B)inary]", Default = DataType.None)]
+        public DataType EnableInput { get; set; }
+
+        [Option('e', "extendedInput", HelpText = "When input is in Ascii mode, expand escaped characters such as \\n", Default = false)]
+        public bool ExpandInput { get; set; }
+
         [Option("first", HelpText = "Connect to the first available port when no portName is set.", Default = false)]
         public bool UseFirstFound { get; set; }
 
@@ -81,8 +87,8 @@ namespace ComMonitor.Main {
         [Option("singleLog", HelpText = "If Logging is enabled, use a single file for logging, overwriting it each time", Default = false)]
         public bool SingleLogging { get; set; }
 
-        [Option("input", HelpText = "Enable input when connected to a port, refer to readme for formatting [(A)scii|(H)ex|(D)ecimal|(B)inary]", Default = DataType.None)]
-        public DataType EnableInput { get; set; }
+        //[Option("input", HelpText = "Enable input when connected to a port, refer to readme for formatting [(A)scii|(H)ex|(D)ecimal|(B)inary]", Default = DataType.None)]
+        //public DataType EnableInput { get; set; }
 
         [Option("disableInputPrompt", HelpText = "Disable the prompt that appears when inputting data, recommended to paste data instead.\n NOTE: On windows, right clicking a terminal with text in the clipboard should paste.", Default = false)]
         public bool DisableInputPrompt { get; set; }

@@ -2,6 +2,7 @@
 using ComMonitor.Serial;
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace ComMonitor.Terminal {
@@ -15,6 +16,7 @@ namespace ComMonitor.Terminal {
         private static int lastInputLen = 0;
         private static bool updateInput = false;
         private static bool enableInputPrompt = false;
+        private static bool expandInput;
         private static DataType inputDataType = DataType.None;
 
         private static bool colorEnabled = false;
@@ -116,12 +118,15 @@ namespace ComMonitor.Terminal {
             Monitor.Exit(inputLock);
         }
 
-        internal static void SendMsg(string msg) {
+        internal static void SendMsg(string message) {
             if (inputDataType == DataType.Ascii) {
-                Console.WriteLine($"Sending String: {msg}");
-                SerialClient.SendString(msg);
+                Console.WriteLine($"Sending {(expandInput ? "Expanded" : "")} String: {message}");
+                if (expandInput) {
+                    message = Regex.Unescape(message);
+                }
+                SerialClient.SendString(message);
             } else {
-                string[] messages = msg.Trim().Split(' ');
+                string[] messages = message.Trim().Split(' ');
                 foreach (var msgStr in messages) {
                     byte[] msgArr = SerialType.GetByteArray(inputDataType, msgStr);
                     if (msgArr == null)
@@ -132,7 +137,8 @@ namespace ComMonitor.Terminal {
             }
         }
 
-        public static void EnableInput(DataType inputDataType, bool enableInputPrompt) {
+        public static void EnableInput(DataType inputDataType, bool expandInput, bool enableInputPrompt) {
+            Term.expandInput = expandInput;
             Term.inputDataType = inputDataType;
             Term.enableInputPrompt = enableInputPrompt;
             updateInput = inputDataType != DataType.None && inputDataType != DataType.Mapped;
