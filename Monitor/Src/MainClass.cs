@@ -28,8 +28,8 @@ namespace ComMonitor.Main {
         private static PipeDataClient SerialPipe;
 
         private static string connectStr, waitStr, retryStr;
-        private static readonly int[] waitAnimTime = [80, 40, 30, 30, 20, 20, 10, 20, 20, 30, 30, 40];
-        private static readonly string[] waitAnim = ["        ", "-       ", "--      ", "---     ", "----    ", " ----   ", "  ----  ", "   ---- ", "    ----", "     ---", "      --", "       -"];
+        private static readonly int[] waitAnimTime = [120, 90, 80, 60, 45, 30, 25, 40, 55, 80, 90, 120, 90, 80, 60, 45, 30, 25, 40, 55, 80, 90];
+        private static readonly string[] waitAnim = ["        ", "=       ", "-=      ", "--=     ", " --=    ", "  --=   ", "   --=  ", "   --= ", "     --=", "      --", "       -", "        ", "       =", "      =-", "     =--", "    =-- ", "   =--  ", "  =--   ", " =--    ", "=--     ", "--      ", "-       ",];
 
         #endregion defines
 
@@ -106,6 +106,7 @@ namespace ComMonitor.Main {
 
         private static void PriorityStop() {
             try {
+                // IMPROVE: Graceful shutdown of other resources
                 FileLog.Flush();
             } catch (Exception) {
             }
@@ -155,25 +156,6 @@ namespace ComMonitor.Main {
                 }
             }
 
-            #region Setup SerialClient
-
-            SerialClient.Setup(options.PortName?.ToUpper() ?? "", options.BaudRate ?? 9600, options.SetParity, options.SetDataBits, options.SetStopBits, !options.DisableDtr, options.Frequency);
-            SerialClient.SetWriteTimeout(options.WaitTimeout);
-            SerialClient.SerialDataReceived += SerialParser.LoadParser(dataType, options.SetMaxBytes);
-
-            #endregion Setup SerialClient
-
-            #region File Logging
-
-            if (options.Logging != null) {
-                FileLog.SetFile(options.Logging, options.SingleLogging);
-                FileLog.TimestampEnabled = options.LogTime;
-                if (dataType == DataType.Mapped)
-                    JSONMap.LogMap();
-            }
-
-            #endregion File Logging
-
             #region Priority Queue Setup
 
             PriorityPipeName += SerialClient.PortName;
@@ -193,6 +175,25 @@ namespace ComMonitor.Main {
             priorityPipe.SetCallback(PriorityStop);
 
             #endregion Priority Queue Setup
+
+            #region Setup SerialClient
+
+            SerialClient.Setup(options.PortName?.ToUpper() ?? "", options.BaudRate ?? 9600, options.SetParity, options.SetDataBits, options.SetStopBits, !options.DisableDtr, options.Frequency);
+            SerialClient.SetWriteTimeout(options.WaitTimeout);
+            SerialClient.SerialDataReceived += SerialParser.LoadParser(dataType, options.SetMaxBytes);
+
+            #endregion Setup SerialClient
+
+            #region File Logging
+
+            if (options.Logging != null) {
+                FileLog.SetFile(options.Logging, options.SingleLogging);
+                FileLog.TimestampEnabled = options.LogTime;
+                if (dataType == DataType.Mapped)
+                    JSONMap.LogMap();
+            }
+
+            #endregion File Logging
 
             #region Serial Data Pipe
 
