@@ -29,6 +29,7 @@ namespace Pipe {
                 }
         }
 
+        // TODO: make async
         public void SendData(string msg) {
             SendData(Encoding.UTF8.GetBytes(msg.TrimEnd(Trimmed) + '\n'));
         }
