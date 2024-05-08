@@ -228,10 +228,10 @@ namespace ComMonitor.Serial {
             while (!stopThreads) {
                 try {
                     int count = serialPort.BaseStream.ReadAsync(Buffer, 0, BufferSize).Result;
-                    // Wait up to 2ms for more data if received data is small, reduces the number of queued items
-                    if (count < 8) {
+                    // Wait up to 3ms for more data if received data is small, reduces the number of queued items
+                    if (count < 16) {
                         sw.Restart();
-                        while (serialPort.BytesToRead < 0 && sw.ElapsedMilliseconds < 2) { }
+                        while (serialPort.BytesToRead < 0 && sw.ElapsedMilliseconds < 3) { }
                         count += serialPort.BaseStream.ReadAsync(Buffer, count, BufferSize - count).Result;
                     }
                     IncomingData.Enqueue(Buf_s[..count].ToArray());
