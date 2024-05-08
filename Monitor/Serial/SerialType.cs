@@ -37,6 +37,7 @@ namespace ComMonitor.Serial {
             return val - (val < 58 ? 48 : (val < 97 ? 55 : 87));
         }
 
+        // TODO: option to parse multiple bytes
         public static string GetDecimal(byte[] data) {
             StringBuilder fnl = new();
 
