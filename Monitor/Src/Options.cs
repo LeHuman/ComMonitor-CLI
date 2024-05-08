@@ -54,9 +54,6 @@ namespace ComMonitor.Main {
         [Option("priority", HelpText = "Take priority of a port if another instance of ComMonitor has it open ( Does not apply to any other app )", Default = false)]
         public bool Priority { get; set; }
 
-        [Option('f', "frequency", HelpText = "Manually Set the critical frequency of communication (Hz)", Default = 20)]
-        public int Frequency { get; set; }
-
         [Option('l', "log", HelpText = "Enable logging to a file [Valid Directory Path]")]
         public string Logging { get; set; }
 
@@ -86,9 +83,6 @@ namespace ComMonitor.Main {
 
         [Option("singleLog", HelpText = "If Logging is enabled, use a single file for logging, overwriting it each time", Default = false)]
         public bool SingleLogging { get; set; }
-
-        //[Option("input", HelpText = "Enable input when connected to a port, refer to readme for formatting [(A)scii|(H)ex|(D)ecimal|(B)inary]", Default = DataType.None)]
-        //public DataType EnableInput { get; set; }
 
         [Option("disableInputPrompt", HelpText = "Disable the prompt that appears when inputting data, recommended to paste data instead.\n NOTE: On windows, right clicking a terminal with text in the clipboard should paste.", Default = false)]
         public bool DisableInputPrompt { get; set; }
