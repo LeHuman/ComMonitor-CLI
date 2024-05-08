@@ -268,6 +268,7 @@ namespace ComMonitor.Terminal {
             });
         }
 
+        // FIXME: Log coloring is broken, sometimes fails to color after a default string
         public static void _WriteInternal(string str, bool newline, bool Log) {
             ClearInputLine();
 
