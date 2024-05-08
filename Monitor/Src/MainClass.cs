@@ -3,12 +3,17 @@ using ComMonitor.Log;
 using ComMonitor.MsgMap;
 using ComMonitor.Serial;
 using ComMonitor.Terminal;
+using Newtonsoft.Json.Linq;
 using Pipe;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Ports;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Transactions;
+using Theraot.Collections;
 
 namespace ComMonitor.Main {
 
@@ -19,7 +24,8 @@ namespace ComMonitor.Main {
         private static int MAX_RETRY = 500; // We should give it a limit, just in case
         private static int retries = MAX_RETRY;
         private static bool reconnect = false;
-        private static int reconnectDelay = 0;
+
+        //private static int reconnectDelay = 0;
         private static bool initalWait = false;
 
         private static string PriorityPipeName = "ComMonitor";
@@ -32,6 +38,9 @@ namespace ComMonitor.Main {
         private static readonly string[] waitAnim = ["        ", "=       ", "-=      ", "--=     ", " --=    ", "  --=   ", "   --=  ", "   --= ", "     --=", "      --", "       -", "        ", "       =", "      =-", "     =--", "    =-- ", "   =--  ", "  =--   ", " =--    ", "=--     ", "--      ", "-       ",];
         private static bool EnableAnimation = true;
 
+        private static bool programStop = false;
+        private static Thread parsingThread;
+
         #endregion defines
 
         #region Methods
@@ -39,7 +48,7 @@ namespace ComMonitor.Main {
         #region Runtime Methods
 
         private static void RetryWait(bool firstWait = false) {
-            if (SerialClient.IsAlive())
+            if (SerialClient.IsAlive)
                 return;
             Thread.Sleep(100);
             Term.ColorConsole(ConsoleColor.Blue);
@@ -68,7 +77,7 @@ namespace ComMonitor.Main {
 
                 if (retries > 0)
                     retries--;
-            } while (!SerialClient.IsAlive() && retries != 0);
+            } while (!SerialClient.IsAlive && retries != 0);
 
             if (EnableAnimation) {
                 Console.Write("\r");
@@ -76,7 +85,7 @@ namespace ComMonitor.Main {
                 Console.Write("\r");
             }
 
-            if (!SerialClient.IsAlive() && retries == 0) {
+            if (!SerialClient.IsAlive && retries == 0) {
                 throw new Exception("Max number of retries reached");
             }
         }
@@ -92,13 +101,16 @@ namespace ComMonitor.Main {
                     throw new SerialException($"Unable to find port: {SerialClient.PortName}");
             }
 
+            programStop = false;
+            parsingThread.Start();
+
             while (true) {
                 try {
                     if (SerialClient.OpenConn()) {
                         retries = MAX_RETRY; // Reset retry counter
                         Term.ColorSingle(ConsoleColor.Green, "------[Connect]-------"); // IMPROVE: Does this need an initial '/r'? Had one before.
                         ConsoleInput.Enable = true;
-                        while (SerialClient.IsAlive()) {
+                        while (SerialClient.IsAlive) {
                             Thread.Sleep(400);
                         }
                         ConsoleInput.Enable = false;
@@ -116,6 +128,11 @@ namespace ComMonitor.Main {
                 ConsoleInput.Enable = false;
                 RetryWait();
             }
+
+            programStop = true;
+            //parsingThread.Interrupt();
+            SerialClient.ClearLock();
+            parsingThread.Join();
         }
 
         #endregion Runtime Methods
@@ -147,7 +164,7 @@ namespace ComMonitor.Main {
 
             initalWait = options.Wait;
             reconnect = options.Reconnect || (options.ReconnectDelay > 0);
-            reconnectDelay = options.ReconnectDelay;
+            //reconnectDelay = options.ReconnectDelay;
             MAX_RETRY = options.MaxRetries;
             retries = MAX_RETRY;
             EnableAnimation = !options.DisableAnimation;
@@ -202,9 +219,8 @@ namespace ComMonitor.Main {
 
             #region Setup SerialClient
 
-            SerialClient.Setup(options.PortName.ToUpper(), options.BaudRate ?? 9600, options.SetParity, options.SetDataBits, options.SetStopBits, !options.DisableDtr, options.Frequency);
+            SerialClient.Setup(options.PortName.ToUpper(), options.BaudRate ?? 9600, options.SetParity, options.SetDataBits, options.SetStopBits, !options.DisableDtr);
             SerialClient.SetWriteTimeout(options.WaitTimeout);
-            SerialClient.SerialDataReceived += SerialParser.LoadParser(dataType, options.SetMaxBytes);
 
             #endregion Setup SerialClient
 
@@ -225,10 +241,11 @@ namespace ComMonitor.Main {
                 SerialPipe = new PipeDataClient(SerialClient.PortName, options.SetMaxBytes, dataType.ToString());
                 // SerialClient.SerialDataReceived += (sender, e) => { SerialPipe.SendData(e.Data); }; // For piping raw data
                 if (!SerialPipe.Start()) {
+                    SerialPipe = null;
                     Term.ColorSingle(ConsoleColor.Yellow, "Unable to wait for open system pipe for serial data");
                     Term.ColorSingle(ConsoleColor.Yellow, "Is another ComMonitor open?");
                 } else {
-                    SerialParser.SetParsedDataListener(SerialPipe.SendData);
+                    //SerialParser.SetParsedDataListener(SerialPipe.SendData);
                     if (options.PlotData) {
                         Process[] processes = Process.GetProcessesByName("ComPlotter"); // TODO: Only start if specifically asked to, otherwise just wait
                         if (processes.Length == 0) {
@@ -246,11 +263,35 @@ namespace ComMonitor.Main {
                 }
             }
 
+            //SerialParser.DataParsedListener = (message, newline) => {
+            //    Term.WriteInternal(message, newline, dataType != DataType.Mapped);
+            //    SerialPipe?.SendData(message); // TODO: Better data transfer to pipe
+            //};
+
+            Func<byte[], string> parser = SerialParser.ObtainParser(dataType, options.SetMaxBytes);
+
+            parsingThread = new Thread(() => {
+                List<byte> inputBuffer = new(4096 * 2);
+
+                while (!programStop) {
+                    SerialClient.DataReceived.WaitOne();
+                    while (SerialClient.Receive(out byte[] data)) {
+                        inputBuffer.AddRange(data);
+                    }
+                    if (inputBuffer.Count > 0) {
+                        string message = parser.Invoke(inputBuffer.AsArray());
+                        Term.Write(message, dataType != DataType.Mapped);
+                        SerialPipe?.SendData(message); // TODO: Better data transfer to pipe
+                    }
+                    inputBuffer.Clear();
+                }
+            });
+
             #endregion Serial Data Pipe
 
             waitStr = $"Waiting for connection to {SerialClient.PortName} ";
             retryStr = $"Retrying to connect to {SerialClient.PortName} ";
-            connectStr = $"Connecting to {SerialClient.PortName} @ {SerialClient.BaudRate}\np:{SerialClient.Parity} d:{SerialClient.DataBits} s:{SerialClient.StopBits} dtr:{SerialClient.Dtr} cf:{SerialClient.FreqCriticalLimit}{(options.SetMaxBytes > 0 ? " j:" + options.SetMaxBytes : null)}{(options.EnableInput != DataType.None ? $" i{(options.ExpandInput && (options.EnableInput == DataType.Ascii) ? 'e' : null)}:{options.EnableInput.ToString().First()}" : null)}\n";
+            connectStr = $"Connecting to {SerialClient.PortName} @ {SerialClient.BaudRate}\np:{SerialClient.Parity} d:{SerialClient.DataBits} s:{SerialClient.StopBits} dtr:{SerialClient.Dtr}{(options.SetMaxBytes > 0 ? " j:" + options.SetMaxBytes : null)}{(options.EnableInput != DataType.None ? $" i{(options.ExpandInput && (options.EnableInput == DataType.Ascii) ? 'e' : null)}:{options.EnableInput.ToString().First()}" : null)}\n";
         }
 
         private static void Main(string[] args) {
