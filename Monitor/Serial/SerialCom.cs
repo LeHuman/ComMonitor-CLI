@@ -7,17 +7,22 @@
    Over The Standard C# Serial Component
 */
 
+// Ignore Spelling: Dtr
+
+using CommandLine;
 using System;
+using System.Collections.Concurrent;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO.Ports;
 using System.Linq;
+using System.Text;
 using System.Threading;
 
 namespace ComMonitor.Serial {
-
-    public class DataStreamEventArgs : EventArgs {
-        public byte[] Data { get; set; }
-    }
+    //public class DataStreamEventArgs : EventArgs {
+    //    public byte[] Data { get; set; }
+    //}
 
     public static class SerialClient {
 
@@ -28,23 +33,18 @@ namespace ComMonitor.Serial {
         public static Parity Parity { get; private set; } = Parity.None;
         public static int DataBits { get; private set; } = 8;
         public static StopBits StopBits { get; private set; } = StopBits.One;
-
         public static bool Dtr { get; private set; } = true;
-        public static int FreqCriticalLimit { get; private set; } = 20; // The Critical Frequency of Communication to Avoid Any Lag
 
-        private static Thread serThread;
-        private static double packetsRate;
-        private static DateTime lastReceive;
+        private static Thread receivingThread;
         private static int writeTimeout = -1;
         private static SerialPort serialPort;
+        public static readonly AutoResetEvent DataReceived = new(false);
+        private static readonly ConcurrentQueue<byte[]> IncomingData = new();
+        private static readonly ConcurrentQueue<byte[]> OutgoingData = new();
+        private static readonly SemaphoreSlim OutgoingSemaphore = new(1);
+        private static bool stopThreads = false;
 
         #endregion Defines
-
-        #region Custom Events
-
-        public static event EventHandler<DataStreamEventArgs> SerialDataReceived;
-
-        #endregion Custom Events
 
         #region Setups
 
@@ -52,43 +52,35 @@ namespace ComMonitor.Serial {
             PortName = port;
         }
 
-        public static void SetWriteTimeout(int timeout) {
-            writeTimeout = timeout;
-        }
-
         public static void Setup(string Port, int baudRate) {
             Setup(Port);
             SerialClient.BaudRate = baudRate;
         }
 
-        public static void Setup(string Port, int baudRate, Parity parity, int dataBits, StopBits stopBits, bool enableDtr, int freqCriticalLimit) {
+        public static void Setup(string Port, int baudRate, Parity parity, int dataBits, StopBits stopBits, bool enableDtr) {
             Setup(Port, baudRate);
             SerialClient.Parity = parity;
             SerialClient.DataBits = dataBits;
             SerialClient.StopBits = stopBits;
             SerialClient.Dtr = enableDtr;
-            SerialClient.FreqCriticalLimit = Math.Max(1, freqCriticalLimit);
+        }
+
+        public static void SetWriteTimeout(int timeout) {
+            writeTimeout = timeout;
         }
 
         #endregion Setups
 
         #region Methods
 
+        public static void ClearLock() => DataReceived.Set();
+
         #region Port Control
 
-        public static bool IsAlive() {
-            return serialPort?.IsOpen ?? false;
-        }
+        public static bool IsAlive => serialPort?.IsOpen ?? false;
 
         public static bool ResetConn() {
             CloseConn();
-            return OpenConn();
-        }
-
-        public static bool OpenConn(string port, int baudRate) {
-            PortName = port;
-            SerialClient.BaudRate = baudRate;
-
             return OpenConn();
         }
 
@@ -101,12 +93,29 @@ namespace ComMonitor.Serial {
         }
 
         public static void CloseConn() {
-            if (serialPort != null && serialPort.IsOpen) {// Stop thread here
-                                                          // serThread.Interrupt();
-
-                // if (serThread.ThreadState == ThreadState.Aborted)
-                serialPort.Close();
+            stopThreads = true;
+            OutgoingSemaphore.Wait();
+            receivingThread?.Join();
+            serialPort?.Close();
+            // Wait up to a second for consumers to finish, if needed
+            if (!IncomingData.IsEmpty) {
+                DataReceived.Set();
+                Stopwatch sw = Stopwatch.StartNew();
+                while (!IncomingData.IsEmpty && sw.ElapsedMilliseconds < 1000) {
+                    Thread.Sleep(10);
+                }
             }
+            DataReceived.Reset();
+            IncomingData.Clear();
+            OutgoingData.Clear();
+            OutgoingSemaphore.Release(); // IMPROVE: Does this need a tryf?
+        }
+
+        public static bool OpenConn(string port, int baudRate) {
+            PortName = port;
+            SerialClient.BaudRate = baudRate;
+
+            return OpenConn();
         }
 
         public static bool OpenConn(bool suppressMessage = false) {
@@ -119,6 +128,7 @@ namespace ComMonitor.Serial {
             }
 
             if (!serialPort.IsOpen) {
+                CloseConn();
                 serialPort.ReadTimeout = -1;
                 serialPort.WriteTimeout = writeTimeout;
                 serialPort.DtrEnable = Dtr;
@@ -142,15 +152,13 @@ namespace ComMonitor.Serial {
                     return false;
                 }
 
-                packetsRate = 0;
-                lastReceive = DateTime.MinValue;
-
-                serThread = new Thread(new ThreadStart(SerialReceiving))
+                receivingThread = new Thread(new ThreadStart(SerialReceiving))
                 {
                     Priority = ThreadPriority.AboveNormal
                 };
-                serThread.Name = "SerialHandle" + serThread.ManagedThreadId;
-                serThread.Start(); /*Start The Communication Thread*/
+                receivingThread.Name = "SerialHandle" + receivingThread.ManagedThreadId;
+                stopThreads = false;
+                receivingThread.Start(); // Start The Communication Thread
             }
 
             return true;
@@ -160,8 +168,25 @@ namespace ComMonitor.Serial {
 
         #region Transmit/Receive
 
-        public static void Transmit(byte[] packet) {
-            serialPort.Write(packet, 0, packet.Length);
+        public static bool Receive(out byte[] data) {
+            return IncomingData.TryDequeue(out data);
+        }
+
+        private static async void Transmit() {
+            if (!await OutgoingSemaphore.WaitAsync(0))
+                return;
+
+            try {
+                while (OutgoingData.TryDequeue(out byte[] data)) {
+#if NETCOREAPP2_1_OR_GREATER
+                    await serialPort.BaseStream.WriteAsync(data);
+#else
+                    await serialPort.BaseStream.WriteAsync(data, 0, data.Length);
+#endif
+                }
+            } finally {
+                OutgoingSemaphore.Release();
+            }
         }
 
         #endregion Transmit/Receive
@@ -181,56 +206,36 @@ namespace ComMonitor.Serial {
 
         #region Threading Loops
 
-        public static bool AddFreq(int freq) {
-            if (FreqCriticalLimit == 1)
-                return false;
-            FreqCriticalLimit = Math.Max(FreqCriticalLimit + freq, 1);
-            return true;
-        }
-
-        public static void SendString(string msg) // TODO: Async Writes
-        {
-            try {
-                serialPort?.Write(msg);
-            } catch (Exception e) {
-                Console.WriteLine($"Serial: Error Sending Data, {e.Message}");
-            }
+        public static void SendString(string msg) {
+            SendBytes(Encoding.ASCII.GetBytes(msg));
         }
 
         public static void SendBytes(byte[] msg) {
             try {
-                serialPort?.Write(msg, 0, msg.Length);
+                OutgoingData.Enqueue(msg);
+                Transmit();
             } catch (Exception e) {
                 Console.WriteLine($"Serial: Error Sending Data, {e.Message}");
             }
         }
 
-        private static async void SerialReceiving() {
-            int count;
-            while (true) {
+        private const int BufferSize = 4096;
+        private static readonly byte[] Buffer = new byte[BufferSize]; // TODO: Ensure this can be allocated
+        private static ReadOnlySpan<byte> Buf_s => Buffer;
+
+        private static void SerialReceiving() {
+            Stopwatch sw = Stopwatch.StartNew();
+            while (!stopThreads) {
                 try {
-                    count = serialPort.BytesToRead;
-
-                    /*Get Sleep Interval*/
-                    TimeSpan tmpInterval = (DateTime.Now - lastReceive);
-
-                    /*Form The Packet in The Buffer*/
-                    byte[] buf = new byte[count];
-                    int readBytes = 0;
-                    if (count > 0) {
-                        readBytes = await serialPort.BaseStream.ReadAsync(buf, 0, count);
-                        OnSerialReceiving(buf);
+                    int count = serialPort.BaseStream.ReadAsync(Buffer, 0, BufferSize).Result;
+                    // Wait up to 2ms for more data if received data is small, reduces the number of queued items
+                    if (count < 8) {
+                        sw.Restart();
+                        while (serialPort.BytesToRead < 0 && sw.ElapsedMilliseconds < 2) { }
+                        count += serialPort.BaseStream.ReadAsync(Buffer, count, BufferSize - count).Result;
                     }
-
-                    #region Frequency Control
-
-                    packetsRate = (packetsRate + readBytes) / 2;
-                    lastReceive = DateTime.Now;
-
-                    if (tmpInterval.Milliseconds > 0 && (double)(readBytes + serialPort.BytesToRead) / 2 <= packetsRate)
-                        Thread.Sleep(tmpInterval.Milliseconds > FreqCriticalLimit ? FreqCriticalLimit : tmpInterval.Milliseconds);
-
-                    #endregion Frequency Control
+                    IncomingData.Enqueue(Buf_s[..count].ToArray());
+                    DataReceived.Set();
                 } catch (Exception e) {
                     Console.WriteLine($"Serial: Error Receiving Data, {e.Message}");
                     break;
@@ -239,13 +244,5 @@ namespace ComMonitor.Serial {
         }
 
         #endregion Threading Loops
-
-        #region Custom Events Invoke Functions
-
-        private static void OnSerialReceiving(byte[] res) {
-            SerialDataReceived?.Invoke(null, new DataStreamEventArgs() { Data = res });
-        }
-
-        #endregion Custom Events Invoke Functions
     }
 }
