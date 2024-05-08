@@ -263,27 +263,41 @@ namespace ComMonitor.Main {
                 }
             }
 
-            //SerialParser.DataParsedListener = (message, newline) => {
-            //    Term.WriteInternal(message, newline, dataType != DataType.Mapped);
-            //    SerialPipe?.SendData(message); // TODO: Better data transfer to pipe
-            //};
-
             Func<byte[], string> parser = SerialParser.ObtainParser(dataType, options.SetMaxBytes);
 
             parsingThread = new Thread(() => {
-                List<byte> inputBuffer = new(4096 * 2);
+                List<byte> inputBuffer = new(4096);
+                bool delay = false;
 
-                while (!programStop) {
-                    SerialClient.DataReceived.WaitOne();
-                    while (SerialClient.Receive(out byte[] data)) {
-                        inputBuffer.AddRange(data);
-                    }
+                void pushData() {
                     if (inputBuffer.Count > 0) {
                         string message = parser.Invoke(inputBuffer.AsArray());
                         Term.Write(message, dataType != DataType.Mapped);
                         SerialPipe?.SendData(message); // TODO: Better data transfer to pipe
                     }
                     inputBuffer.Clear();
+                }
+
+                while (!programStop) {
+                    if (delay) {
+                        // Just push if we don't receive anything for 2ms
+                        if (!SerialClient.DataReceived.WaitOne(2)) {
+                            pushData();
+                            delay = false;
+                        }
+                    } else {
+                        SerialClient.DataReceived.WaitOne();
+                    }
+
+                    while (SerialClient.Receive(out byte[] data)) {
+                        inputBuffer.AddRange(data);
+                    }
+
+                    // Add artificial delay to help buffer data for parsing
+                    delay = (inputBuffer.Count <= 4);
+                    if (!delay) {
+                        pushData();
+                    }
                 }
             });
 
