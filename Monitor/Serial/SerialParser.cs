@@ -2,106 +2,124 @@
 using ComMonitor.MsgMap;
 using ComMonitor.Terminal;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Text;
+using Theraot.Collections;
 
 namespace ComMonitor.Serial {
-
-    public delegate void DelegateParsedData(string Message);
 
     public static class SerialParser {
         public static int MaxBytes { get; private set; } = 8;
 
         private static Func<byte[], string> dataFunction;
-        private static DelegateParsedData ParsedDataListener;
+
+        //public static Action<string, bool> DataParsedListener { get; set; }
         private static readonly List<byte> saveBuffer = [];
 
-        private static void PrintMessage(string Message, bool Log = true) {
-            Term.WriteLine(Message, Log);
-            ParsedDataListener?.Invoke(Message);
-        }
+        private static readonly char[] newlineChars = ['\n', '\r'];
 
-        private static void AsciiDataReceived(object sender, DataStreamEventArgs e) {
-            string data = SerialType.GetAscii(e.Data);
-            if (data.IndexOf('\n') < data.Length - 1) {
-                string[] lines = data.Split('\n');
-                foreach (string line in lines) {
-                    PrintMessage(line.Trim('\r'));
-                }
-            } else {
-                Term.Write(data, true);
-            }
+        //private static void DataParsed(string message, bool newline = true) {
+        //    DataParsedListener?.Invoke(message, newline);
+        //}
+
+        private static string ParseASCII(byte[] data) {
+            StringBuilder fnl = new(data.Length + 1);
+            string message = SerialType.GetAscii(data);
+
+            fnl.Append(message);
+
+            //int newlineIndex = message.IndexOf('\n');
+            //if (newlineIndex >= 0) {
+            //    string[] lines = message.Split(newlineChars, StringSplitOptions.RemoveEmptyEntries);
+            //    foreach (string line in lines) {
+            //        DataParsed(line);
+            //    }
+            //} else {
+            //    DataParsed(message, false);
+            //}
+
             FileLog.Flush();
+            return fnl.ToString();
         }
 
-        private static void SerialDataReceived(object sender, DataStreamEventArgs e) {
-            string msg = dataFunction(e.Data);
-            PrintMessage(msg);
+        private static string ParseGeneral(byte[] data) {
+            StringBuilder fnl = new(data.Length + 1);
+            string msg = dataFunction(data);
+
+            fnl.AppendLine(msg);
+            return fnl.ToString();
         }
 
-        public static void SetParsedDataListener(DelegateParsedData ParsedDataListener) {
-            SerialParser.ParsedDataListener = ParsedDataListener;
-        }
-
-        private static void SerialChunkedDataReceived(object sender, DataStreamEventArgs e) {
-            Span<byte> rawData = e.Data.AsSpan();
+        private static string ParseChunkedSerial(byte[] data) {
+            StringBuilder fnl = new(data.Length + 1);
+            Span<byte> rawData = data.AsSpan();
             int remain = rawData.Length;
             int i = 0;
+
             while (remain >= MaxBytes) {
-                PrintMessage(dataFunction(rawData.Slice(i, MaxBytes).ToArray()));
+                fnl.AppendLine(dataFunction(rawData.Slice(i, MaxBytes).ToArray()));
                 remain -= MaxBytes;
                 i += MaxBytes;
             }
+
             if (remain > 0) {
-                PrintMessage(dataFunction(rawData[i..].ToArray()));
+                fnl.AppendLine(dataFunction(rawData[i..].ToArray()));
             }
+
             FileLog.Flush();
+            return fnl.ToString();
         }
 
-        public static EventHandler<DataStreamEventArgs> LoadParser(DataType dataType, int MaxBytes) {
-            SerialParser.MaxBytes = MaxBytes;
-            dataFunction = SerialType.GetTypeFunction(dataType);
+        private static string ParseMappedData(byte[] data) {
+            StringBuilder fnl = new(data.Length + 1);
 
-            if (dataType == DataType.Ascii) {
-                return AsciiDataReceived;
-            } else {
-                if (dataType == DataType.Mapped) {
-                    return SerialMappedDataReceived;
-                } else if (MaxBytes > 0) {
-                    return SerialChunkedDataReceived;
-                } else {
-                    return SerialDataReceived;
-                }
-            }
-        }
-
-        private static void SerialMappedDataReceived(object sender, DataStreamEventArgs e) {
-            if (e.Data.Length % MaxBytes != 0)
-                Term.WriteLine("WARN: Data may have dysynced, or badly formatted data was received");
+            if (data.Length % MaxBytes != 0)
+                fnl.AppendLine("[WARN] Data may have desynced, or badly formatted data was received");// IMPROVE: Don't send as data
 
             byte[] stichedData;
             Span<byte> rawData;
 
-            if (saveBuffer.Count > 0) // There is part of a message that was uncomplete, prepend it to our span
+            if (saveBuffer.Count > 0) // There is part of a message that was incomplete, pre-pend it to our span
             {
-                stichedData = new byte[e.Data.Length + saveBuffer.Count];
+                stichedData = new byte[data.Length + saveBuffer.Count];
                 Buffer.BlockCopy(saveBuffer.ToArray(), 0, stichedData, 0, saveBuffer.Count);
-                Buffer.BlockCopy(e.Data, 0, stichedData, saveBuffer.Count, e.Data.Length);
+                Buffer.BlockCopy(data, 0, stichedData, saveBuffer.Count, data.Length);
                 rawData = stichedData.AsSpan();
             } else {
-                rawData = e.Data.AsSpan();
+                rawData = data.AsSpan();
             }
 
             int remain = rawData.Length;
             int i = 0;
             while (remain >= MaxBytes) {
-                PrintMessage(JSONMap.GetMappedMessage(rawData.Slice(i, MaxBytes)), false);
+                fnl.AppendLine(JSONMap.GetMappedMessage(rawData.Slice(i, MaxBytes)));
                 remain -= MaxBytes;
                 i += MaxBytes;
             }
             if (remain > 0) {
                 saveBuffer.AddRange(rawData[i..].ToArray());
             }
+
             FileLog.Flush();
+            return fnl.ToString();
+        }
+
+        public static Func<byte[], string> ObtainParser(DataType dataType, int MaxBytes) {
+            SerialParser.MaxBytes = MaxBytes;
+            dataFunction = SerialType.GetTypeFunction(dataType);
+
+            if (dataType == DataType.Ascii) {
+                return ParseASCII;
+            } else {
+                if (dataType == DataType.Mapped) {
+                    return ParseMappedData;
+                } else if (MaxBytes > 0) {
+                    return ParseChunkedSerial;
+                } else {
+                    return ParseGeneral;
+                }
+            }
         }
     }
 }
