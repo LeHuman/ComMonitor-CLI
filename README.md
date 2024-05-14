@@ -24,6 +24,10 @@ A .NET console application to monitor data over a serial port. Has options for l
 <!-- TODO: Test this -->
 **NOTE:** This app has been mainly been tested and used on Windows, but should technically work on anything that has a .NET runtime.
 
+### Why
+
+When I initially made this, I was in need of a CLI only serial monitor that could also do logging for me. At the time, I did not find anything, so I made it myself. On top of that, I also wanted the option to graph the data using a separate GUI app, but only as an option, not a forced 'this must run' feature. This allowed me to use the app in VSCode's integrated terminal instead of having to open another tool separately unless I wanted to graph the data in realtime.
+
 ## Key Features
 
 - CLI app
